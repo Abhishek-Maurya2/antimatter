@@ -1,0 +1,94 @@
+import 'package:flutter/material.dart';
+import 'package:settings_tiles/src/tiles/setting_tile.dart';
+
+/// Setting section.
+class SettingSection extends StatelessWidget {
+  /// A setting section with a [title] and a list of settings [tiles].
+  ///
+  /// An optional [divider] can be displayed between the tiles.
+  const SettingSection({
+    required this.tiles,
+    super.key,
+    this.title,
+    this.divider,
+    this.styleTile = false,
+    this.PrimarySwitch = false,
+    this.errorTile = false,
+    this.backgroundColor,
+    this.padding,
+  });
+
+  /// The title of the setting section.
+  final Widget? title;
+
+  /// The list of setting tiles.
+  final List<SettingTile> tiles;
+
+  /// A divider displayed between the setting tiles.
+  final Divider? divider;
+  final bool styleTile;
+  final bool PrimarySwitch;
+  final bool errorTile;
+  final Color? backgroundColor;
+  final EdgeInsetsGeometry? padding;
+
+  Widget _wrapStyledTile(BuildContext context, Widget tile,
+      {required bool isFirst, required bool isLast, required bool isOnly}) {
+    final borderRadius = PrimarySwitch
+        ? BorderRadius.circular(50)
+        : isOnly
+            ? BorderRadius.circular(16)
+            : isFirst
+                ? const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                    bottomLeft: Radius.circular(4),
+                    bottomRight: Radius.circular(4),
+                  )
+                : isLast
+                    ? const BorderRadius.only(
+                        topLeft: Radius.circular(4),
+                        topRight: Radius.circular(4),
+                        bottomLeft: Radius.circular(16),
+                        bottomRight: Radius.circular(16),
+                      )
+                    : BorderRadius.circular(4);
+
+    return Material(
+      color: PrimarySwitch
+          ? Theme.of(context).colorScheme.primaryContainer
+          : errorTile
+              ? Theme.of(context).colorScheme.errorContainer
+              : backgroundColor ?? Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: borderRadius),
+      clipBehavior: Clip.hardEdge,
+      child: tile,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: padding ?? EdgeInsets.fromLTRB(styleTile ? 16 : 0, 0, styleTile ? 16 : 0, 0),
+        child: Column(
+          spacing: styleTile ? 2 : 0,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (title != null) title!,
+            for (final (index, tile) in tiles.indexed) ...[
+              if (divider != null && index != 0) divider!,
+              if (styleTile)
+                _wrapStyledTile(
+                  context,
+                  tile,
+                  isFirst: index == 0,
+                  isLast: index == tiles.length - 1,
+                  isOnly: tiles.length == 1,
+                )
+              else
+                tile,
+            ],
+          ],
+        ));
+  }
+}
