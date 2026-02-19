@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:provider/provider.dart';
 import '../utils/theme_controller.dart';
 import '../notifiers/settings_notifier.dart';
+import 'settings/appearance_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -26,6 +27,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SliverAppBar.large(
             title: Text('Settings'),
             titleSpacing: 0,
+            leadingWidth: 80,
+            leading: Center(
+              child: Container(
+                width: 60,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colorTheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: Icon(
+                    Symbols.arrow_back,
+                    color: colorTheme.onSurface,
+                    size: 25,
+                  ),
+                  tooltip: 'Back',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ),
+            ),
             backgroundColor: colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,
@@ -46,7 +69,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: Text('Appearance'),
                       description: Text('Theme, colors, and display'),
                       onTap: () {
-                        _showThemeDialog(context, themeController);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AppearanceScreen(),
+                          ),
+                        );
                       },
                     ),
                   ],
@@ -123,23 +151,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 SettingSection(
                   styleTile: true,
                   tiles: [
-                    SettingSwitchTile(
-                      icon: iconContainer(
-                        Symbols.palette,
-                        isLight ? Color(0xffffd6f9) : Color(0xff633664),
-                        isLight ? Color(0xff633664) : Color(0xffffd6f9),
-                      ),
-                      title: Text('Expressive colors'),
-                      description: Text('Use vibrant M3 expressive variant'),
-                      toggled: context
-                          .watch<SettingsNotifier>()
-                          .useExpressiveVariant,
-                      onChanged: (value) {
-                        context.read<SettingsNotifier>().updateColorVariant(
-                          value,
-                        );
-                      },
-                    ),
                     SettingActionTile(
                       icon: iconContainer(
                         Symbols.info,
@@ -182,49 +193,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showThemeDialog(BuildContext context, ThemeController themeController) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Choose theme'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<ThemeMode>(
-                title: Text('System'),
-                value: ThemeMode.system,
-                groupValue: themeController.themeMode,
-                onChanged: (value) {
-                  themeController.setThemeMode(value!);
-                  Navigator.pop(context);
-                },
-              ),
-              RadioListTile<ThemeMode>(
-                title: Text('Light'),
-                value: ThemeMode.light,
-                groupValue: themeController.themeMode,
-                onChanged: (value) {
-                  themeController.setThemeMode(value!);
-                  Navigator.pop(context);
-                },
-              ),
-              RadioListTile<ThemeMode>(
-                title: Text('Dark'),
-                value: ThemeMode.dark,
-                groupValue: themeController.themeMode,
-                onChanged: (value) {
-                  themeController.setThemeMode(value!);
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

@@ -116,11 +116,41 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
       appBar: AppBar(
         title: Text(widget.task == null ? 'New Task' : 'Edit Task'),
         backgroundColor: colorTheme.surfaceContainer,
+        leadingWidth: 80,
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            width: 64,
+            height: 48,
+            decoration: BoxDecoration(
+              color: colorTheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: IconButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: Icon(Symbols.arrow_back, color: colorTheme.onSurface),
+              tooltip: 'Back',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ),
+        ),
         actions: [
-          IconButton(
-            onPressed: _saveTask,
-            icon: Icon(Symbols.check, fill: 1),
-            tooltip: 'Save',
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              width: 64,
+              height: 48,
+              decoration: BoxDecoration(
+                color: colorTheme.primary,
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: IconButton(
+                onPressed: _saveTask,
+                icon: Icon(Symbols.check, color: colorTheme.onPrimary),
+                tooltip: 'Save',
+              ),
+            ),
           ),
           const SizedBox(width: 8),
         ],
@@ -214,10 +244,26 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
                     color: colorTheme.primary,
                   ),
                 ),
-                IconButton(
-                  onPressed: _addSubTask,
-                  icon: Icon(Symbols.add_circle),
-                  color: colorTheme.primary,
+                Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: Container(
+                    width: 50,
+                    height: 35,
+                    decoration: BoxDecoration(
+                      color: colorTheme.primary,
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: IconButton(
+                      onPressed: _addSubTask,
+                      icon: Icon(
+                        Symbols.add_circle,
+                        color: colorTheme.onPrimary,
+                      ),
+                      tooltip: 'add subtask',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -231,6 +277,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
                   children: [
                     Checkbox(
                       value: subTask.isCompleted,
+                      shape: const CircleBorder(),
                       onChanged: (value) {
                         setState(() {
                           subTask.isCompleted = value ?? false;
