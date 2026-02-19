@@ -13,6 +13,7 @@ class TaskTile extends SettingTile {
     this.deadline,
     this.subTasks,
     this.backgroundColor,
+    this.onPressed,
     super.key,
     super.visible,
     super.enabled,
@@ -45,6 +46,9 @@ class TaskTile extends SettingTile {
   /// Optional background color for the tile.
   final Color? backgroundColor;
 
+  /// Called when the tile is tapped.
+  final VoidCallback? onPressed;
+
   @override
   Widget build(BuildContext context) {
     if (!visible) {
@@ -70,7 +74,7 @@ class TaskTile extends SettingTile {
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
-                        vertical: 4,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
                         color: colorScheme.tertiaryContainer,
@@ -101,7 +105,7 @@ class TaskTile extends SettingTile {
             )
           : null,
       trailing: trailing,
-      onTap: enabled && onChanged != null ? () => onChanged!(!checked) : null,
+      onTap: enabled ? (onPressed ?? (onChanged != null ? () => onChanged!(!checked) : null)) : null,
     );
 
     if (subTasks == null || subTasks!.isEmpty) {
@@ -114,7 +118,7 @@ class TaskTile extends SettingTile {
       children: [
         mainTile,
         SettingSection(
-          padding: const EdgeInsets.only(left: 32.0, right: 16, bottom: 8.0),
+          padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 12.0),
           styleTile: true,
           tiles: subTasks!,
           backgroundColor: backgroundColor,

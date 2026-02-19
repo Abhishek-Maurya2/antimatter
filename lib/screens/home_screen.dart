@@ -6,6 +6,8 @@ import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:settings_tiles/settings_tiles.dart';
 import 'package:intl/intl.dart';
+import 'package:orches/models/task.dart';
+import 'package:orches/screens/task_editor_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -344,6 +346,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                   task.isCompleted = value ?? false;
                                 });
                               },
+                              onPressed: () async {
+                                final updatedTask = await Navigator.of(context)
+                                    .push<Task>(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            TaskEditorScreen(task: task),
+                                      ),
+                                    );
+                                if (updatedTask != null) {
+                                  setState(() {
+                                    final index = _tasks.indexWhere(
+                                      (t) => t.id == task.id,
+                                    );
+                                    if (index != -1) {
+                                      _tasks[index] = updatedTask;
+                                    }
+                                  });
+                                }
+                              },
                             );
                           }).toList(),
                         ),
@@ -429,6 +450,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                   task.isCompleted = value ?? false;
                                 });
                               },
+                              onPressed: () async {
+                                final updatedTask = await Navigator.of(context)
+                                    .push<Task>(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            TaskEditorScreen(task: task),
+                                      ),
+                                    );
+                                if (updatedTask != null) {
+                                  setState(() {
+                                    final index = _tasks.indexWhere(
+                                      (t) => t.id == task.id,
+                                    );
+                                    if (index != -1) {
+                                      _tasks[index] = updatedTask;
+                                    }
+                                  });
+                                }
+                              },
                             );
                           }).toList(),
                         ),
@@ -441,16 +481,16 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Task creation coming soon!'),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+        onPressed: () async {
+          final newTask = await Navigator.of(context).push<Task>(
+            MaterialPageRoute(builder: (_) => const TaskEditorScreen()),
           );
+
+          if (newTask != null) {
+            setState(() {
+              _tasks.add(newTask);
+            });
+          }
         },
         backgroundColor: colorTheme.primaryContainer,
         foregroundColor: colorTheme.onPrimaryContainer,
@@ -564,24 +604,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
-
-class Task {
-  final String id;
-  String title;
-  String? description;
-  bool isCompleted;
-  DateTime? deadline;
-  List<Task> subTasks;
-
-  Task({
-    required this.id,
-    required this.title,
-    this.description,
-    this.isCompleted = false,
-    this.deadline,
-    this.subTasks = const [],
-  });
 }
 
 String? formatDeadline(DateTime? deadline) {
