@@ -24,6 +24,8 @@ dependencies:
     path: ./expressive_loading_indicator_modified
   custom_refresh_indicator: ^4.0.1
   intl: ^0.20.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
 dev_dependencies:
   flutter_test:
