@@ -1,3 +1,4 @@
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'settings_screen.dart';
@@ -20,7 +21,15 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isGridView = false;
 
-  final List<Task> _tasks = [];
+  late Box<Task> _tasksBox;
+  List<Task> _tasks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _tasksBox = Hive.box<Task>('tasksBox');
+    _tasks = _tasksBox.values.toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -246,6 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   onChanged: (value) {
                                     setState(() {
                                       subTask.isCompleted = value ?? false;
+                                      task.save();
                                     });
                                   },
                                 );
@@ -254,11 +264,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               onChanged: (value) {
                                 setState(() {
                                   task.isCompleted = value ?? false;
+                                  task.save();
                                 });
                               },
                               onPressed: () async {
                                 final updatedTask = await Navigator.of(context)
-                                    .push<Task>(
+                                    .push<dynamic>(
                                       MaterialPageRoute(
                                         builder: (_) =>
                                             TaskEditorScreen(task: task),
@@ -270,7 +281,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                       (t) => t.id == task.id,
                                     );
                                     if (index != -1) {
-                                      _tasks[index] = updatedTask;
+                                      if (updatedTask == 'DELETE') {
+                                        _tasks.removeAt(index);
+                                        _tasksBox.delete(task.id);
+                                      } else if (updatedTask is Task) {
+                                        _tasks[index] = updatedTask;
+                                        _tasksBox.put(
+                                          updatedTask.id,
+                                          updatedTask,
+                                        );
+                                      }
                                     }
                                   });
                                 }
@@ -350,6 +370,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   onChanged: (value) {
                                     setState(() {
                                       subTask.isCompleted = value ?? false;
+                                      task.save();
                                     });
                                   },
                                 );
@@ -358,11 +379,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               onChanged: (value) {
                                 setState(() {
                                   task.isCompleted = value ?? false;
+                                  task.save();
                                 });
                               },
                               onPressed: () async {
                                 final updatedTask = await Navigator.of(context)
-                                    .push<Task>(
+                                    .push<dynamic>(
                                       MaterialPageRoute(
                                         builder: (_) =>
                                             TaskEditorScreen(task: task),
@@ -374,7 +396,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                       (t) => t.id == task.id,
                                     );
                                     if (index != -1) {
-                                      _tasks[index] = updatedTask;
+                                      if (updatedTask == 'DELETE') {
+                                        _tasks.removeAt(index);
+                                        _tasksBox.delete(task.id);
+                                      } else if (updatedTask is Task) {
+                                        _tasks[index] = updatedTask;
+                                        _tasksBox.put(
+                                          updatedTask.id,
+                                          updatedTask,
+                                        );
+                                      }
                                     }
                                   });
                                 }
@@ -399,6 +430,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (newTask != null) {
             setState(() {
               _tasks.add(newTask);
+              _tasksBox.put(newTask.id, newTask);
             });
           }
         },

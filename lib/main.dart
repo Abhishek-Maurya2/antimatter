@@ -3,11 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:animations/animations.dart';
 import 'package:provider/provider.dart';
 
+import 'package:hive_flutter/hive_flutter.dart';
+
 import 'utils/theme_controller.dart';
 import 'utils/preferences_helper.dart';
 import 'notifiers/settings_notifier.dart';
 import 'screens/loading_screen.dart';
 import 'screens/home_screen.dart';
+import 'models/task.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +21,10 @@ void main() async {
   ]);
 
   await PreferencesHelper.init();
+
+  await Hive.initFlutter();
+  Hive.registerAdapter(TaskAdapter());
+  await Hive.openBox<Task>('tasksBox');
 
   final themeController = ThemeController();
   await themeController.initialize();

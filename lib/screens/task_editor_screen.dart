@@ -136,6 +136,30 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
           ),
         ),
         actions: [
+          if (widget.task != null) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Container(
+                width: 64,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: colorTheme.errorContainer,
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pop('DELETE');
+                  },
+                  icon: Icon(
+                    Symbols.delete,
+                    color: colorTheme.onErrorContainer,
+                  ),
+                  tooltip: 'Delete',
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(

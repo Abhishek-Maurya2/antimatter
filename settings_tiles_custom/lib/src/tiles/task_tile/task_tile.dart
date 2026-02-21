@@ -118,7 +118,7 @@ class TaskTile extends SettingTile {
       children: [
         mainTile,
         SettingSection(
-          padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 12.0),
+          padding: const EdgeInsets.only(left: 50.0, right: 16, bottom: 12.0),
           styleTile: true,
           tiles: subTasks!,
           backgroundColor: backgroundColor,
