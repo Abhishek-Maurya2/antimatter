@@ -14,6 +14,7 @@ class TaskTile extends SettingTile {
     this.subTasks,
     this.backgroundColor,
     this.onPressed,
+    this.onLongPress,
     super.key,
     super.visible,
     super.enabled,
@@ -48,6 +49,9 @@ class TaskTile extends SettingTile {
 
   /// Called when the tile is tapped.
   final VoidCallback? onPressed;
+
+  /// Called when the tile is long-pressed.
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +110,7 @@ class TaskTile extends SettingTile {
           : null,
       trailing: trailing,
       onTap: enabled ? (onPressed ?? (onChanged != null ? () => onChanged!(!checked) : null)) : null,
+      onLongPress: enabled ? onLongPress : null,
     );
 
     if (subTasks == null || subTasks!.isEmpty) {
