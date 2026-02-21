@@ -9,6 +9,7 @@ import 'package:settings_tiles/settings_tiles.dart';
 import 'package:intl/intl.dart';
 import 'package:orches/models/task.dart';
 import 'package:orches/screens/task_editor_screen.dart';
+import 'package:orches/widgets/sort_split_button.dart';
 
 enum TaskSortOption { newest, oldest, dueDate }
 
@@ -182,69 +183,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(width: 8),
 
-                      // Popup Menu for Sort
-                      PopupMenuButton<TaskSortOption>(
-                        icon: Icon(Symbols.sort, color: colorTheme.onSurface),
-                        initialValue: _currentSort,
-                        tooltip: 'Sort tasks',
-                        onSelected: (option) {
-                          setState(() {
-                            _currentSort = option;
-                          });
-                        },
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: TaskSortOption.newest,
-                            child: Row(
-                              children: [
-                                Text('Newest first'),
-                                if (_currentSort == TaskSortOption.newest) ...[
-                                  Spacer(),
-                                  Icon(
-                                    Symbols.check,
-                                    size: 18,
-                                    color: colorTheme.primary,
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: TaskSortOption.oldest,
-                            child: Row(
-                              children: [
-                                Text('Oldest first'),
-                                if (_currentSort == TaskSortOption.oldest) ...[
-                                  Spacer(),
-                                  Icon(
-                                    Symbols.check,
-                                    size: 18,
-                                    color: colorTheme.primary,
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: TaskSortOption.dueDate,
-                            child: Row(
-                              children: [
-                                Text('Due Date'),
-                                if (_currentSort == TaskSortOption.dueDate) ...[
-                                  Spacer(),
-                                  Icon(
-                                    Symbols.check,
-                                    size: 18,
-                                    color: colorTheme.primary,
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 8),
-
                       // Avatar → Settings
                       Padding(
                         padding: const EdgeInsets.only(right: 0),
@@ -290,6 +228,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: Column(
                     children: [
+                      SortSplitButton(
+                        currentSort: _currentSort,
+                        onSortChanged: (option) {
+                          setState(() {
+                            _currentSort = option;
+                          });
+                        },
+                        colorTheme: colorTheme,
+                      ),
                       if (_sortedTasks
                           .where((t) => !t.isCompleted)
                           .isNotEmpty) ...[
