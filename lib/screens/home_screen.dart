@@ -63,554 +63,578 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: colorTheme.surfaceContainer,
-      drawer: _buildDrawer(context, colorTheme),
-      body: Stack(
-        children: [
-          CustomRefreshIndicator(
-            onRefresh: () async {
-              // Simulate network refresh
-              await Future.delayed(const Duration(seconds: 3));
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Tasks refreshed'),
-                    behavior: SnackBarBehavior.floating,
-                    width: 500,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                );
-              }
-            },
-            builder: (context, child, controller) {
-              return Stack(
-                children: [
-                  child,
-                  AnimatedBuilder(
-                    animation: controller,
-                    builder: (context, _) {
-                      final double opacity = (controller.value * 2).clamp(
-                        0.0,
-                        1.0,
-                      );
-                      final double scale = (controller.value * 1.5).clamp(
-                        0.0,
-                        1.0,
-                      );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isExpanded = constraints.maxWidth >= 840;
 
-                      return Positioned(
-                        top: 110 * controller.value, // Move down as we pull
-                        left: 0,
-                        right: 0,
-                        child: Opacity(
-                          opacity: opacity,
-                          child: Transform.scale(
-                            scale: scale,
-                            child: Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: colorTheme.surfaceContainerHighest,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+        final Widget bodyContent = Stack(
+          children: [
+            CustomRefreshIndicator(
+              onRefresh: () async {
+                // Simulate network refresh
+                await Future.delayed(const Duration(seconds: 3));
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Tasks refreshed'),
+                      behavior: SnackBarBehavior.floating,
+                      width: 500,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  );
+                }
+              },
+              builder: (context, child, controller) {
+                return Stack(
+                  children: [
+                    child,
+                    AnimatedBuilder(
+                      animation: controller,
+                      builder: (context, _) {
+                        final double opacity = (controller.value * 2).clamp(
+                          0.0,
+                          1.0,
+                        );
+                        final double scale = (controller.value * 1.5).clamp(
+                          0.0,
+                          1.0,
+                        );
+
+                        return Positioned(
+                          top: 110 * controller.value, // Move down as we pull
+                          left: 0,
+                          right: 0,
+                          child: Opacity(
+                            opacity: opacity,
+                            child: Transform.scale(
+                              scale: scale,
+                              child: Center(
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: colorTheme.surfaceContainerHighest,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: SizedBox(
+                                    width: 32,
+                                    height: 32,
+                                    child: ExpressiveLoadingIndicator(
+                                      activeSize: 52,
+                                      color: colorTheme.primary,
                                     ),
-                                  ],
-                                ),
-                                child: SizedBox(
-                                  width: 32,
-                                  height: 32,
-                                  child: ExpressiveLoadingIndicator(
-                                    activeSize: 52,
-                                    color: colorTheme.primary,
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              );
-            },
-            child: CustomScrollView(
-              slivers: [
-                // Search bar app bar
-                SliverToBoxAdapter(
-                  child: SafeArea(
-                    bottom: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(1, 8, 16, 8),
-                      child: Row(
-                        children: [
-                          // Hamburger menu
-                          IconButton(
-                            onPressed: () {
-                              _scaffoldKey.currentState?.openDrawer();
-                            },
-                            icon: Icon(
-                              Symbols.menu,
-                              fill: 0,
-                              weight: 400,
-                              color: colorTheme.onSurface,
-                            ),
-                          ),
-                          // Search bar
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: colorTheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(28),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              alignment: Alignment.centerLeft,
-                              height: 58,
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: 'Search Tasks',
-                                  hintStyle: TextStyle(
-                                    color: colorTheme.onSurfaceVariant,
-                                  ),
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.zero,
-                                ),
-                                style: TextStyle(
-                                  fontSize: 16,
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
+              child: CustomScrollView(
+                slivers: [
+                  // Search bar app bar
+                  SliverToBoxAdapter(
+                    child: SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(1, 8, 16, 8),
+                        child: Row(
+                          children: [
+                            if (!isExpanded) ...[
+                              // Hamburger menu
+                              IconButton(
+                                onPressed: () {
+                                  _scaffoldKey.currentState?.openDrawer();
+                                },
+                                icon: Icon(
+                                  Symbols.menu,
+                                  fill: 0,
+                                  weight: 400,
                                   color: colorTheme.onSurface,
                                 ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-
-                          // Avatar → Settings
-                          Padding(
-                            padding: const EdgeInsets.only(right: 0),
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const SettingsScreen(),
+                            ],
+                            // Search bar
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: colorTheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(28),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                alignment: Alignment.centerLeft,
+                                height: 58,
+                                child: TextField(
+                                  decoration: InputDecoration(
+                                    hintText: 'Search Tasks',
+                                    hintStyle: TextStyle(
+                                      color: colorTheme.onSurfaceVariant,
+                                    ),
+                                    border: InputBorder.none,
+                                    isDense: true,
+                                    contentPadding: EdgeInsets.zero,
                                   ),
-                                );
-                              },
-                              child: CircleAvatar(
-                                radius: 20,
-                                backgroundColor: colorTheme.primaryContainer,
-                                child: Text(
-                                  'A',
                                   style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                    color: colorTheme.onPrimaryContainer,
+                                    fontSize: 16,
+                                    color: colorTheme.onSurface,
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+
+                            // Avatar → Settings
+                            Padding(
+                              padding: const EdgeInsets.only(right: 0),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const SettingsScreen(),
+                                    ),
+                                  );
+                                },
+                                child: CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: colorTheme.primaryContainer,
+                                  child: Text(
+                                    'A',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                      color: colorTheme.onPrimaryContainer,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                // Content
-                if (_tasks.isEmpty)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: _buildEmptyState(context, colorTheme),
-                  )
-                else
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 0.0,
-                        vertical: 8.0,
-                      ),
-                      child: Column(
-                        children: [
-                          SortSplitButton(
-                            currentSort: _currentSort,
-                            onSortChanged: (option) {
-                              setState(() {
-                                _currentSort = option;
-                              });
-                            },
-                            colorTheme: colorTheme,
-                          ),
-                          if (_sortedTasks
-                              .where((t) => !t.isCompleted)
-                              .isNotEmpty) ...[
-                            SettingSection(
-                              title: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 4,
-                                  bottom: 8,
-                                ),
-                                child: Text(
-                                  'Active',
-                                  style: TextStyle(
-                                    color: colorTheme.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              styleTile: true,
-                              tiles: _sortedTasks
-                                  .where((t) => !t.isCompleted)
-                                  .map((task) {
-                                    return TaskTile(
-                                      title: Text(task.title),
-                                      description:
-                                          task.description != null &&
-                                              task.description!.isNotEmpty
-                                          ? Text(task.description!)
-                                          : null,
-                                      deadline: task.deadline != null
-                                          ? Text(formatDeadline(task.deadline)!)
-                                          : null,
-                                      subTasks: task.subTasks.map((subTask) {
-                                        return TaskTile(
-                                          backgroundColor:
-                                              colorTheme.surfaceContainerHigh,
-                                          title: Text(
-                                            subTask.title,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.normal,
-                                            ),
-                                          ),
-                                          description:
-                                              subTask.description != null &&
-                                                  subTask
-                                                      .description!
-                                                      .isNotEmpty
-                                              ? Text(
-                                                  subTask.description!,
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                  ),
-                                                )
-                                              : null,
-                                          checked: subTask.isCompleted,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              subTask.isCompleted =
-                                                  value ?? false;
-                                              task.save();
-                                            });
-                                          },
-                                        );
-                                      }).toList(),
-                                      checked: task.isCompleted,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          task.isCompleted = value ?? false;
-                                          task.save();
-                                        });
-                                      },
-                                      onLongPress: () {
-                                        setState(() {
-                                          _selectedTaskForToolbar = task;
-                                        });
-                                      },
-                                      onPressed: () async {
-                                        final updatedTask =
-                                            await Navigator.of(
-                                              context,
-                                            ).push<dynamic>(
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    TaskEditorScreen(
-                                                      task: task,
-                                                    ),
-                                              ),
-                                            );
-                                        if (updatedTask != null) {
-                                          setState(() {
-                                            final index = _tasks.indexWhere(
-                                              (t) => t.id == task.id,
-                                            );
-                                            if (index != -1) {
-                                              if (updatedTask == 'DELETE') {
-                                                _tasks.removeAt(index);
-                                                _tasksBox.delete(task.id);
-                                              } else if (updatedTask is Task) {
-                                                _tasks[index] = updatedTask;
-                                                _tasksBox.put(
-                                                  updatedTask.id,
-                                                  updatedTask,
-                                                );
-                                              }
-                                            }
-                                          });
-                                        }
-                                      },
-                                    );
-                                  })
-                                  .toList(),
+                  // Content
+                  if (_tasks.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: _buildEmptyState(context, colorTheme),
+                    )
+                  else
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 0.0,
+                          vertical: 8.0,
+                        ),
+                        child: Column(
+                          children: [
+                            SortSplitButton(
+                              currentSort: _currentSort,
+                              onSortChanged: (option) {
+                                setState(() {
+                                  _currentSort = option;
+                                });
+                              },
+                              colorTheme: colorTheme,
                             ),
-                            SizedBox(height: 16),
-                          ],
-                          if (_sortedTasks
-                              .where((t) => t.isCompleted)
-                              .isNotEmpty)
-                            SettingSection(
-                              title: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 4,
-                                  bottom: 8,
-                                ),
-                                child: Text(
-                                  'Completed',
-                                  style: TextStyle(
-                                    color: colorTheme.primary,
-                                    fontWeight: FontWeight.bold,
+                            if (_sortedTasks
+                                .where((t) => !t.isCompleted)
+                                .isNotEmpty) ...[
+                              SettingSection(
+                                title: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 4,
+                                    bottom: 8,
+                                  ),
+                                  child: Text(
+                                    'Active',
+                                    style: TextStyle(
+                                      color: colorTheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
+                                styleTile: true,
+                                tiles: _sortedTasks
+                                    .where((t) => !t.isCompleted)
+                                    .map((task) {
+                                      return TaskTile(
+                                        title: Text(task.title),
+                                        description:
+                                            task.description != null &&
+                                                task.description!.isNotEmpty
+                                            ? Text(task.description!)
+                                            : null,
+                                        deadline: task.deadline != null
+                                            ? Text(
+                                                formatDeadline(task.deadline)!,
+                                              )
+                                            : null,
+                                        subTasks: task.subTasks.map((subTask) {
+                                          return TaskTile(
+                                            backgroundColor:
+                                                colorTheme.surfaceContainerHigh,
+                                            title: Text(
+                                              subTask.title,
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.normal,
+                                              ),
+                                            ),
+                                            description:
+                                                subTask.description != null &&
+                                                    subTask
+                                                        .description!
+                                                        .isNotEmpty
+                                                ? Text(
+                                                    subTask.description!,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                    ),
+                                                  )
+                                                : null,
+                                            checked: subTask.isCompleted,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                subTask.isCompleted =
+                                                    value ?? false;
+                                                task.save();
+                                              });
+                                            },
+                                          );
+                                        }).toList(),
+                                        checked: task.isCompleted,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            task.isCompleted = value ?? false;
+                                            task.save();
+                                          });
+                                        },
+                                        onLongPress: () {
+                                          setState(() {
+                                            _selectedTaskForToolbar = task;
+                                          });
+                                        },
+                                        onPressed: () async {
+                                          final updatedTask =
+                                              await Navigator.of(
+                                                context,
+                                              ).push<dynamic>(
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      TaskEditorScreen(
+                                                        task: task,
+                                                      ),
+                                                ),
+                                              );
+                                          if (updatedTask != null) {
+                                            setState(() {
+                                              final index = _tasks.indexWhere(
+                                                (t) => t.id == task.id,
+                                              );
+                                              if (index != -1) {
+                                                if (updatedTask == 'DELETE') {
+                                                  _tasks.removeAt(index);
+                                                  _tasksBox.delete(task.id);
+                                                } else if (updatedTask
+                                                    is Task) {
+                                                  _tasks[index] = updatedTask;
+                                                  _tasksBox.put(
+                                                    updatedTask.id,
+                                                    updatedTask,
+                                                  );
+                                                }
+                                              }
+                                            });
+                                          }
+                                        },
+                                      );
+                                    })
+                                    .toList(),
                               ),
-                              styleTile: true,
-                              tiles: _sortedTasks
-                                  .where((t) => t.isCompleted)
-                                  .map((task) {
-                                    return TaskTile(
-                                      title: Text(
-                                        task.title,
-                                        style: TextStyle(
-                                          decoration:
-                                              TextDecoration.lineThrough,
-                                          color: colorTheme.onSurfaceVariant,
+                              SizedBox(height: 16),
+                            ],
+                            if (_sortedTasks
+                                .where((t) => t.isCompleted)
+                                .isNotEmpty)
+                              SettingSection(
+                                title: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 4,
+                                    bottom: 8,
+                                  ),
+                                  child: Text(
+                                    'Completed',
+                                    style: TextStyle(
+                                      color: colorTheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                styleTile: true,
+                                tiles: _sortedTasks
+                                    .where((t) => t.isCompleted)
+                                    .map((task) {
+                                      return TaskTile(
+                                        title: Text(
+                                          task.title,
+                                          style: TextStyle(
+                                            decoration:
+                                                TextDecoration.lineThrough,
+                                            color: colorTheme.onSurfaceVariant,
+                                          ),
                                         ),
-                                      ),
-                                      description:
-                                          task.description != null &&
-                                              task.description!.isNotEmpty
-                                          ? Text(
-                                              task.description!,
+                                        description:
+                                            task.description != null &&
+                                                task.description!.isNotEmpty
+                                            ? Text(
+                                                task.description!,
+                                                style: TextStyle(
+                                                  decoration: TextDecoration
+                                                      .lineThrough,
+                                                  color: colorTheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                              )
+                                            : null,
+                                        deadline: task.deadline != null
+                                            ? Text(
+                                                formatDeadline(task.deadline)!,
+                                                style: TextStyle(
+                                                  decoration: TextDecoration
+                                                      .lineThrough,
+                                                ),
+                                              )
+                                            : null,
+                                        subTasks: task.subTasks.map((subTask) {
+                                          return TaskTile(
+                                            backgroundColor:
+                                                colorTheme.surfaceContainerHigh,
+                                            title: Text(
+                                              subTask.title,
                                               style: TextStyle(
                                                 decoration:
                                                     TextDecoration.lineThrough,
                                                 color:
                                                     colorTheme.onSurfaceVariant,
+                                                fontSize: 14,
                                               ),
-                                            )
-                                          : null,
-                                      deadline: task.deadline != null
-                                          ? Text(
-                                              formatDeadline(task.deadline)!,
-                                              style: TextStyle(
-                                                decoration:
-                                                    TextDecoration.lineThrough,
-                                              ),
-                                            )
-                                          : null,
-                                      subTasks: task.subTasks.map((subTask) {
-                                        return TaskTile(
-                                          backgroundColor:
-                                              colorTheme.surfaceContainerHigh,
-                                          title: Text(
-                                            subTask.title,
-                                            style: TextStyle(
-                                              decoration:
-                                                  TextDecoration.lineThrough,
-                                              color:
-                                                  colorTheme.onSurfaceVariant,
-                                              fontSize: 14,
                                             ),
-                                          ),
-                                          description:
-                                              subTask.description != null &&
-                                                  subTask
-                                                      .description!
-                                                      .isNotEmpty
-                                              ? Text(
-                                                  subTask.description!,
-                                                  style: TextStyle(
-                                                    decoration: TextDecoration
-                                                        .lineThrough,
-                                                    color: colorTheme
-                                                        .onSurfaceVariant,
-                                                    fontSize: 12,
-                                                  ),
-                                                )
-                                              : null,
-                                          checked: subTask.isCompleted,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              subTask.isCompleted =
-                                                  value ?? false;
-                                              task.save();
-                                            });
-                                          },
-                                        );
-                                      }).toList(),
-                                      checked: task.isCompleted,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          task.isCompleted = value ?? false;
-                                          task.save();
-                                        });
-                                      },
-                                      onLongPress: () {
-                                        setState(() {
-                                          _selectedTaskForToolbar = task;
-                                        });
-                                      },
-                                      onPressed: () async {
-                                        final updatedTask =
-                                            await Navigator.of(
-                                              context,
-                                            ).push<dynamic>(
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    TaskEditorScreen(
-                                                      task: task,
+                                            description:
+                                                subTask.description != null &&
+                                                    subTask
+                                                        .description!
+                                                        .isNotEmpty
+                                                ? Text(
+                                                    subTask.description!,
+                                                    style: TextStyle(
+                                                      decoration: TextDecoration
+                                                          .lineThrough,
+                                                      color: colorTheme
+                                                          .onSurfaceVariant,
+                                                      fontSize: 12,
                                                     ),
-                                              ),
-                                            );
-                                        if (updatedTask != null) {
+                                                  )
+                                                : null,
+                                            checked: subTask.isCompleted,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                subTask.isCompleted =
+                                                    value ?? false;
+                                                task.save();
+                                              });
+                                            },
+                                          );
+                                        }).toList(),
+                                        checked: task.isCompleted,
+                                        onChanged: (value) {
                                           setState(() {
-                                            final index = _tasks.indexWhere(
-                                              (t) => t.id == task.id,
-                                            );
-                                            if (index != -1) {
-                                              if (updatedTask == 'DELETE') {
-                                                _tasks.removeAt(index);
-                                                _tasksBox.delete(task.id);
-                                              } else if (updatedTask is Task) {
-                                                _tasks[index] = updatedTask;
-                                                _tasksBox.put(
-                                                  updatedTask.id,
-                                                  updatedTask,
-                                                );
-                                              }
-                                            }
+                                            task.isCompleted = value ?? false;
+                                            task.save();
                                           });
-                                        }
-                                      },
-                                    );
-                                  })
-                                  .toList(),
-                            ),
-                          SizedBox(height: 25),
-                        ],
+                                        },
+                                        onLongPress: () {
+                                          setState(() {
+                                            _selectedTaskForToolbar = task;
+                                          });
+                                        },
+                                        onPressed: () async {
+                                          final updatedTask =
+                                              await Navigator.of(
+                                                context,
+                                              ).push<dynamic>(
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      TaskEditorScreen(
+                                                        task: task,
+                                                      ),
+                                                ),
+                                              );
+                                          if (updatedTask != null) {
+                                            setState(() {
+                                              final index = _tasks.indexWhere(
+                                                (t) => t.id == task.id,
+                                              );
+                                              if (index != -1) {
+                                                if (updatedTask == 'DELETE') {
+                                                  _tasks.removeAt(index);
+                                                  _tasksBox.delete(task.id);
+                                                } else if (updatedTask
+                                                    is Task) {
+                                                  _tasks[index] = updatedTask;
+                                                  _tasksBox.put(
+                                                    updatedTask.id,
+                                                    updatedTask,
+                                                  );
+                                                }
+                                              }
+                                            });
+                                          }
+                                        },
+                                      );
+                                    })
+                                    .toList(),
+                              ),
+                            SizedBox(height: 25),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-          ),
-          if (_selectedTaskForToolbar != null)
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  setState(() {
-                    _selectedTaskForToolbar = null;
-                  });
-                },
-                child: Container(color: Colors.black.withOpacity(0)),
+                ],
               ),
             ),
-          if (_selectedTaskForToolbar != null)
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOutCubic,
-              bottom: 32,
-              left: 0,
-              right: 0,
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: TaskFloatingToolbar(
-                  task: _selectedTaskForToolbar!,
-                  colorTheme: colorTheme,
-                  onComplete: () {
-                    setState(() {
-                      _selectedTaskForToolbar!.isCompleted =
-                          !_selectedTaskForToolbar!.isCompleted;
-                      _selectedTaskForToolbar!.save();
-                      _selectedTaskForToolbar = null;
-                    });
-                  },
-                  onEdit: () async {
-                    final taskToEdit = _selectedTaskForToolbar!;
-                    setState(() {
-                      _selectedTaskForToolbar = null;
-                    });
-                    final updatedTask = await Navigator.of(context)
-                        .push<dynamic>(
-                          MaterialPageRoute(
-                            builder: (_) => TaskEditorScreen(task: taskToEdit),
-                          ),
-                        );
-                    if (updatedTask != null) {
-                      setState(() {
-                        final index = _tasks.indexWhere(
-                          (t) => t.id == taskToEdit.id,
-                        );
-                        if (index != -1) {
-                          if (updatedTask == 'DELETE') {
-                            _tasks.removeAt(index);
-                            _tasksBox.delete(taskToEdit.id);
-                          } else if (updatedTask is Task) {
-                            _tasks[index] = updatedTask;
-                            _tasksBox.put(updatedTask.id, updatedTask);
-                          }
-                        }
-                      });
-                    }
-                  },
-                  onDelete: () {
-                    setState(() {
-                      final index = _tasks.indexWhere(
-                        (t) => t.id == _selectedTaskForToolbar!.id,
-                      );
-                      if (index != -1) {
-                        _tasks.removeAt(index);
-                        _tasksBox.delete(_selectedTaskForToolbar!.id);
-                      }
-                      _selectedTaskForToolbar = null;
-                    });
-                  },
-                  onClose: () {
+            if (_selectedTaskForToolbar != null)
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
                     setState(() {
                       _selectedTaskForToolbar = null;
                     });
                   },
+                  child: Container(color: Colors.black.withValues(alpha: 0)),
                 ),
               ),
-            ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final newTask = await Navigator.of(context).push<Task>(
-            MaterialPageRoute(builder: (_) => const TaskEditorScreen()),
-          );
+            if (_selectedTaskForToolbar != null)
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                bottom: 32,
+                left: 0,
+                right: 0,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: TaskFloatingToolbar(
+                    task: _selectedTaskForToolbar!,
+                    colorTheme: colorTheme,
+                    onComplete: () {
+                      setState(() {
+                        _selectedTaskForToolbar!.isCompleted =
+                            !_selectedTaskForToolbar!.isCompleted;
+                        _selectedTaskForToolbar!.save();
+                        _selectedTaskForToolbar = null;
+                      });
+                    },
+                    onEdit: () async {
+                      final taskToEdit = _selectedTaskForToolbar!;
+                      setState(() {
+                        _selectedTaskForToolbar = null;
+                      });
+                      final updatedTask = await Navigator.of(context)
+                          .push<dynamic>(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  TaskEditorScreen(task: taskToEdit),
+                            ),
+                          );
+                      if (updatedTask != null) {
+                        setState(() {
+                          final index = _tasks.indexWhere(
+                            (t) => t.id == taskToEdit.id,
+                          );
+                          if (index != -1) {
+                            if (updatedTask == 'DELETE') {
+                              _tasks.removeAt(index);
+                              _tasksBox.delete(taskToEdit.id);
+                            } else if (updatedTask is Task) {
+                              _tasks[index] = updatedTask;
+                              _tasksBox.put(updatedTask.id, updatedTask);
+                            }
+                          }
+                        });
+                      }
+                    },
+                    onDelete: () {
+                      setState(() {
+                        final index = _tasks.indexWhere(
+                          (t) => t.id == _selectedTaskForToolbar!.id,
+                        );
+                        if (index != -1) {
+                          _tasks.removeAt(index);
+                          _tasksBox.delete(_selectedTaskForToolbar!.id);
+                        }
+                        _selectedTaskForToolbar = null;
+                      });
+                    },
+                    onClose: () {
+                      setState(() {
+                        _selectedTaskForToolbar = null;
+                      });
+                    },
+                  ),
+                ),
+              ),
+          ],
+        );
 
-          if (newTask != null) {
-            setState(() {
-              _tasks.add(newTask);
-              _tasksBox.put(newTask.id, newTask);
-            });
-          }
-        },
-        backgroundColor: colorTheme.primaryContainer,
-        foregroundColor: colorTheme.onPrimaryContainer,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Icon(Symbols.add, fill: 1, weight: 500, size: 24),
-      ),
+        return Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: colorTheme.surfaceContainer,
+          drawer: isExpanded ? null : _buildDrawer(context, colorTheme),
+          body: Row(
+            children: [
+              if (isExpanded) _buildDrawer(context, colorTheme),
+              Expanded(child: bodyContent),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              final newTask = await Navigator.of(context).push<Task>(
+                MaterialPageRoute(builder: (_) => const TaskEditorScreen()),
+              );
+
+              if (newTask != null) {
+                setState(() {
+                  _tasks.add(newTask);
+                  _tasksBox.put(newTask.id, newTask);
+                });
+              }
+            },
+            backgroundColor: colorTheme.primaryContainer,
+            foregroundColor: colorTheme.onPrimaryContainer,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(Symbols.add, fill: 1, weight: 500, size: 24),
+          ),
+        );
+      },
     );
   }
 
