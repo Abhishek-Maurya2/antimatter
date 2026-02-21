@@ -10,6 +10,8 @@ import 'package:intl/intl.dart';
 import 'package:orches/models/task.dart';
 import 'package:orches/screens/task_editor_screen.dart';
 
+enum TaskSortOption { newest, oldest, dueDate }
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -23,6 +25,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late Box<Task> _tasksBox;
   List<Task> _tasks = [];
+  TaskSortOption _currentSort = TaskSortOption.newest;
+
+  List<Task> get _sortedTasks {
+    final sorted = List<Task>.from(_tasks);
+    sorted.sort((a, b) {
+      switch (_currentSort) {
+        case TaskSortOption.newest:
+          final idA = int.tryParse(a.id) ?? 0;
+          final idB = int.tryParse(b.id) ?? 0;
+          return idB.compareTo(idA);
+        case TaskSortOption.oldest:
+          final idA = int.tryParse(a.id) ?? 0;
+          final idB = int.tryParse(b.id) ?? 0;
+          return idA.compareTo(idB);
+        case TaskSortOption.dueDate:
+          if (a.deadline == null && b.deadline == null) return 0;
+          if (a.deadline == null) return 1;
+          if (b.deadline == null) return -1;
+          return a.deadline!.compareTo(b.deadline!);
+      }
+    });
+    return sorted;
+  }
 
   @override
   void initState() {
@@ -157,6 +182,69 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(width: 8),
 
+                      // Popup Menu for Sort
+                      PopupMenuButton<TaskSortOption>(
+                        icon: Icon(Symbols.sort, color: colorTheme.onSurface),
+                        initialValue: _currentSort,
+                        tooltip: 'Sort tasks',
+                        onSelected: (option) {
+                          setState(() {
+                            _currentSort = option;
+                          });
+                        },
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: TaskSortOption.newest,
+                            child: Row(
+                              children: [
+                                Text('Newest first'),
+                                if (_currentSort == TaskSortOption.newest) ...[
+                                  Spacer(),
+                                  Icon(
+                                    Symbols.check,
+                                    size: 18,
+                                    color: colorTheme.primary,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: TaskSortOption.oldest,
+                            child: Row(
+                              children: [
+                                Text('Oldest first'),
+                                if (_currentSort == TaskSortOption.oldest) ...[
+                                  Spacer(),
+                                  Icon(
+                                    Symbols.check,
+                                    size: 18,
+                                    color: colorTheme.primary,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: TaskSortOption.dueDate,
+                            child: Row(
+                              children: [
+                                Text('Due Date'),
+                                if (_currentSort == TaskSortOption.dueDate) ...[
+                                  Spacer(),
+                                  Icon(
+                                    Symbols.check,
+                                    size: 18,
+                                    color: colorTheme.primary,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 8),
+
                       // Avatar → Settings
                       Padding(
                         padding: const EdgeInsets.only(right: 0),
@@ -202,7 +290,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: Column(
                     children: [
-                      if (_tasks.where((t) => !t.isCompleted).isNotEmpty) ...[
+                      if (_sortedTasks
+                          .where((t) => !t.isCompleted)
+                          .isNotEmpty) ...[
                         SettingSection(
                           title: Padding(
                             padding: const EdgeInsets.only(
@@ -219,7 +309,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           styleTile: true,
-                          tiles: _tasks.where((t) => !t.isCompleted).map((
+                          tiles: _sortedTasks.where((t) => !t.isCompleted).map((
                             task,
                           ) {
                             return TaskTile(
@@ -300,7 +390,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         SizedBox(height: 16),
                       ],
-                      if (_tasks.where((t) => t.isCompleted).isNotEmpty)
+                      if (_sortedTasks.where((t) => t.isCompleted).isNotEmpty)
                         SettingSection(
                           title: Padding(
                             padding: const EdgeInsets.only(left: 0, bottom: 8),
@@ -313,7 +403,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           styleTile: true,
-                          tiles: _tasks.where((t) => t.isCompleted).map((task) {
+                          tiles: _sortedTasks.where((t) => t.isCompleted).map((
+                            task,
+                          ) {
                             return TaskTile(
                               title: Text(
                                 task.title,
