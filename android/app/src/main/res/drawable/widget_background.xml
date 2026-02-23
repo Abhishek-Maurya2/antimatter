@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#222222" />
+    <!-- Use a dynamic dark theme color fallback for older devices, 
+         but ideally rely on system_neutral1_800 or similar for Material You if available, 
+         or just use a semitransparent system_accent for expressive vibe. 
+         For maximum compatibility with older Android but also looking good on A12+,
+         using ?android:attr/colorBackground floating behind. -->
+    <solid android:color="@color/widget_bg_color" />
     <corners android:radius="24dp" />
 </shape>
