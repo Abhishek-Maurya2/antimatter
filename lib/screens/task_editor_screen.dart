@@ -3,16 +3,41 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:orches/models/task.dart';
 
-class TaskEditorScreen extends StatefulWidget {
+class TaskEditorScreen extends StatelessWidget {
   final Task? task;
 
   const TaskEditorScreen({super.key, this.task});
 
   @override
-  State<TaskEditorScreen> createState() => _TaskEditorScreenState();
+  Widget build(BuildContext context) {
+    return TaskEditorWidget(
+      task: task,
+      onClose: () => Navigator.of(context).pop(),
+      onResult: (result) => Navigator.of(context).pop(result),
+      isStandaloneScreen: true,
+    );
+  }
 }
 
-class _TaskEditorScreenState extends State<TaskEditorScreen> {
+class TaskEditorWidget extends StatefulWidget {
+  final Task? task;
+  final VoidCallback onClose;
+  final ValueChanged<dynamic> onResult;
+  final bool isStandaloneScreen;
+
+  const TaskEditorWidget({
+    super.key,
+    this.task,
+    required this.onClose,
+    required this.onResult,
+    this.isStandaloneScreen = false,
+  });
+
+  @override
+  State<TaskEditorWidget> createState() => _TaskEditorWidgetState();
+}
+
+class _TaskEditorWidgetState extends State<TaskEditorWidget> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
@@ -24,6 +49,19 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
   @override
   void initState() {
     super.initState();
+    _initFromTask();
+  }
+
+  @override
+  void didUpdateWidget(covariant TaskEditorWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.task?.id != widget.task?.id ||
+        oldWidget.task == null && widget.task != null) {
+      _initFromTask();
+    }
+  }
+
+  void _initFromTask() {
     _titleController = TextEditingController(text: widget.task?.title ?? '');
     _descriptionController = TextEditingController(
       text: widget.task?.description ?? '',
@@ -69,7 +107,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
         subTasks: _subTasks,
         labels: _labels,
       );
-      Navigator.of(context).pop(newTask);
+      widget.onResult(newTask);
     }
   }
 
@@ -118,7 +156,9 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
     return Scaffold(
       backgroundColor: colorTheme.surfaceContainer,
       appBar: AppBar(
-        title: Text(widget.task == null ? 'New Task' : 'Edit Task'),
+        title: widget.isStandaloneScreen
+            ? Text(widget.task == null ? 'New Task' : 'Edit Task')
+            : null,
         backgroundColor: colorTheme.surfaceContainer,
         leadingWidth: 80,
         leading: Padding(
@@ -131,9 +171,12 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
               borderRadius: BorderRadius.circular(50),
             ),
             child: IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: Icon(Symbols.arrow_back, color: colorTheme.onSurface),
-              tooltip: 'Back',
+              onPressed: widget.onClose,
+              icon: Icon(
+                widget.isStandaloneScreen ? Symbols.arrow_back : Symbols.close,
+                color: colorTheme.onSurface,
+              ),
+              tooltip: widget.isStandaloneScreen ? 'Back' : 'Close',
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             ),
@@ -152,7 +195,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
                 ),
                 child: IconButton(
                   onPressed: () {
-                    Navigator.of(context).pop('DELETE');
+                    widget.onResult('DELETE');
                   },
                   icon: Icon(
                     Symbols.delete,
@@ -191,6 +234,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
             // Title
             TextFormField(
               controller: _titleController,
+              autofocus: !widget.isStandaloneScreen && widget.task == null,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: 'Task Title',

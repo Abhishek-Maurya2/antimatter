@@ -31,6 +31,34 @@ class _HomeScreenState extends State<HomeScreen> {
   Task? _selectedTaskForToolbar;
   int _selectedDrawerIndex = 0;
   String? _selectedLabelFilter;
+  Task? _editingTask;
+  bool _isEditingNewTask = false;
+
+  void _handleTaskResult(dynamic result) {
+    if (result == null) return;
+    setState(() {
+      if (result == 'DELETE' && _editingTask != null && !_isEditingNewTask) {
+        final index = _tasks.indexWhere((t) => t.id == _editingTask!.id);
+        if (index != -1) {
+          _tasks.removeAt(index);
+          _tasksBox.delete(_editingTask!.id);
+        }
+      } else if (result is Task) {
+        if (_isEditingNewTask) {
+          _tasks.add(result);
+          _tasksBox.put(result.id, result);
+        } else if (_editingTask != null) {
+          final index = _tasks.indexWhere((t) => t.id == _editingTask!.id);
+          if (index != -1) {
+            _tasks[index] = result;
+            _tasksBox.put(result.id, result);
+          }
+        }
+      }
+      _editingTask = null;
+      _isEditingNewTask = false;
+    });
+  }
 
   List<String> get _uniqueLabels {
     final Set<String> labels = {};
@@ -308,6 +336,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: Column(
                           children: [
+                            if (isExpanded &&
+                                _selectedDrawerIndex != 5 &&
+                                _selectedDrawerIndex != 6)
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  0,
+                                  16,
+                                  16,
+                                ),
+                              ),
                             SortSplitButton(
                               currentSort: _currentSort,
                               onSortChanged: (option) {
@@ -502,33 +541,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                       });
                                     },
                                     onPressed: () async {
-                                      final updatedTask =
-                                          await Navigator.of(
-                                            context,
-                                          ).push<dynamic>(
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  TaskEditorScreen(task: task),
-                                            ),
-                                          );
-                                      if (updatedTask != null) {
+                                      if (isExpanded) {
                                         setState(() {
-                                          final index = _tasks.indexWhere(
-                                            (t) => t.id == task.id,
-                                          );
-                                          if (index != -1) {
-                                            if (updatedTask == 'DELETE') {
-                                              _tasks.removeAt(index);
-                                              _tasksBox.delete(task.id);
-                                            } else if (updatedTask is Task) {
-                                              _tasks[index] = updatedTask;
-                                              _tasksBox.put(
-                                                updatedTask.id,
-                                                updatedTask,
-                                              );
-                                            }
-                                          }
+                                          _editingTask = task;
+                                          _isEditingNewTask = false;
                                         });
+                                      } else {
+                                        final updatedTask =
+                                            await Navigator.of(
+                                              context,
+                                            ).push<dynamic>(
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    TaskEditorScreen(
+                                                      task: task,
+                                                    ),
+                                              ),
+                                            );
+                                        if (updatedTask != null) {
+                                          setState(() {
+                                            _editingTask = task;
+                                            _isEditingNewTask = false;
+                                          });
+                                          _handleTaskResult(updatedTask);
+                                        }
                                       }
                                     },
                                   );
@@ -696,33 +732,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                       });
                                     },
                                     onPressed: () async {
-                                      final updatedTask =
-                                          await Navigator.of(
-                                            context,
-                                          ).push<dynamic>(
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  TaskEditorScreen(task: task),
-                                            ),
-                                          );
-                                      if (updatedTask != null) {
+                                      if (isExpanded) {
                                         setState(() {
-                                          final index = _tasks.indexWhere(
-                                            (t) => t.id == task.id,
-                                          );
-                                          if (index != -1) {
-                                            if (updatedTask == 'DELETE') {
-                                              _tasks.removeAt(index);
-                                              _tasksBox.delete(task.id);
-                                            } else if (updatedTask is Task) {
-                                              _tasks[index] = updatedTask;
-                                              _tasksBox.put(
-                                                updatedTask.id,
-                                                updatedTask,
-                                              );
-                                            }
-                                          }
+                                          _editingTask = task;
+                                          _isEditingNewTask = false;
                                         });
+                                      } else {
+                                        final updatedTask =
+                                            await Navigator.of(
+                                              context,
+                                            ).push<dynamic>(
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    TaskEditorScreen(
+                                                      task: task,
+                                                    ),
+                                              ),
+                                            );
+                                        if (updatedTask != null) {
+                                          setState(() {
+                                            _editingTask = task;
+                                            _isEditingNewTask = false;
+                                          });
+                                          _handleTaskResult(updatedTask);
+                                        }
                                       }
                                     },
                                   );
@@ -773,28 +806,26 @@ class _HomeScreenState extends State<HomeScreen> {
                       setState(() {
                         _selectedTaskForToolbar = null;
                       });
-                      final updatedTask = await Navigator.of(context)
-                          .push<dynamic>(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  TaskEditorScreen(task: taskToEdit),
-                            ),
-                          );
-                      if (updatedTask != null) {
+                      if (isExpanded) {
                         setState(() {
-                          final index = _tasks.indexWhere(
-                            (t) => t.id == taskToEdit.id,
-                          );
-                          if (index != -1) {
-                            if (updatedTask == 'DELETE') {
-                              _tasks.removeAt(index);
-                              _tasksBox.delete(taskToEdit.id);
-                            } else if (updatedTask is Task) {
-                              _tasks[index] = updatedTask;
-                              _tasksBox.put(updatedTask.id, updatedTask);
-                            }
-                          }
+                          _editingTask = taskToEdit;
+                          _isEditingNewTask = false;
                         });
+                      } else {
+                        final updatedTask = await Navigator.of(context)
+                            .push<dynamic>(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    TaskEditorScreen(task: taskToEdit),
+                              ),
+                            );
+                        if (updatedTask != null) {
+                          setState(() {
+                            _editingTask = taskToEdit;
+                            _isEditingNewTask = false;
+                          });
+                          _handleTaskResult(updatedTask);
+                        }
                       }
                     },
                     onDelete: () {
@@ -850,6 +881,28 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               if (isExpanded) _buildDrawer(context, colorTheme),
               Expanded(child: bodyContent),
+              if (isExpanded && (_editingTask != null || _isEditingNewTask))
+                Container(
+                  width: 350,
+                  decoration: BoxDecoration(
+                    color: colorTheme.surfaceContainerHigh,
+                    border: Border(
+                      left: BorderSide(
+                        color: colorTheme.outlineVariant.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ),
+                  child: TaskEditorWidget(
+                    task: _isEditingNewTask ? null : _editingTask,
+                    onClose: () {
+                      setState(() {
+                        _editingTask = null;
+                        _isEditingNewTask = false;
+                      });
+                    },
+                    onResult: _handleTaskResult,
+                  ),
+                ),
             ],
           ),
           floatingActionButton:
@@ -857,17 +910,24 @@ class _HomeScreenState extends State<HomeScreen> {
               ? null
               : FloatingActionButton(
                   onPressed: () async {
-                    final newTask = await Navigator.of(context).push<Task>(
-                      MaterialPageRoute(
-                        builder: (_) => const TaskEditorScreen(),
-                      ),
-                    );
-
-                    if (newTask != null) {
+                    if (isExpanded) {
                       setState(() {
-                        _tasks.add(newTask);
-                        _tasksBox.put(newTask.id, newTask);
+                        _editingTask = null;
+                        _isEditingNewTask = true;
                       });
+                    } else {
+                      final newTask = await Navigator.of(context).push<Task>(
+                        MaterialPageRoute(
+                          builder: (_) => const TaskEditorScreen(),
+                        ),
+                      );
+
+                      if (newTask != null) {
+                        setState(() {
+                          _tasks.add(newTask);
+                          _tasksBox.put(newTask.id, newTask);
+                        });
+                      }
                     }
                   },
                   backgroundColor: colorTheme.primaryContainer,

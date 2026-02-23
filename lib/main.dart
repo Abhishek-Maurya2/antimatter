@@ -11,20 +11,30 @@ import 'notifiers/settings_notifier.dart';
 import 'screens/loading_screen.dart';
 import 'screens/home_screen.dart';
 import 'models/task.dart';
+import 'services/home_widget_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  // Allow all orientations for web/desktop
+  // await SystemChrome.setPreferredOrientations([
+  //   DeviceOrientation.portraitUp,
+  //   DeviceOrientation.portraitDown,
+  // ]);
 
   await PreferencesHelper.init();
 
   await Hive.initFlutter();
   Hive.registerAdapter(TaskAdapter());
-  await Hive.openBox<Task>('tasksBox');
+  final tasksBox = await Hive.openBox<Task>('tasksBox');
+
+  // Listen to changes in the tasksBox and update the home widget
+  tasksBox.listenable().addListener(() {
+    HomeWidgetService.updateTasksWidget(tasksBox.values.toList());
+  });
+
+  // Initial update
+  HomeWidgetService.updateTasksWidget(tasksBox.values.toList());
 
   final themeController = ThemeController();
   await themeController.initialize();
