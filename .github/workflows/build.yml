@@ -1,0 +1,60 @@
+name: Build & Release APK
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.0'
+          channel: 'beta'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Create key.properties
+        run: |
+          echo "storePassword=antimatter123" > android/key.properties
+          echo "keyPassword=antimatter123" >> android/key.properties
+          echo "keyAlias=upload" >> android/key.properties
+          echo "storeFile=upload-keystore.jks" >> android/key.properties
+
+      - name: Build Release APK
+        run: flutter build apk --release
+
+      - name: Extract version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}-build.${{ github.run_number }}
+          name: AntiMatter v${{ steps.version.outputs.version }} (Build ${{ github.run_number }})
+          body: |
+            Automated release from commit ${{ github.sha }}
+
+            **Changes:** ${{ github.event.head_commit.message }}
+          files: build/app/outputs/flutter-apk/app-release.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -5,6 +5,8 @@ import 'settings/appearance_screen.dart';
 import 'settings/notifications_screen.dart';
 import 'settings/categories_screen.dart';
 import 'settings/backup_restore_screen.dart';
+import 'settings/updates_screen.dart';
+import 'settings/about_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -137,10 +139,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
                 SizedBox(height: 16),
-                // About section
+                // Updates & About section
                 SettingSection(
                   styleTile: true,
                   tiles: [
+                    SettingActionTile(
+                      icon: iconContainer(
+                        Symbols.system_update,
+                        isLight ? Color(0xffc3f0d1) : Color(0xff0f5132),
+                        isLight ? Color(0xff0f5132) : Color(0xffc3f0d1),
+                      ),
+                      title: Text('Updates'),
+                      description: Text('Check for new versions'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const UpdatesScreen(),
+                          ),
+                        );
+                      },
+                    ),
                     SettingActionTile(
                       icon: iconContainer(
                         Symbols.info,
@@ -150,28 +169,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: Text('About AntiMatter'),
                       description: Text('Version, licenses, and credits'),
                       onTap: () {
-                        showAboutDialog(
-                          context: context,
-                          applicationName: 'AntiMatter',
-                          applicationVersion: '0.1.0',
-                          applicationIcon: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: colorTheme.primaryContainer,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Symbols.task_alt,
-                              fill: 1,
-                              color: colorTheme.onPrimaryContainer,
-                            ),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AboutScreen(),
                           ),
-                          children: [
-                            Text(
-                              'A beautiful task manager built with Material 3 Expressive design language.',
-                            ),
-                          ],
                         );
                       },
                     ),
