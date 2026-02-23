@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:settings_tiles/settings_tiles.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:provider/provider.dart';
-import '../utils/theme_controller.dart';
-import '../notifiers/settings_notifier.dart';
 import 'settings/appearance_screen.dart';
+import 'settings/notifications_screen.dart';
+import 'settings/categories_screen.dart';
+import 'settings/backup_restore_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,7 +18,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final isLight = Theme.of(context).brightness == Brightness.light;
     final colorTheme = Theme.of(context).colorScheme;
-    final themeController = Provider.of<ThemeController>(context);
 
     return Scaffold(
       backgroundColor: colorTheme.surfaceContainer,
@@ -93,13 +92,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: Text('Notifications'),
                       description: Text('Task reminders and alerts'),
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Coming soon!'),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const NotificationsScreen(),
                           ),
                         );
                       },
@@ -113,13 +109,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: Text('Categories'),
                       description: Text('Manage task categories'),
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Coming soon!'),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CategoriesScreen(),
                           ),
                         );
                       },
@@ -133,13 +126,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: Text('Backup & Restore'),
                       description: Text('Export and import your tasks'),
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Coming soon!'),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const BackupRestoreScreen(),
                           ),
                         );
                       },
