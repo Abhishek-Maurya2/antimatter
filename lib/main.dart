@@ -57,9 +57,9 @@ class OrchesApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeController = Provider.of<ThemeController>(context);
-    final useExpressiveVariant = context
+    final useVibrantVariant = context
         .watch<SettingsNotifier>()
-        .useExpressiveVariant;
+        .useVibrantVariant;
 
     final isLight = Theme.of(context).brightness == Brightness.light;
 
@@ -86,11 +86,11 @@ class OrchesApp extends StatelessWidget {
                     brightness: Brightness.light,
                     dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
                   )
-                : useExpressiveVariant
+                : useVibrantVariant
                 ? ColorScheme.fromSeed(
                     seedColor: themeController.seedColor,
                     brightness: Brightness.light,
-                    dynamicSchemeVariant: DynamicSchemeVariant.expressive,
+                    dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
                   )
                 : ColorScheme.fromSeed(
                     seedColor: themeController.seedColor,
@@ -121,11 +121,11 @@ class OrchesApp extends StatelessWidget {
                     brightness: Brightness.dark,
                     dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
                   )
-                : useExpressiveVariant
+                : useVibrantVariant
                 ? ColorScheme.fromSeed(
                     seedColor: themeController.seedColor,
                     brightness: Brightness.dark,
-                    dynamicSchemeVariant: DynamicSchemeVariant.expressive,
+                    dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
                   )
                 : ColorScheme.fromSeed(
                     seedColor: themeController.seedColor,

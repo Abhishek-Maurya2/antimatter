@@ -37,7 +37,7 @@ class SettingSection extends StatelessWidget {
     final borderRadius = PrimarySwitch
         ? BorderRadius.circular(50)
         : isOnly
-            ? BorderRadius.circular(16)
+            ? BorderRadius.circular(36)
             : isFirst
                 ? const BorderRadius.only(
                     topLeft: Radius.circular(16),

@@ -15,6 +15,13 @@ class AppearanceScreen extends StatelessWidget {
     final themeController = Provider.of<ThemeController>(context);
     final isLight = Theme.of(context).brightness == Brightness.light;
 
+    final Map<String, String> optionsTheme = {
+      "Auto": "System Default",
+      "Light": "Light",
+      "Dark": "Dark",
+    };
+    final currentMode = themeController.themeMode;
+
     return Scaffold(
       backgroundColor: colorTheme.surfaceContainer,
       body: CustomScrollView(
@@ -69,31 +76,35 @@ class AppearanceScreen extends StatelessWidget {
                     ),
                   ),
                   tiles: [
-                    SettingActionTile(
-                      title: Text('System Default'),
-                      trailing: themeController.themeMode == ThemeMode.system
-                          ? Icon(Symbols.check, color: colorTheme.primary)
-                          : null,
-                      onTap: () {
-                        themeController.setThemeMode(ThemeMode.system);
-                      },
-                    ),
-                    SettingActionTile(
-                      title: Text('Light'),
-                      trailing: themeController.themeMode == ThemeMode.light
-                          ? Icon(Symbols.check, color: colorTheme.primary)
-                          : null,
-                      onTap: () {
-                        themeController.setThemeMode(ThemeMode.light);
-                      },
-                    ),
-                    SettingActionTile(
-                      title: Text('Dark'),
-                      trailing: themeController.themeMode == ThemeMode.dark
-                          ? Icon(Symbols.check, color: colorTheme.primary)
-                          : null,
-                      onTap: () {
-                        themeController.setThemeMode(ThemeMode.dark);
+                    SettingSingleOptionTile(
+                      icon: const Icon(Symbols.routine),
+                      title: const Text('Theme'),
+                      dialogTitle: 'Theme',
+                      value: SettingTileValue(
+                        optionsTheme[currentMode == ThemeMode.light
+                            ? "Light"
+                            : currentMode == ThemeMode.system
+                            ? "Auto"
+                            : "Dark"]!,
+                      ),
+                      options: optionsTheme.values.toList(),
+                      initialOption:
+                          optionsTheme[currentMode == ThemeMode.light
+                              ? "Light"
+                              : currentMode == ThemeMode.system
+                              ? "Auto"
+                              : "Dark"]!,
+                      onSubmitted: (value) {
+                        final selectedKey = optionsTheme.entries
+                            .firstWhere((e) => e.value == value)
+                            .key;
+                        themeController.setThemeMode(
+                          selectedKey == "Dark"
+                              ? ThemeMode.dark
+                              : selectedKey == "Auto"
+                              ? ThemeMode.system
+                              : ThemeMode.light,
+                        );
                       },
                     ),
                   ],
@@ -119,15 +130,28 @@ class AppearanceScreen extends StatelessWidget {
                   tiles: [
                     SettingSwitchTile(
                       icon: iconContainer(
+                        Symbols.format_paint,
+                        isLight ? Color(0xffd6e2ff) : Color(0xff004a77),
+                        isLight ? Color(0xff004a77) : Color(0xffd6e2ff),
+                      ),
+                      title: Text('Device colors'),
+                      description: Text('Use device accent colors'),
+                      toggled: themeController.useDynamicColors,
+                      onChanged: (value) {
+                        themeController.setUseDynamicColors(value);
+                      },
+                    ),
+                    SettingSwitchTile(
+                      icon: iconContainer(
                         Symbols.palette,
                         isLight ? Color(0xffffd6f9) : Color(0xff633664),
                         isLight ? Color(0xff633664) : Color(0xffffd6f9),
                       ),
-                      title: Text('Expressive colors'),
-                      description: Text('Use vibrant M3 expressive variant'),
+                      title: Text('Vibrant colors'),
+                      description: Text('Use vibrant M3 variant'),
                       toggled: context
                           .watch<SettingsNotifier>()
-                          .useExpressiveVariant,
+                          .useVibrantVariant,
                       onChanged: (value) {
                         context.read<SettingsNotifier>().updateColorVariant(
                           value,

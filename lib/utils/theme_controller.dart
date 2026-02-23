@@ -23,7 +23,8 @@ class ThemeController extends ChangeNotifier {
 
   Future<void> checkDynamicColorSupport() async {
     _isDynamicColorSupported =
-        (await DynamicColorPlugin.getCorePalette()) != null;
+        (await DynamicColorPlugin.getCorePalette()) != null ||
+        (await DynamicColorPlugin.getAccentColor()) != null;
   }
 
   ThemeController();
@@ -31,7 +32,7 @@ class ThemeController extends ChangeNotifier {
   Future<void> initialize({
     Color fallbackColor = const Color(0xFF6750A4),
   }) async {
-    bool useDynamicColors = PreferencesHelper.getBool("DynamicColors") ?? false;
+    bool useDynamicColors = PreferencesHelper.getBool("DynamicColors") ?? true;
 
     if (useDynamicColors) {
       await loadDynamicColors();
@@ -48,6 +49,23 @@ class ThemeController extends ChangeNotifier {
   CorePalette? get corePalette => _corePalette;
   ThemeMode get themeMode => _themeMode;
   bool get isUsingDynamicColor => _isUsingDynamicColor;
+  bool get useDynamicColors =>
+      PreferencesHelper.getBool("DynamicColors") ?? true;
+
+  void setUseDynamicColors(bool value) async {
+    PreferencesHelper.setBool("DynamicColors", value);
+    if (value) {
+      await loadDynamicColors();
+    } else {
+      if (isCustom) {
+        setSeedColor(
+          PreferencesHelper.getColor("CustomMaterialColor") ?? Colors.blue,
+        );
+      } else {
+        setSeedColor(const Color(0xFF6750A4));
+      }
+    }
+  }
 
   void setSeedColor(Color newColor) {
     _seedColor = newColor;
@@ -87,23 +105,34 @@ class ThemeController extends ChangeNotifier {
   }
 
   Future<void> loadDynamicColors() async {
-    final corePalette = await DynamicColorPlugin.getCorePalette();
-    if (corePalette != null) {
-      _corePalette = corePalette;
+    try {
+      final corePalette = await DynamicColorPlugin.getCorePalette();
+      if (corePalette != null) {
+        _corePalette = corePalette;
 
-      final brightness = currentBrightness;
+        final brightness = currentBrightness;
+        int primaryTone = brightness == Brightness.light ? 40 : 80;
 
-      int primaryTone = brightness == Brightness.light ? 40 : 80;
+        final int argb = corePalette.primary.get(primaryTone);
+        _seedColor = Color(argb);
+        _isUsingDynamicColor = true;
+        notifyListeners();
+        return;
+      }
+    } catch (e) {
+      debugPrint("Failed to get core palette: $e");
+    }
 
-      final int argb = corePalette.primary.get(primaryTone);
-      _seedColor = Color.from(
-        alpha: ((argb >> 24) & 0xFF) / 255.0,
-        red: ((argb >> 16) & 0xFF) / 255.0,
-        green: ((argb >> 8) & 0xFF) / 255.0,
-        blue: (argb & 0xFF) / 255.0,
-      );
-      _isUsingDynamicColor = true;
-      notifyListeners();
+    try {
+      final accentColor = await DynamicColorPlugin.getAccentColor();
+      if (accentColor != null) {
+        _seedColor = accentColor;
+        _isUsingDynamicColor = true;
+        notifyListeners();
+        return;
+      }
+    } catch (e) {
+      debugPrint("Failed to get accent color: $e");
     }
   }
 }

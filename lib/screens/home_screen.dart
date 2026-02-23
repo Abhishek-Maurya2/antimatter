@@ -206,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: colorTheme.surfaceContainerHighest,
+                                    color: colorTheme.surface,
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
@@ -264,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Expanded(
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: colorTheme.surfaceContainerHighest,
+                                  color: colorTheme.surface,
                                   borderRadius: BorderRadius.circular(28),
                                 ),
                                 padding: const EdgeInsets.symmetric(
@@ -303,15 +303,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   );
                                 },
                                 child: CircleAvatar(
-                                  radius: 20,
+                                  radius: 24,
                                   backgroundColor: colorTheme.primaryContainer,
-                                  child: Text(
-                                    'A',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                      color: colorTheme.onPrimaryContainer,
-                                    ),
+                                  backgroundImage: const AssetImage(
+                                    'assets/profile.jpg',
                                   ),
                                 ),
                               ),

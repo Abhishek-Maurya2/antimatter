@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 import '../utils/preferences_helper.dart';
 
 class SettingsNotifier extends ChangeNotifier {
-  bool _useExpressiveVariant = false;
+  bool _useVibrantVariant = false;
 
-  bool get useExpressiveVariant => _useExpressiveVariant;
+  bool get useVibrantVariant => _useVibrantVariant;
 
   SettingsNotifier() {
     _loadSettings();
   }
 
   Future<void> _loadSettings() async {
-    _useExpressiveVariant =
-        PreferencesHelper.getBool("useExpressiveVariant") ?? false;
+    _useVibrantVariant =
+        PreferencesHelper.getBool("useVibrantVariant") ?? false;
     notifyListeners();
   }
 
   void updateColorVariant(bool value) {
-    _useExpressiveVariant = value;
-    PreferencesHelper.setBool("useExpressiveVariant", value);
+    _useVibrantVariant = value;
+    PreferencesHelper.setBool("useVibrantVariant", value);
     notifyListeners();
   }
 }

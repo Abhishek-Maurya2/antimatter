@@ -185,10 +185,11 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
         actions: [
           if (widget.task != null) ...[
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              padding: const EdgeInsets.symmetric(vertical: 5.0),
               child: Container(
-                width: 64,
-                height: 48,
+                width: 32,
+                height: 50,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: colorTheme.errorContainer,
                   borderRadius: BorderRadius.circular(50),
@@ -202,16 +203,18 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                     color: colorTheme.onErrorContainer,
                   ),
                   tooltip: 'Delete',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ),
             ),
             const SizedBox(width: 8),
           ],
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(5.0),
             child: Container(
               width: 64,
-              height: 48,
+              height: 50,
               decoration: BoxDecoration(
                 color: colorTheme.primary,
                 borderRadius: BorderRadius.circular(50),
