@@ -157,12 +157,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         isLight ? Color(0xffe6deff) : Color(0xff493e76),
                         isLight ? Color(0xff493e76) : Color(0xffe6deff),
                       ),
-                      title: Text('About Orches'),
+                      title: Text('About AntiMatter'),
                       description: Text('Version, licenses, and credits'),
                       onTap: () {
                         showAboutDialog(
                           context: context,
-                          applicationName: 'Orches',
+                          applicationName: 'AntiMatter',
                           applicationVersion: '0.1.0',
                           applicationIcon: Container(
                             width: 48,

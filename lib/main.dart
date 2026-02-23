@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animations/animations.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -13,9 +14,19 @@ import 'screens/loading_screen.dart';
 import 'screens/home_screen.dart';
 import 'models/task.dart';
 import 'services/home_widget_service.dart';
+import 'services/supabase_sync_service.dart';
+
+// Initialize Supabase details
+const String supaUrl = 'https://gztupoebzdjjdcttenkb.supabase.co';
+const String supaAnonKey = 'sb_publishable_fILUo9xhkWoqMlt2UiNlWg_kZf220ex';
+
+// Global reference for Supabase Sync
+late final SupabaseSyncService syncService;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(url: supaUrl, anonKey: supaAnonKey);
 
   // Allow all orientations for web/desktop
   // await SystemChrome.setPreferredOrientations([
@@ -28,6 +39,13 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(TaskAdapter());
   final tasksBox = await Hive.openBox<Task>('tasksBox');
+
+  // Initialize and start Sync Service
+  syncService = SupabaseSyncService(tasksBox);
+  // Asynchronously pull latest tasks from the cloud
+  syncService.pullTasks();
+  // Start pushing future local changes
+  syncService.startListening();
 
   // Listen to changes in the tasksBox and update the home widget
   tasksBox.listenable().addListener(() {
@@ -77,7 +95,7 @@ class OrchesApp extends StatelessWidget {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     return MaterialApp(
-      title: 'Orches',
+      title: 'AntiMatter',
       debugShowCheckedModeBanner: false,
       theme:
           ThemeData.from(
@@ -100,6 +118,14 @@ class OrchesApp extends StatelessWidget {
             useMaterial3: true,
             textTheme: TypographyHelper.getTextTheme(context),
           ).copyWith(
+            appBarTheme: AppBarTheme(
+              titleTextStyle: TypographyHelper.getTextTheme(context).titleLarge
+                  ?.copyWith(
+                    fontFamily: 'RobotoFlex',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 24,
+                  ),
+            ),
             highlightColor: Colors.transparent,
             pageTransitionsTheme: const PageTransitionsTheme(
               builders: {
@@ -136,6 +162,14 @@ class OrchesApp extends StatelessWidget {
             useMaterial3: true,
             textTheme: TypographyHelper.getTextTheme(context),
           ).copyWith(
+            appBarTheme: AppBarTheme(
+              titleTextStyle: TypographyHelper.getTextTheme(context).titleLarge
+                  ?.copyWith(
+                    fontFamily: 'RobotoFlex',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 24,
+                  ),
+            ),
             highlightColor: Colors.transparent,
             pageTransitionsTheme: const PageTransitionsTheme(
               builders: {

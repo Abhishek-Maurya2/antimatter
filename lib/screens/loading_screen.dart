@@ -20,7 +20,7 @@ class LoadingScreen extends StatelessWidget {
               color: colorTheme.primary,
             ),
             Text(
-              'Orches',
+              'AntiMatter',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w600,

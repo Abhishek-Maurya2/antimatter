@@ -1,5 +1,5 @@
 name: orches
-description: "A Material 3 Expressive Task Manager App."
+description: "AntiMatter - A Material 3 Expressive Task Manager App."
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -28,6 +28,7 @@ dependencies:
   hive_flutter: ^1.1.0
   home_widget: ^0.9.0
   google_fonts: ^8.0.2
+  supabase_flutter: ^2.12.0
 
 dev_dependencies:
   flutter_test:
@@ -35,6 +36,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   build_runner: ^2.4.13
   hive_generator: ^2.0.1
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -56,3 +58,9 @@ flutter:
           weight: 600
         - asset: assets/fonts/nato-Bold.ttf
           weight: 700
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
