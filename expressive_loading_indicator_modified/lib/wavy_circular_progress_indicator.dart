@@ -38,7 +38,7 @@ class _WavyCircularProgressIndicatorState
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 4000),
     )..repeat();
   }
 

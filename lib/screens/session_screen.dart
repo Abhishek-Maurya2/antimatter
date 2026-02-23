@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 
 class SessionScreen extends StatefulWidget {
   const SessionScreen({super.key});
@@ -57,68 +59,115 @@ class _SessionScreenState extends State<SessionScreen> {
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
 
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
-            decoration: BoxDecoration(
-              color: colorTheme.surfaceContainerHigh,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: colorTheme.primary.withValues(alpha: 0.2),
-                width: 8,
+    return Scaffold(
+      backgroundColor: colorTheme.surfaceContainer,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar.large(
+            title: Text('Session'),
+            titleSpacing: 0,
+            leadingWidth: 80,
+            leading: Center(
+              child: Container(
+                width: 60,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colorTheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: Icon(
+                    Symbols.arrow_back,
+                    color: colorTheme.onSurface,
+                    size: 25,
+                  ),
+                  tooltip: 'Back',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
               ),
             ),
-            child: Text(
-              _formatTime(),
-              style: TextStyle(
-                fontSize: 64,
-                fontWeight: FontWeight.bold,
-                color: colorTheme.primary,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
+            backgroundColor: colorTheme.surfaceContainer,
+            scrolledUnderElevation: 1,
+            expandedHeight: 120,
           ),
-          const SizedBox(height: 48),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FilledButton.icon(
-                onPressed: _toggleTimer,
-                icon: Icon(_isRunning ? Icons.pause : Icons.play_arrow),
-                label: Text(_isRunning ? 'Pause' : 'Start'),
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(160, 0),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 20,
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 220,
+                    height: 220,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SizedBox(
+                          width: 220,
+                          height: 220,
+                          child: WavyCircularProgressIndicator(
+                            value: _isRunning ? 0.3 : 0.0,
+                            strokeWidth: 8.0,
+                            waveAmplitude: 6,
+                            waveLength: 22.0,
+                          ),
+                        ),
+                        Text(
+                          _formatTime(),
+                          style: TextStyle(
+                            fontSize: 52,
+                            fontWeight: FontWeight.bold,
+                            color: colorTheme.primary,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 48),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: _toggleTimer,
+                        icon: Icon(_isRunning ? Icons.pause : Icons.play_arrow),
+                        label: Text(_isRunning ? 'Pause' : 'Start'),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(160, 0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 20,
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      OutlinedButton.icon(
+                        onPressed: _resetTimer,
+                        icon: const Icon(Icons.stop),
+                        label: const Text('Stop'),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(160, 0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 20,
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                ],
               ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: _resetTimer,
-                icon: const Icon(Icons.stop),
-                label: const Text('Stop'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(160, 0),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 20,
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),
