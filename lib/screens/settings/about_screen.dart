@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 /// TODO: Replace with your actual GitHub repo URL
 const String _githubUrl = 'https://github.com/Abhishek-Maurya2/antimatter';
-const String _appVersion = '1.3.0';
+const String _appVersion = '1.4.0';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});

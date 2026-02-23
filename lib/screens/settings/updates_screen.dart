@@ -7,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 /// TODO: Replace these with your actual GitHub owner/repo
 const String _githubOwner = 'Abhishek-Maurya2';
 const String _githubRepo = 'antimatter';
-const String _currentVersion = '1.3.0';
+const String _currentVersion = '1.4.0';
 
 class UpdatesScreen extends StatefulWidget {
   const UpdatesScreen({super.key});
