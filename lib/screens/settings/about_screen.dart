@@ -1,13 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-/// TODO: Replace with your actual GitHub repo URL
 const String _githubUrl = 'https://github.com/Abhishek-Maurya2/antimatter';
-const String _appVersion = '1.4.0';
 
-class AboutScreen extends StatelessWidget {
+class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
+
+  @override
+  State<AboutScreen> createState() => _AboutScreenState();
+}
+
+class _AboutScreenState extends State<AboutScreen> {
+  String _appVersion = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _appVersion = info.version.isNotEmpty ? info.version : '1.4.0';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

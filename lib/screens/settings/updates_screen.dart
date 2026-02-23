@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-/// TODO: Replace these with your actual GitHub owner/repo
 const String _githubOwner = 'Abhishek-Maurya2';
 const String _githubRepo = 'antimatter';
-const String _currentVersion = '1.4.0';
 
 class UpdatesScreen extends StatefulWidget {
   const UpdatesScreen({super.key});
@@ -22,11 +22,20 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
   String? _releaseNotes;
   String? _downloadUrl;
   String? _error;
+  String _currentVersion = '';
 
   @override
   void initState() {
     super.initState();
-    _checkForUpdates();
+    _loadVersionAndCheck();
+  }
+
+  Future<void> _loadVersionAndCheck() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _currentVersion = info.version.isNotEmpty ? info.version : '1.4.0';
+    });
+    await _checkForUpdates();
   }
 
   Future<void> _checkForUpdates() async {
@@ -137,7 +146,15 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          CircularProgressIndicator(),
+                          SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: WavyCircularProgressIndicator(
+                              strokeWidth: 4.0,
+                              waveAmplitude: 2.0,
+                              waveCount: 8,
+                            ),
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             'Checking for updates...',

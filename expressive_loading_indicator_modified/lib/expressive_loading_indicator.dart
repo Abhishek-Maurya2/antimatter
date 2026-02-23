@@ -15,6 +15,9 @@ import 'package:flutter/physics.dart';
 import 'package:flutter/semantics.dart';
 import 'package:material_new_shapes/material_new_shapes.dart';
 
+export 'wavy_linear_progress_indicator.dart';
+export 'wavy_circular_progress_indicator.dart';
+
 /// A Material Design loading indicator.
 ///
 /// This version of the loading indicator morphs between its [polygons] shapes.
@@ -71,7 +74,6 @@ class _ExpressiveLoadingIndicatorState extends State<ExpressiveLoadingIndicator>
   static const double _fullRotation = 360.0;
 
   static const double _quarterRotation = _fullRotation / 4;
-  static const double _activeSize = 48; // based on source spec
 
   late final List<Morph> _morphSequence;
 
