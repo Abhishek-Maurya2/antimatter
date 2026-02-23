@@ -7,6 +7,7 @@ import 'settings/categories_screen.dart';
 import 'settings/backup_restore_screen.dart';
 import 'settings/updates_screen.dart';
 import 'settings/about_screen.dart';
+import 'settings/wavy_demo_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -173,6 +174,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => const AboutScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                // Demos section
+                SettingSection(
+                  styleTile: true,
+                  tiles: [
+                    SettingActionTile(
+                      icon: iconContainer(
+                        Symbols.animation,
+                        isLight ? Color(0xffffd8e4) : Color(0xff73293d),
+                        isLight ? Color(0xff73293d) : Color(0xffffd8e4),
+                      ),
+                      title: Text('Wavy Indicators Demo'),
+                      description: Text('Preview wavy progress indicators'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const WavyDemoScreen(),
                           ),
                         );
                       },

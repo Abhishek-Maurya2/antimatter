@@ -1,17 +1,15 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 
 /// A Material Design 3 Expressive Wavy Circular Progress Indicator.
+///
+/// Track is a smooth circle. The active indicator is a wavy path that flows
+/// smoothly around the circle. Uses the cubic-bezier wave algorithm from
+/// Android Material Components.
 class WavyCircularProgressIndicator extends ProgressIndicator {
-  /// The default stroke width of the indicator.
   final double strokeWidth;
-
-  /// The amplitude of the wave.
   final double waveAmplitude;
-
-  /// The number of waves in the full circle.
-  final int waveCount;
+  final double waveLength;
 
   const WavyCircularProgressIndicator({
     super.key,
@@ -19,8 +17,8 @@ class WavyCircularProgressIndicator extends ProgressIndicator {
     super.color,
     super.backgroundColor,
     this.strokeWidth = 4.0,
-    this.waveAmplitude = 2.0,
-    this.waveCount = 10,
+    this.waveAmplitude = 3.0,
+    this.waveLength = 20.0,
     super.semanticsLabel,
     super.semanticsValue,
   });
@@ -40,23 +38,8 @@ class _WavyCircularProgressIndicatorState
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(
-        milliseconds: 2000,
-      ), // A full cycle rotation/phase animation
-    );
-    if (widget.value == null) {
-      _controller.repeat();
-    }
-  }
-
-  @override
-  void didUpdateWidget(WavyCircularProgressIndicator oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.value == null && oldWidget.value != null) {
-      _controller.repeat();
-    } else if (widget.value != null && oldWidget.value == null) {
-      _controller.stop();
-    }
+      duration: const Duration(milliseconds: 2000),
+    )..repeat();
   }
 
   @override
@@ -68,43 +51,34 @@ class _WavyCircularProgressIndicatorState
   @override
   Widget build(BuildContext context) {
     final indicatorTheme = ProgressIndicatorTheme.of(context);
-    final colorTheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
-    final Color indicatorColor =
-        widget.color ?? indicatorTheme.color ?? colorTheme.primary;
+    final Color activeColor =
+        widget.color ?? indicatorTheme.color ?? cs.primary;
     final Color trackColor =
         widget.backgroundColor ??
         indicatorTheme.circularTrackColor ??
-        colorTheme.surfaceContainerHighest;
+        cs.surfaceContainerHighest;
 
-    return Semantics.fromProperties(
-      properties: SemanticsProperties(
-        label: widget.semanticsLabel,
-        value: widget.semanticsValue,
-      ),
-      child: Container(
-        constraints: const BoxConstraints(minWidth: 48.0, minHeight: 48.0),
+    return Semantics(
+      label: widget.semanticsLabel,
+      value: widget.semanticsValue,
+      child: SizedBox(
+        width: 48,
+        height: 48,
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
             return CustomPaint(
               painter: _WavyCircularPainter(
                 value: widget.value,
-                phase:
-                    _controller.value *
-                    2 *
-                    math.pi, // Controls the wave moving smoothly
-                rotation:
-                    _controller.value *
-                    2 *
-                    math.pi, // Controls the overall rotation (for indeterminate)
-                indicatorColor: indicatorColor,
+                t: _controller.value,
+                activeColor: activeColor,
                 trackColor: trackColor,
                 strokeWidth: widget.strokeWidth,
                 waveAmplitude: widget.waveAmplitude,
-                waveCount: widget.waveCount,
+                waveLength: widget.waveLength,
               ),
-              child: const SizedBox.expand(),
             );
           },
         ),
@@ -113,55 +87,97 @@ class _WavyCircularProgressIndicatorState
   }
 }
 
+// Android's WAVE_SMOOTHNESS constant.
+const double _kSmoothness = 0.48;
+
 class _WavyCircularPainter extends CustomPainter {
   final double? value;
-  final double phase;
-  final double rotation;
-  final Color indicatorColor;
+  final double t; // animation value 0..1
+  final Color activeColor;
   final Color trackColor;
   final double strokeWidth;
   final double waveAmplitude;
-  final int waveCount;
+  final double waveLength;
 
   _WavyCircularPainter({
     required this.value,
-    required this.phase,
-    required this.rotation,
-    required this.indicatorColor,
+    required this.t,
+    required this.activeColor,
     required this.trackColor,
     required this.strokeWidth,
     required this.waveAmplitude,
-    required this.waveCount,
+    required this.waveLength,
   });
 
-  Path _buildWavePath(
-    double baseRadius,
-    Offset center, {
-    double startAngle = 0,
-    double sweepAngle = 2 * math.pi,
-  }) {
+  /// Builds TWO copies of a wavy circle path so that we can extract any
+  /// contiguous segment up to one full circumference starting from any point.
+  /// This is the same trick Android uses (two copies of the base circle).
+  Path _buildFullWavyCirclePath(double radius, Offset center) {
+    final double circumference = 2 * math.pi * radius;
+    final int cycleCount = math.max(3, (circumference / waveLength).round());
+    final double adjWave = circumference / cycleCount;
+    final int halfCycles = cycleCount * 2; // per copy
+
+    // For each half-cycle anchor:
+    //   even index → on the circle (no shift)
+    //   odd index  → shifted inward by amplitude
+    // Then connected with cubic beziers using _kSmoothness.
+
     final path = Path();
-    if (sweepAngle <= 0) {
-      return path;
-    }
 
-    const int points = 100; // Resolution of the curve drawing
-    final double angleStep = sweepAngle / points;
+    // We build 2 copies (like Android) for seamless wrapping.
+    for (int copy = 0; copy < 2; copy++) {
+      for (int i = 0; i <= halfCycles; i++) {
+        // arc distance from start of this copy
+        final double dist = i * adjWave / 2;
+        final double theta = (copy * circumference + dist) / radius;
+        // Shift: odd half-cycle anchors are pushed inward
+        final double shift = (i % 2 == 1) ? -waveAmplitude : 0.0;
+        final double r = radius + shift;
 
-    for (int i = 0; i <= points; i++) {
-      final double theta = startAngle + (i * angleStep);
+        final double px = center.dx + r * math.cos(theta - math.pi / 2);
+        final double py = center.dy + r * math.sin(theta - math.pi / 2);
 
-      // Radius varies by sin(waveCount * theta + phase)
-      final double currentRadius =
-          baseRadius + waveAmplitude * math.sin(waveCount * theta + phase);
+        if (copy == 0 && i == 0) {
+          path.moveTo(px, py);
+        } else {
+          // Previous anchor
+          final double prevDist = (copy == 0 && i == 0)
+              ? 0
+              : (i > 0 ? (i - 1) * adjWave / 2 : halfCycles * adjWave / 2);
+          final double prevTheta =
+              (i > 0
+                  ? (copy * circumference + prevDist)
+                  : ((copy - 1) * circumference + halfCycles * adjWave / 2)) /
+              radius;
+          final double prevShift = ((i > 0 ? i - 1 : halfCycles) % 2 == 1)
+              ? -waveAmplitude
+              : 0.0;
+          final double prevR = radius + prevShift;
 
-      final double x = center.dx + currentRadius * math.cos(theta);
-      final double y = center.dy + currentRadius * math.sin(theta);
+          final double prevPx =
+              center.dx + prevR * math.cos(prevTheta - math.pi / 2);
+          final double prevPy =
+              center.dy + prevR * math.sin(prevTheta - math.pi / 2);
 
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
+          // Tangent at prev point (perpendicular to radius, clockwise)
+          final double prevTx = -math.sin(prevTheta - math.pi / 2);
+          final double prevTy = math.cos(prevTheta - math.pi / 2);
+          // Tangent at current point
+          final double tx = -math.sin(theta - math.pi / 2);
+          final double ty = math.cos(theta - math.pi / 2);
+
+          final double ctrlLen = adjWave / 2 * _kSmoothness;
+
+          path.cubicTo(
+            prevPx + ctrlLen * prevTx,
+            prevPy + ctrlLen * prevTy,
+            px - ctrlLen * tx,
+            py - ctrlLen * ty,
+            px,
+            py,
+          );
+        }
       }
     }
     return path;
@@ -169,68 +185,65 @@ class _WavyCircularPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Offset center = Offset(size.width / 2, size.height / 2);
-    final double baseRadius =
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius =
         (math.min(size.width, size.height) / 2) - strokeWidth - waveAmplitude;
 
-    final Paint trackPaint = Paint()
+    final trackPaint = Paint()
       ..color = trackColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    final Paint indicatorPaint = Paint()
-      ..color = indicatorColor
+    final activePaint = Paint()
+      ..color = activeColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    if (value != null) {
-      // Determinate
-      // Draw smooth circular track
-      canvas.drawCircle(center, baseRadius, trackPaint);
+    // Draw smooth track circle
+    canvas.drawCircle(center, radius, trackPaint);
 
-      final sweepAngle = 2 * math.pi * value!.clamp(0.0, 1.0);
-      if (sweepAngle > 0) {
-        final indicatorPath = _buildWavePath(
-          baseRadius,
-          center,
-          startAngle: -math.pi / 2,
-          sweepAngle: sweepAngle,
-        );
-        canvas.drawPath(indicatorPath, indicatorPaint);
+    // Build the full wavy path (2 copies for wrapping)
+    final wavyPath = _buildFullWavyCirclePath(radius, center);
+    final metrics = wavyPath.computeMetrics().first;
+    final totalLen = metrics.length; // ~2x circumference
+    final halfLen = totalLen / 2; // ~1x circumference
+
+    // Phase: smoothly shift where we start extracting from.
+    // t goes 0→1 continuously, so phase scrolls the wave smoothly.
+    final double phaseShift = t * halfLen;
+
+    if (value != null) {
+      // Determinate: extract an arc of length proportional to value
+      final double arcLen = halfLen * value!.clamp(0.0, 1.0);
+      if (arcLen > 0) {
+        final start = phaseShift;
+        final end = phaseShift + arcLen;
+        final segment = metrics.extractPath(start, math.min(end, totalLen));
+        canvas.drawPath(segment, activePaint);
       }
     } else {
-      // Indeterminate
-      // Draw smooth circular track
-      canvas.drawCircle(center, baseRadius, trackPaint);
-
-      // We animate an arc growing and shrinking over rotation
-      // Standard indeterminate circular indicator logic mapped to wavy path
-      final sweepAngle =
-          math.pi * 0.75 +
-          math.sin(rotation * 2) * (math.pi * 0.5); // Arc pulsing
-      final startAngle = rotation * 2 - math.pi / 2; // Spinning
-
-      final indicatorPath = _buildWavePath(
-        baseRadius,
-        center,
-        startAngle: startAngle,
-        sweepAngle: sweepAngle,
-      );
-      canvas.drawPath(indicatorPath, indicatorPaint);
+      // Indeterminate: pulsing arc that spins
+      final double spinPhase = t * halfLen * 2; // spins faster
+      final double pulseFraction =
+          0.2 + 0.15 * math.sin(t * 2 * math.pi); // 20-35% of circumference
+      final double arcLen = halfLen * pulseFraction;
+      final start = (spinPhase + phaseShift) % halfLen;
+      final end = start + arcLen;
+      final segment = metrics.extractPath(start, math.min(end, totalLen));
+      canvas.drawPath(segment, activePaint);
     }
   }
 
   @override
   bool shouldRepaint(covariant _WavyCircularPainter oldDelegate) {
     return oldDelegate.value != value ||
-        oldDelegate.phase != phase ||
-        oldDelegate.rotation != rotation ||
-        oldDelegate.indicatorColor != indicatorColor ||
+        oldDelegate.t != t ||
+        oldDelegate.activeColor != activeColor ||
         oldDelegate.trackColor != trackColor ||
         oldDelegate.strokeWidth != strokeWidth ||
         oldDelegate.waveAmplitude != waveAmplitude ||
-        oldDelegate.waveCount != waveCount;
+        oldDelegate.waveLength != waveLength;
   }
 }

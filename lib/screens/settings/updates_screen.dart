@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 const String _githubOwner = 'Abhishek-Maurya2';
@@ -22,6 +26,12 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
   String? _releaseNotes;
   String? _downloadUrl;
   String? _error;
+
+  // Download state
+  bool _isDownloading = false;
+  double _downloadProgress = 0.0;
+  String? _downloadError;
+  String? _downloadedFilePath;
   String _currentVersion = '';
 
   @override
@@ -95,6 +105,115 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
     }
   }
 
+  Future<void> _downloadAndInstall() async {
+    if (_downloadUrl == null) return;
+
+    // Request storage permission on older Android versions
+    if (Platform.isAndroid) {
+      final status = await Permission.storage.request();
+      if (status.isDenied) {
+        setState(() => _downloadError = 'Storage permission denied');
+        return;
+      }
+    }
+
+    setState(() {
+      _isDownloading = true;
+      _downloadProgress = 0.0;
+      _downloadError = null;
+      _downloadedFilePath = null;
+    });
+
+    try {
+      final dir = await getTemporaryDirectory();
+      final filePath = '${dir.path}/antimatter-update.apk';
+
+      final dio = Dio();
+      await dio.download(
+        _downloadUrl!,
+        filePath,
+        onReceiveProgress: (received, total) {
+          if (total > 0) {
+            setState(() {
+              _downloadProgress = received / total;
+            });
+          }
+        },
+      );
+
+      setState(() {
+        _isDownloading = false;
+        _downloadedFilePath = filePath;
+      });
+
+      // Open/install the APK
+      await OpenFilex.open(filePath);
+    } catch (e) {
+      setState(() {
+        _isDownloading = false;
+        _downloadError = 'Download failed: ${e.toString()}';
+      });
+    }
+  }
+
+  Widget _buildDownloadSection(ColorScheme colorTheme) {
+    if (_isDownloading) {
+      return Column(
+        children: [
+          SizedBox(
+            width: 200,
+            child: WavyLinearProgressIndicator(
+              value: _downloadProgress,
+              minHeight: 4.0,
+              waveAmplitude: 3.0,
+              waveLength: 24.0,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${(_downloadProgress * 100).toStringAsFixed(0)}%',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: colorTheme.onPrimaryContainer,
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (_downloadError != null) {
+      return Column(
+        children: [
+          Text(
+            _downloadError!,
+            style: TextStyle(color: colorTheme.error, fontSize: 13),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            onPressed: _downloadAndInstall,
+            icon: Icon(Symbols.refresh),
+            label: Text('Retry Download'),
+          ),
+        ],
+      );
+    }
+
+    if (_downloadedFilePath != null) {
+      return FilledButton.icon(
+        onPressed: () => OpenFilex.open(_downloadedFilePath!),
+        icon: Icon(Symbols.install_mobile),
+        label: Text('Install APK'),
+      );
+    }
+
+    return FilledButton.icon(
+      onPressed: _downloadAndInstall,
+      icon: Icon(Symbols.download),
+      label: Text('Download APK'),
+    );
+  }
+
   bool get _isUpdateAvailable {
     if (_latestVersion == null) return false;
     return _latestVersion != _currentVersion;
@@ -152,7 +271,6 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                             child: WavyCircularProgressIndicator(
                               strokeWidth: 4.0,
                               waveAmplitude: 2.0,
-                              waveCount: 8,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -280,19 +398,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                                 ),
                                 const SizedBox(height: 20),
                                 if (_downloadUrl != null)
-                                  FilledButton.icon(
-                                    onPressed: () async {
-                                      final uri = Uri.parse(_downloadUrl!);
-                                      if (await canLaunchUrl(uri)) {
-                                        await launchUrl(
-                                          uri,
-                                          mode: LaunchMode.externalApplication,
-                                        );
-                                      }
-                                    },
-                                    icon: Icon(Symbols.download),
-                                    label: Text('Download APK'),
-                                  ),
+                                  _buildDownloadSection(colorTheme),
                               ],
                             ],
                           ),

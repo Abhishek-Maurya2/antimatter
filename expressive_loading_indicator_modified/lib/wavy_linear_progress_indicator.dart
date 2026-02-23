@@ -1,16 +1,14 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 
 /// A Material Design 3 Expressive Wavy Linear Progress Indicator.
+///
+/// Track is a straight line. The active indicator is a wavy path that flows
+/// smoothly. Uses the cubic-bezier wave algorithm from Android Material
+/// Components.
 class WavyLinearProgressIndicator extends ProgressIndicator {
-  /// The minimum height of the indicator.
   final double minHeight;
-
-  /// The amplitude of the wave.
   final double waveAmplitude;
-
-  /// The wavelength (distance between two peaks) of the wave.
   final double waveLength;
 
   const WavyLinearProgressIndicator({
@@ -20,7 +18,7 @@ class WavyLinearProgressIndicator extends ProgressIndicator {
     super.backgroundColor,
     this.minHeight = 4.0,
     this.waveAmplitude = 3.0,
-    this.waveLength = 40.0,
+    this.waveLength = 24.0,
     super.semanticsLabel,
     super.semanticsValue,
   });
@@ -41,20 +39,7 @@ class _WavyLinearProgressIndicatorState
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
-    );
-    if (widget.value == null) {
-      _controller.repeat();
-    }
-  }
-
-  @override
-  void didUpdateWidget(WavyLinearProgressIndicator oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.value == null && oldWidget.value != null) {
-      _controller.repeat();
-    } else if (widget.value != null && oldWidget.value == null) {
-      _controller.stop();
-    }
+    )..repeat();
   }
 
   @override
@@ -66,20 +51,18 @@ class _WavyLinearProgressIndicatorState
   @override
   Widget build(BuildContext context) {
     final indicatorTheme = ProgressIndicatorTheme.of(context);
-    final colorTheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
-    final Color indicatorColor =
-        widget.color ?? indicatorTheme.color ?? colorTheme.primary;
+    final Color activeColor =
+        widget.color ?? indicatorTheme.color ?? cs.primary;
     final Color trackColor =
         widget.backgroundColor ??
         indicatorTheme.linearTrackColor ??
-        colorTheme.surfaceContainerHighest;
+        cs.surfaceContainerHighest;
 
-    return Semantics.fromProperties(
-      properties: SemanticsProperties(
-        label: widget.semanticsLabel,
-        value: widget.semanticsValue,
-      ),
+    return Semantics(
+      label: widget.semanticsLabel,
+      value: widget.semanticsValue,
       child: Container(
         constraints: BoxConstraints(
           minWidth: double.infinity,
@@ -91,8 +74,8 @@ class _WavyLinearProgressIndicatorState
             return CustomPaint(
               painter: _WavyLinearPainter(
                 value: widget.value,
-                phase: _controller.value * 2 * math.pi,
-                indicatorColor: indicatorColor,
+                t: _controller.value,
+                activeColor: activeColor,
                 trackColor: trackColor,
                 strokeWidth: widget.minHeight,
                 waveAmplitude: widget.waveAmplitude,
@@ -107,10 +90,13 @@ class _WavyLinearProgressIndicatorState
   }
 }
 
+// Android's WAVE_SMOOTHNESS constant.
+const double _kSmoothness = 0.48;
+
 class _WavyLinearPainter extends CustomPainter {
   final double? value;
-  final double phase;
-  final Color indicatorColor;
+  final double t;
+  final Color activeColor;
   final Color trackColor;
   final double strokeWidth;
   final double waveAmplitude;
@@ -118,36 +104,50 @@ class _WavyLinearPainter extends CustomPainter {
 
   _WavyLinearPainter({
     required this.value,
-    required this.phase,
-    required this.indicatorColor,
+    required this.t,
+    required this.activeColor,
     required this.trackColor,
     required this.strokeWidth,
     required this.waveAmplitude,
     required this.waveLength,
   });
 
-  Path _buildWavePath(
-    double width,
-    double centerY, {
-    double startX = 0,
-    double endX = 0,
-  }) {
+  /// Builds the full wavy path in world coordinates following Android's
+  /// LinearDrawingDelegate.invalidateCachedPaths().
+  ///
+  /// We build (cycleCount + 1) cycles so there is extra length to scroll
+  /// through for the phase animation. The wave is:
+  ///   y = amplitude * cos(2π * x / adjWaveLength)
+  /// built from half-cycle cubic beziers.
+  Path _buildWavyLinePath(double trackWidth, double centerY) {
+    final int cycleCount = math.max(1, (trackWidth / waveLength).round());
+    final double adjWave = trackWidth / cycleCount;
+    // Build one extra cycle for smooth phase scrolling.
+    final int totalHalves = (cycleCount + 1) * 2;
+
     final path = Path();
-    if (endX <= startX) {
-      return path;
-    }
 
-    path.moveTo(
-      startX,
-      centerY +
-          waveAmplitude * math.sin((startX / waveLength) * 2 * math.pi + phase),
-    );
+    for (int i = 0; i <= totalHalves; i++) {
+      final double x = i * adjWave / 2;
+      // y = amplitude * cos(2π * x / adjWave)
+      // At x=0 → y = +amplitude (peak)
+      // At x = adjWave/2 → y = -amplitude (trough)
+      // Simplifies: at even i → peak, at odd i → trough
+      final double y =
+          centerY + ((i % 2 == 0) ? waveAmplitude : -waveAmplitude);
 
-    for (double x = startX; x <= endX; x += 1.0) {
-      final y =
-          centerY +
-          waveAmplitude * math.sin((x / waveLength) * 2 * math.pi + phase);
-      path.lineTo(x, y);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        final double prevX = (i - 1) * adjWave / 2;
+        final double prevY =
+            centerY + (((i - 1) % 2 == 0) ? waveAmplitude : -waveAmplitude);
+
+        // Control handles along the x-axis (tangent at peaks/troughs is horizontal).
+        final double ctrlDx = adjWave / 2 * _kSmoothness;
+
+        path.cubicTo(prevX + ctrlDx, prevY, x - ctrlDx, y, x, y);
+      }
     }
     return path;
   }
@@ -156,72 +156,75 @@ class _WavyLinearPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final centerY = size.height / 2;
 
-    final Paint trackPaint = Paint()
+    // Draw straight track
+    final trackPaint = Paint()
       ..color = trackColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(0, centerY),
+      Offset(size.width, centerY),
+      trackPaint,
+    );
 
-    final Paint indicatorPaint = Paint()
-      ..color = indicatorColor
+    // Active paint
+    final activePaint = Paint()
+      ..color = activeColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
+    // Build the full wavy path (with one extra cycle for phase scrolling)
+    final wavyPath = _buildWavyLinePath(size.width, centerY);
+    final metricsList = wavyPath.computeMetrics().toList();
+    if (metricsList.isEmpty) return;
+    final metrics = metricsList.first;
+    final totalLen = metrics.length;
+
+    // One cycle's worth of path length (for the phase scroll range)
+    final int cycleCount = math.max(1, (size.width / waveLength).round());
+    final double adjWave = size.width / cycleCount;
+    // The "real" track occupies the first `cycleCount` cycles.
+    // The extra cycle is for smooth phase wrapping.
+    // Path length of the base track portion:
+    final double baseLen = totalLen * cycleCount / (cycleCount + 1);
+    // Path length of one cycle:
+    final double oneCycleLen = totalLen / (cycleCount + 1);
+
+    // Phase offset: scrolls smoothly through one full cycle over the animation.
+    final double phaseShift = t * oneCycleLen;
+
     if (value != null) {
       // Determinate
-      final indicatorWidth = size.width * value!.clamp(0.0, 1.0);
-
-      // Draw track
-      if (indicatorWidth < size.width) {
-        final trackPath = _buildWavePath(
-          size.width,
-          centerY,
-          startX: indicatorWidth,
-          endX: size.width,
-        );
-        canvas.drawPath(trackPath, trackPaint);
-      }
-
-      // Draw indicator
-      if (indicatorWidth > 0) {
-        final indicatorPath = _buildWavePath(
-          size.width,
-          centerY,
-          startX: 0,
-          endX: indicatorWidth,
-        );
-        canvas.drawPath(indicatorPath, indicatorPaint);
+      final double fraction = value!.clamp(0.0, 1.0);
+      final double arcLen = baseLen * fraction;
+      if (arcLen > 0) {
+        final segment = metrics.extractPath(phaseShift, phaseShift + arcLen);
+        // Translate so that the wave starts at x=0
+        // The phase shift moves the path to the right; we compensate.
+        canvas.save();
+        canvas.translate(-t * adjWave, 0);
+        canvas.drawPath(segment, activePaint);
+        canvas.restore();
       }
     } else {
-      // Indeterminate
-      // In indeterminate mode, the track doesn't need to be wavy, but drawing it wavy looks consistent.
-      // Alternatively, we could animate the width of the active segment.
-      // For now, doing an active wave segment moving left to right.
-
-      final head = (size.width + waveLength) * (phase / (2 * math.pi));
-      final tail = head - size.width * 0.3; // 30% width
-
-      final trackPath = _buildWavePath(
-        size.width,
-        centerY,
-        startX: 0,
-        endX: size.width,
-      );
-      canvas.drawPath(trackPath, trackPaint);
-
-      if (head > 0 && tail < size.width) {
-        final startX = math.max(0.0, tail);
-        final endX = math.min(size.width, head);
-        if (endX > startX) {
-          final indicatorPath = _buildWavePath(
-            size.width,
-            centerY,
-            startX: startX,
-            endX: endX,
-          );
-          canvas.drawPath(indicatorPath, indicatorPaint);
-        }
+      // Indeterminate: a 30% segment sweeping across
+      final double segFraction = 0.3;
+      final double segLen = baseLen * segFraction;
+      final double totalTravel = baseLen + segLen;
+      final double headDist = totalTravel * t - segLen;
+      final double startDist = math.max(0.0, headDist);
+      final double endDist = math.min(baseLen, headDist + segLen);
+      if (endDist > startDist) {
+        final segment = metrics.extractPath(
+          phaseShift + startDist,
+          phaseShift + endDist,
+        );
+        canvas.save();
+        canvas.translate(-t * adjWave, 0);
+        canvas.drawPath(segment, activePaint);
+        canvas.restore();
       }
     }
   }
@@ -229,8 +232,8 @@ class _WavyLinearPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _WavyLinearPainter oldDelegate) {
     return oldDelegate.value != value ||
-        oldDelegate.phase != phase ||
-        oldDelegate.indicatorColor != indicatorColor ||
+        oldDelegate.t != t ||
+        oldDelegate.activeColor != activeColor ||
         oldDelegate.trackColor != trackColor ||
         oldDelegate.strokeWidth != strokeWidth ||
         oldDelegate.waveAmplitude != waveAmplitude ||
