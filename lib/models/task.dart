@@ -22,6 +22,15 @@ class Task extends HiveObject {
   @HiveField(5)
   List<Task> subTasks;
 
+  @HiveField(6, defaultValue: false)
+  bool isArchived;
+
+  @HiveField(7, defaultValue: false)
+  bool isDeleted;
+
+  @HiveField(8, defaultValue: [])
+  List<String> labels;
+
   Task({
     required this.id,
     required this.title,
@@ -29,5 +38,8 @@ class Task extends HiveObject {
     this.isCompleted = false,
     this.deadline,
     this.subTasks = const [],
+    this.isArchived = false,
+    this.isDeleted = false,
+    this.labels = const [],
   });
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:orches/models/task.dart';
-import 'package:orches/screens/settings_screen.dart'; // reusing iconContainer if needed, or better to copy/make util
 
 class TaskEditorScreen extends StatefulWidget {
   final Task? task;
@@ -19,6 +18,8 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
   late TextEditingController _descriptionController;
   DateTime? _deadline;
   late List<Task> _subTasks;
+  late List<String> _labels;
+  final TextEditingController _labelController = TextEditingController();
 
   @override
   void initState() {
@@ -44,12 +45,14 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
             )
             .toList() ??
         [];
+    _labels = List<String>.from(widget.task?.labels ?? []);
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _labelController.dispose();
     super.dispose();
   }
 
@@ -64,6 +67,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
         isCompleted: widget.task?.isCompleted ?? false,
         deadline: _deadline,
         subTasks: _subTasks,
+        labels: _labels,
       );
       Navigator.of(context).pop(newTask);
     }
@@ -254,6 +258,68 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
                 ),
               ),
             ),
+            const Divider(),
+            const SizedBox(height: 8),
+            // Labels
+            Row(
+              children: [
+                Icon(Symbols.label, color: colorTheme.onSurfaceVariant),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextFormField(
+                    controller: _labelController,
+                    decoration: InputDecoration(
+                      hintText: 'Add a label...',
+                      border: InputBorder.none,
+                      isDense: true,
+                    ),
+                    onFieldSubmitted: (value) {
+                      if (value.trim().isNotEmpty &&
+                          !_labels.contains(value.trim())) {
+                        setState(() {
+                          _labels.add(value.trim());
+                          _labelController.clear();
+                        });
+                      }
+                    },
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Symbols.add, color: colorTheme.primary),
+                  onPressed: () {
+                    final value = _labelController.text;
+                    if (value.trim().isNotEmpty &&
+                        !_labels.contains(value.trim())) {
+                      setState(() {
+                        _labels.add(value.trim());
+                        _labelController.clear();
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+            if (_labels.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 8, left: 40),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: _labels.map((label) {
+                    return InputChip(
+                      label: Text(label),
+                      labelStyle: TextStyle(fontSize: 12),
+                      backgroundColor: colorTheme.secondaryContainer,
+                      deleteIcon: Icon(Symbols.close, size: 16),
+                      onDeleted: () {
+                        setState(() {
+                          _labels.remove(label);
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
             const Divider(),
             const SizedBox(height: 8),
             // Subtasks Header

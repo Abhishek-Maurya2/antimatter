@@ -7,6 +7,8 @@ class TaskFloatingToolbar extends StatelessWidget {
   final VoidCallback onComplete;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onArchive;
+  final VoidCallback onRestore;
   final VoidCallback onClose;
   final ColorScheme colorTheme;
 
@@ -16,6 +18,8 @@ class TaskFloatingToolbar extends StatelessWidget {
     required this.onComplete,
     required this.onEdit,
     required this.onDelete,
+    required this.onArchive,
+    required this.onRestore,
     required this.onClose,
     required this.colorTheme,
   });
@@ -35,23 +39,42 @@ class TaskFloatingToolbar extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              onPressed: onComplete,
-              icon: Icon(
-                isCompleted ? Symbols.undo : Symbols.check,
-                color: colorTheme.onPrimaryContainer,
+            if (task.isDeleted) ...[
+              IconButton(
+                onPressed: onRestore,
+                icon: Icon(
+                  Symbols.restore_from_trash,
+                  color: colorTheme.onPrimaryContainer,
+                ),
+                tooltip: 'Restore Task',
               ),
-              tooltip: isCompleted ? 'Undo Complete' : 'Mark as Complete',
-            ),
-            IconButton(
-              onPressed: onEdit,
-              icon: Icon(Symbols.edit, color: colorTheme.onPrimaryContainer),
-              tooltip: 'Edit Task',
-            ),
+            ] else ...[
+              IconButton(
+                onPressed: onComplete,
+                icon: Icon(
+                  isCompleted ? Symbols.undo : Symbols.check,
+                  color: colorTheme.onPrimaryContainer,
+                ),
+                tooltip: isCompleted ? 'Undo Complete' : 'Mark as Complete',
+              ),
+              IconButton(
+                onPressed: onEdit,
+                icon: Icon(Symbols.edit, color: colorTheme.onPrimaryContainer),
+                tooltip: 'Edit Task',
+              ),
+              IconButton(
+                onPressed: onArchive,
+                icon: Icon(
+                  task.isArchived ? Symbols.unarchive : Symbols.archive,
+                  color: colorTheme.onPrimaryContainer,
+                ),
+                tooltip: task.isArchived ? 'Unarchive Task' : 'Archive Task',
+              ),
+            ],
             IconButton(
               onPressed: onDelete,
               icon: Icon(Symbols.delete_outline, color: colorTheme.error),
-              tooltip: 'Delete Task',
+              tooltip: task.isDeleted ? 'Delete Permanently' : 'Move to Trash',
             ),
             Container(
               width: 1,

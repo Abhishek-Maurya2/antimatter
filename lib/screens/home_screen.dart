@@ -29,9 +29,73 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Task> _tasks = [];
   TaskSortOption _currentSort = TaskSortOption.newest;
   Task? _selectedTaskForToolbar;
+  int _selectedDrawerIndex = 0;
+  String? _selectedLabelFilter;
+
+  List<String> get _uniqueLabels {
+    final Set<String> labels = {};
+    for (final task in _tasksBox.values) {
+      if (!task.isDeleted) {
+        labels.addAll(task.labels);
+      }
+    }
+    final sorted = labels.toList();
+    sorted.sort();
+    return sorted;
+  }
+
+  List<Task> get _filteredTasks {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    return _tasks.where((task) {
+      if (_selectedDrawerIndex == 6) {
+        // Trash
+        return task.isDeleted;
+      }
+
+      // For all other views, exclude deleted tasks
+      if (task.isDeleted) return false;
+
+      switch (_selectedDrawerIndex) {
+        case 0: // All tasks
+          return !task.isArchived;
+        case 1: // Today
+          if (task.isArchived || task.deadline == null) return false;
+          final taskDate = DateTime(
+            task.deadline!.year,
+            task.deadline!.month,
+            task.deadline!.day,
+          );
+          return taskDate.isAtSameMomentAs(today);
+        case 2: // Upcoming
+          if (task.isArchived || task.deadline == null) return false;
+          final taskDate = DateTime(
+            task.deadline!.year,
+            task.deadline!.month,
+            task.deadline!.day,
+          );
+          return taskDate.isAfter(today);
+        case 3: // Completed
+          return task.isCompleted && !task.isArchived;
+        case 4: // Labels
+          if (_selectedLabelFilter != null) {
+            return task.labels.contains(_selectedLabelFilter) &&
+                !task.isArchived;
+          }
+          // If no label is selected, perhaps show all tasks that have at least one label,
+          // or just an empty list. Let's show all labeled tasks by default.
+          return task.labels.isNotEmpty && !task.isArchived;
+        case 5: // Archive
+          return task.isArchived;
+        default:
+          return !task.isArchived;
+      }
+    }).toList();
+  }
 
   List<Task> get _sortedTasks {
-    final sorted = List<Task>.from(_tasks);
+    final sorted = List<Task>.from(_filteredTasks);
     sorted.sort((a, b) {
       switch (_currentSort) {
         case TaskSortOption.newest:
@@ -253,6 +317,67 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               colorTheme: colorTheme,
                             ),
+                            if (_selectedDrawerIndex == 4)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                  vertical: 8.0,
+                                ),
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: [
+                                      ChoiceChip(
+                                        label: Text('All Labeled'),
+                                        selected: _selectedLabelFilter == null,
+                                        onSelected: (selected) {
+                                          if (selected) {
+                                            setState(() {
+                                              _selectedLabelFilter = null;
+                                            });
+                                          }
+                                        },
+                                        selectedColor:
+                                            colorTheme.secondaryContainer,
+                                        labelStyle: TextStyle(
+                                          color: _selectedLabelFilter == null
+                                              ? colorTheme.onSecondaryContainer
+                                              : colorTheme.onSurface,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      ..._uniqueLabels.map((label) {
+                                        final isSelected =
+                                            _selectedLabelFilter == label;
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                            right: 8.0,
+                                          ),
+                                          child: ChoiceChip(
+                                            label: Text(label),
+                                            selected: isSelected,
+                                            onSelected: (selected) {
+                                              setState(() {
+                                                _selectedLabelFilter = selected
+                                                    ? label
+                                                    : null;
+                                              });
+                                            },
+                                            selectedColor:
+                                                colorTheme.secondaryContainer,
+                                            labelStyle: TextStyle(
+                                              color: isSelected
+                                                  ? colorTheme
+                                                        .onSecondaryContainer
+                                                  : colorTheme.onSurface,
+                                            ),
+                                          ),
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             if (_sortedTasks
                                 .where((t) => !t.isCompleted)
                                 .isNotEmpty) ...[
@@ -271,102 +396,143 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 styleTile: true,
-                                tiles: _sortedTasks
-                                    .where((t) => !t.isCompleted)
-                                    .map((task) {
+                                tiles: _sortedTasks.where((t) => !t.isCompleted).map((
+                                  task,
+                                ) {
+                                  return TaskTile(
+                                    title: Text(task.title),
+                                    description:
+                                        (task.description != null &&
+                                                task.description!.isNotEmpty) ||
+                                            task.labels.isNotEmpty
+                                        ? Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              if (task.description != null &&
+                                                  task.description!.isNotEmpty)
+                                                Text(task.description!),
+                                              if (task.labels.isNotEmpty)
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        top: 4.0,
+                                                      ),
+                                                  child: Wrap(
+                                                    spacing: 4,
+                                                    runSpacing: 4,
+                                                    children: task.labels
+                                                        .map(
+                                                          (label) => Container(
+                                                            padding:
+                                                                const EdgeInsets.symmetric(
+                                                                  horizontal: 6,
+                                                                  vertical: 2,
+                                                                ),
+                                                            decoration: BoxDecoration(
+                                                              color: colorTheme
+                                                                  .surfaceContainerHigh,
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    4,
+                                                                  ),
+                                                              border: Border.all(
+                                                                color: colorTheme
+                                                                    .outlineVariant,
+                                                              ),
+                                                            ),
+                                                            child: Text(
+                                                              label,
+                                                              style: TextStyle(
+                                                                fontSize: 10,
+                                                                color: colorTheme
+                                                                    .onSurfaceVariant,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        )
+                                                        .toList(),
+                                                  ),
+                                                ),
+                                            ],
+                                          )
+                                        : null,
+                                    deadline: task.deadline != null
+                                        ? Text(formatDeadline(task.deadline)!)
+                                        : null,
+                                    subTasks: task.subTasks.map((subTask) {
                                       return TaskTile(
-                                        title: Text(task.title),
+                                        backgroundColor:
+                                            colorTheme.surfaceContainerHigh,
+                                        title: Text(
+                                          subTask.title,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                        ),
                                         description:
-                                            task.description != null &&
-                                                task.description!.isNotEmpty
-                                            ? Text(task.description!)
-                                            : null,
-                                        deadline: task.deadline != null
+                                            subTask.description != null &&
+                                                subTask.description!.isNotEmpty
                                             ? Text(
-                                                formatDeadline(task.deadline)!,
+                                                subTask.description!,
+                                                style: TextStyle(fontSize: 12),
                                               )
                                             : null,
-                                        subTasks: task.subTasks.map((subTask) {
-                                          return TaskTile(
-                                            backgroundColor:
-                                                colorTheme.surfaceContainerHigh,
-                                            title: Text(
-                                              subTask.title,
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.normal,
-                                              ),
-                                            ),
-                                            description:
-                                                subTask.description != null &&
-                                                    subTask
-                                                        .description!
-                                                        .isNotEmpty
-                                                ? Text(
-                                                    subTask.description!,
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                    ),
-                                                  )
-                                                : null,
-                                            checked: subTask.isCompleted,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                subTask.isCompleted =
-                                                    value ?? false;
-                                                task.save();
-                                              });
-                                            },
-                                          );
-                                        }).toList(),
-                                        checked: task.isCompleted,
+                                        checked: subTask.isCompleted,
                                         onChanged: (value) {
                                           setState(() {
-                                            task.isCompleted = value ?? false;
+                                            subTask.isCompleted =
+                                                value ?? false;
                                             task.save();
                                           });
                                         },
-                                        onLongPress: () {
-                                          setState(() {
-                                            _selectedTaskForToolbar = task;
-                                          });
-                                        },
-                                        onPressed: () async {
-                                          final updatedTask =
-                                              await Navigator.of(
-                                                context,
-                                              ).push<dynamic>(
-                                                MaterialPageRoute(
-                                                  builder: (_) =>
-                                                      TaskEditorScreen(
-                                                        task: task,
-                                                      ),
-                                                ),
-                                              );
-                                          if (updatedTask != null) {
-                                            setState(() {
-                                              final index = _tasks.indexWhere(
-                                                (t) => t.id == task.id,
-                                              );
-                                              if (index != -1) {
-                                                if (updatedTask == 'DELETE') {
-                                                  _tasks.removeAt(index);
-                                                  _tasksBox.delete(task.id);
-                                                } else if (updatedTask
-                                                    is Task) {
-                                                  _tasks[index] = updatedTask;
-                                                  _tasksBox.put(
-                                                    updatedTask.id,
-                                                    updatedTask,
-                                                  );
-                                                }
-                                              }
-                                            });
-                                          }
-                                        },
                                       );
-                                    })
-                                    .toList(),
+                                    }).toList(),
+                                    checked: task.isCompleted,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        task.isCompleted = value ?? false;
+                                        task.save();
+                                      });
+                                    },
+                                    onLongPress: () {
+                                      setState(() {
+                                        _selectedTaskForToolbar = task;
+                                      });
+                                    },
+                                    onPressed: () async {
+                                      final updatedTask =
+                                          await Navigator.of(
+                                            context,
+                                          ).push<dynamic>(
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  TaskEditorScreen(task: task),
+                                            ),
+                                          );
+                                      if (updatedTask != null) {
+                                        setState(() {
+                                          final index = _tasks.indexWhere(
+                                            (t) => t.id == task.id,
+                                          );
+                                          if (index != -1) {
+                                            if (updatedTask == 'DELETE') {
+                                              _tasks.removeAt(index);
+                                              _tasksBox.delete(task.id);
+                                            } else if (updatedTask is Task) {
+                                              _tasks[index] = updatedTask;
+                                              _tasksBox.put(
+                                                updatedTask.id,
+                                                updatedTask,
+                                              );
+                                            }
+                                          }
+                                        });
+                                      }
+                                    },
+                                  );
+                                }).toList(),
                               ),
                               SizedBox(height: 16),
                             ],
@@ -388,128 +554,179 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 styleTile: true,
-                                tiles: _sortedTasks
-                                    .where((t) => t.isCompleted)
-                                    .map((task) {
+                                tiles: _sortedTasks.where((t) => t.isCompleted).map((
+                                  task,
+                                ) {
+                                  return TaskTile(
+                                    title: Text(
+                                      task.title,
+                                      style: TextStyle(
+                                        decoration: TextDecoration.lineThrough,
+                                        color: colorTheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    description:
+                                        (task.description != null &&
+                                                task.description!.isNotEmpty) ||
+                                            task.labels.isNotEmpty
+                                        ? Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              if (task.description != null &&
+                                                  task.description!.isNotEmpty)
+                                                Text(
+                                                  task.description!,
+                                                  style: TextStyle(
+                                                    decoration: TextDecoration
+                                                        .lineThrough,
+                                                    color: colorTheme
+                                                        .onSurfaceVariant,
+                                                  ),
+                                                ),
+                                              if (task.labels.isNotEmpty)
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        top: 4.0,
+                                                      ),
+                                                  child: Wrap(
+                                                    spacing: 4,
+                                                    runSpacing: 4,
+                                                    children: task.labels
+                                                        .map(
+                                                          (label) => Container(
+                                                            padding:
+                                                                const EdgeInsets.symmetric(
+                                                                  horizontal: 6,
+                                                                  vertical: 2,
+                                                                ),
+                                                            decoration: BoxDecoration(
+                                                              color: colorTheme
+                                                                  .surfaceContainerHigh,
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    4,
+                                                                  ),
+                                                              border: Border.all(
+                                                                color: colorTheme
+                                                                    .outlineVariant
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.5,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                            child: Text(
+                                                              label,
+                                                              style: TextStyle(
+                                                                fontSize: 10,
+                                                                color: colorTheme
+                                                                    .onSurfaceVariant
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.6,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        )
+                                                        .toList(),
+                                                  ),
+                                                ),
+                                            ],
+                                          )
+                                        : null,
+                                    deadline: task.deadline != null
+                                        ? Text(
+                                            formatDeadline(task.deadline)!,
+                                            style: TextStyle(
+                                              decoration:
+                                                  TextDecoration.lineThrough,
+                                            ),
+                                          )
+                                        : null,
+                                    subTasks: task.subTasks.map((subTask) {
                                       return TaskTile(
+                                        backgroundColor:
+                                            colorTheme.surfaceContainerHigh,
                                         title: Text(
-                                          task.title,
+                                          subTask.title,
                                           style: TextStyle(
                                             decoration:
                                                 TextDecoration.lineThrough,
                                             color: colorTheme.onSurfaceVariant,
+                                            fontSize: 14,
                                           ),
                                         ),
                                         description:
-                                            task.description != null &&
-                                                task.description!.isNotEmpty
+                                            subTask.description != null &&
+                                                subTask.description!.isNotEmpty
                                             ? Text(
-                                                task.description!,
+                                                subTask.description!,
                                                 style: TextStyle(
                                                   decoration: TextDecoration
                                                       .lineThrough,
                                                   color: colorTheme
                                                       .onSurfaceVariant,
+                                                  fontSize: 12,
                                                 ),
                                               )
                                             : null,
-                                        deadline: task.deadline != null
-                                            ? Text(
-                                                formatDeadline(task.deadline)!,
-                                                style: TextStyle(
-                                                  decoration: TextDecoration
-                                                      .lineThrough,
-                                                ),
-                                              )
-                                            : null,
-                                        subTasks: task.subTasks.map((subTask) {
-                                          return TaskTile(
-                                            backgroundColor:
-                                                colorTheme.surfaceContainerHigh,
-                                            title: Text(
-                                              subTask.title,
-                                              style: TextStyle(
-                                                decoration:
-                                                    TextDecoration.lineThrough,
-                                                color:
-                                                    colorTheme.onSurfaceVariant,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            description:
-                                                subTask.description != null &&
-                                                    subTask
-                                                        .description!
-                                                        .isNotEmpty
-                                                ? Text(
-                                                    subTask.description!,
-                                                    style: TextStyle(
-                                                      decoration: TextDecoration
-                                                          .lineThrough,
-                                                      color: colorTheme
-                                                          .onSurfaceVariant,
-                                                      fontSize: 12,
-                                                    ),
-                                                  )
-                                                : null,
-                                            checked: subTask.isCompleted,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                subTask.isCompleted =
-                                                    value ?? false;
-                                                task.save();
-                                              });
-                                            },
-                                          );
-                                        }).toList(),
-                                        checked: task.isCompleted,
+                                        checked: subTask.isCompleted,
                                         onChanged: (value) {
                                           setState(() {
-                                            task.isCompleted = value ?? false;
+                                            subTask.isCompleted =
+                                                value ?? false;
                                             task.save();
                                           });
                                         },
-                                        onLongPress: () {
-                                          setState(() {
-                                            _selectedTaskForToolbar = task;
-                                          });
-                                        },
-                                        onPressed: () async {
-                                          final updatedTask =
-                                              await Navigator.of(
-                                                context,
-                                              ).push<dynamic>(
-                                                MaterialPageRoute(
-                                                  builder: (_) =>
-                                                      TaskEditorScreen(
-                                                        task: task,
-                                                      ),
-                                                ),
-                                              );
-                                          if (updatedTask != null) {
-                                            setState(() {
-                                              final index = _tasks.indexWhere(
-                                                (t) => t.id == task.id,
-                                              );
-                                              if (index != -1) {
-                                                if (updatedTask == 'DELETE') {
-                                                  _tasks.removeAt(index);
-                                                  _tasksBox.delete(task.id);
-                                                } else if (updatedTask
-                                                    is Task) {
-                                                  _tasks[index] = updatedTask;
-                                                  _tasksBox.put(
-                                                    updatedTask.id,
-                                                    updatedTask,
-                                                  );
-                                                }
-                                              }
-                                            });
-                                          }
-                                        },
                                       );
-                                    })
-                                    .toList(),
+                                    }).toList(),
+                                    checked: task.isCompleted,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        task.isCompleted = value ?? false;
+                                        task.save();
+                                      });
+                                    },
+                                    onLongPress: () {
+                                      setState(() {
+                                        _selectedTaskForToolbar = task;
+                                      });
+                                    },
+                                    onPressed: () async {
+                                      final updatedTask =
+                                          await Navigator.of(
+                                            context,
+                                          ).push<dynamic>(
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  TaskEditorScreen(task: task),
+                                            ),
+                                          );
+                                      if (updatedTask != null) {
+                                        setState(() {
+                                          final index = _tasks.indexWhere(
+                                            (t) => t.id == task.id,
+                                          );
+                                          if (index != -1) {
+                                            if (updatedTask == 'DELETE') {
+                                              _tasks.removeAt(index);
+                                              _tasksBox.delete(task.id);
+                                            } else if (updatedTask is Task) {
+                                              _tasks[index] = updatedTask;
+                                              _tasksBox.put(
+                                                updatedTask.id,
+                                                updatedTask,
+                                              );
+                                            }
+                                          }
+                                        });
+                                      }
+                                    },
+                                  );
+                                }).toList(),
                               ),
                             SizedBox(height: 25),
                           ],
@@ -582,13 +799,35 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     onDelete: () {
                       setState(() {
-                        final index = _tasks.indexWhere(
-                          (t) => t.id == _selectedTaskForToolbar!.id,
-                        );
-                        if (index != -1) {
-                          _tasks.removeAt(index);
-                          _tasksBox.delete(_selectedTaskForToolbar!.id);
+                        if (_selectedTaskForToolbar!.isDeleted) {
+                          // Permanent delete
+                          final index = _tasks.indexWhere(
+                            (t) => t.id == _selectedTaskForToolbar!.id,
+                          );
+                          if (index != -1) {
+                            _tasks.removeAt(index);
+                            _tasksBox.delete(_selectedTaskForToolbar!.id);
+                          }
+                        } else {
+                          // Soft delete (Move to trash)
+                          _selectedTaskForToolbar!.isDeleted = true;
+                          _selectedTaskForToolbar!.save();
                         }
+                        _selectedTaskForToolbar = null;
+                      });
+                    },
+                    onArchive: () {
+                      setState(() {
+                        _selectedTaskForToolbar!.isArchived =
+                            !_selectedTaskForToolbar!.isArchived;
+                        _selectedTaskForToolbar!.save();
+                        _selectedTaskForToolbar = null;
+                      });
+                    },
+                    onRestore: () {
+                      setState(() {
+                        _selectedTaskForToolbar!.isDeleted = false;
+                        _selectedTaskForToolbar!.save();
                         _selectedTaskForToolbar = null;
                       });
                     },
@@ -613,26 +852,31 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(child: bodyContent),
             ],
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () async {
-              final newTask = await Navigator.of(context).push<Task>(
-                MaterialPageRoute(builder: (_) => const TaskEditorScreen()),
-              );
+          floatingActionButton:
+              (_selectedDrawerIndex == 5 || _selectedDrawerIndex == 6)
+              ? null
+              : FloatingActionButton(
+                  onPressed: () async {
+                    final newTask = await Navigator.of(context).push<Task>(
+                      MaterialPageRoute(
+                        builder: (_) => const TaskEditorScreen(),
+                      ),
+                    );
 
-              if (newTask != null) {
-                setState(() {
-                  _tasks.add(newTask);
-                  _tasksBox.put(newTask.id, newTask);
-                });
-              }
-            },
-            backgroundColor: colorTheme.primaryContainer,
-            foregroundColor: colorTheme.onPrimaryContainer,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(Symbols.add, fill: 1, weight: 500, size: 24),
-          ),
+                    if (newTask != null) {
+                      setState(() {
+                        _tasks.add(newTask);
+                        _tasksBox.put(newTask.id, newTask);
+                      });
+                    }
+                  },
+                  backgroundColor: colorTheme.primaryContainer,
+                  foregroundColor: colorTheme.onPrimaryContainer,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(Symbols.add, fill: 1, weight: 500, size: 24),
+                ),
         );
       },
     );
@@ -640,6 +884,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildDrawer(BuildContext context, ColorScheme colorTheme) {
     return NavigationDrawer(
+      selectedIndex: _selectedDrawerIndex,
+      onDestinationSelected: (index) {
+        setState(() {
+          _selectedDrawerIndex = index;
+        });
+        // Close modal drawer if applicable (i.e. not in expanded view)
+        if (Scaffold.of(context).hasDrawer &&
+            Scaffold.of(context).isDrawerOpen) {
+          Navigator.pop(context);
+        }
+      },
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 16, 16, 16),
