@@ -500,17 +500,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                             colorTheme.surfaceContainerHigh,
                                         title: Text(
                                           subTask.title,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.normal,
-                                          ),
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.bodyMedium,
                                         ),
                                         description:
                                             subTask.description != null &&
                                                 subTask.description!.isNotEmpty
                                             ? Text(
                                                 subTask.description!,
-                                                style: TextStyle(fontSize: 12),
+                                                style: Theme.of(
+                                                  context,
+                                                ).textTheme.bodySmall,
                                               )
                                             : null,
                                         checked: subTask.isCompleted,
@@ -683,25 +684,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                             colorTheme.surfaceContainerHigh,
                                         title: Text(
                                           subTask.title,
-                                          style: TextStyle(
-                                            decoration:
-                                                TextDecoration.lineThrough,
-                                            color: colorTheme.onSurfaceVariant,
-                                            fontSize: 14,
-                                          ),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                                decoration:
+                                                    TextDecoration.lineThrough,
+                                                color:
+                                                    colorTheme.onSurfaceVariant,
+                                              ),
                                         ),
                                         description:
                                             subTask.description != null &&
                                                 subTask.description!.isNotEmpty
                                             ? Text(
                                                 subTask.description!,
-                                                style: TextStyle(
-                                                  decoration: TextDecoration
-                                                      .lineThrough,
-                                                  color: colorTheme
-                                                      .onSurfaceVariant,
-                                                  fontSize: 12,
-                                                ),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      decoration: TextDecoration
+                                                          .lineThrough,
+                                                      color: colorTheme
+                                                          .onSurfaceVariant,
+                                                    ),
                                               )
                                             : null,
                                         checked: subTask.isCompleted,

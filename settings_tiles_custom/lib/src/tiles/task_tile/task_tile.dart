@@ -94,11 +94,9 @@ class TaskTile extends SettingTile {
                           ),
                           const SizedBox(width: 4),
                           DefaultTextStyle(
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: colorScheme.onTertiaryContainer,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                                  color: colorScheme.onTertiaryContainer,
+                                ),
                             child: deadline!,
                           ),
                         ],

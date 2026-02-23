@@ -27,6 +27,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   home_widget: ^0.9.0
+  google_fonts: ^8.0.2
 
 dev_dependencies:
   flutter_test:
@@ -39,3 +40,19 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+  fonts:
+    - family: RobotoFlex
+      fonts:
+        - asset: assets/fonts/flex-Regular.ttf
+        - asset: assets/fonts/flex-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/flex-Bold.ttf
+          weight: 700
+    - family: NotoSans
+      fonts:
+        - asset: assets/fonts/nato-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/nato-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/nato-Bold.ttf
+          weight: 700

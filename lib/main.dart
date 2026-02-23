@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'utils/theme_controller.dart';
 import 'utils/preferences_helper.dart';
+import 'utils/typography_helper.dart';
 import 'notifiers/settings_notifier.dart';
 import 'screens/loading_screen.dart';
 import 'screens/home_screen.dart';
@@ -97,6 +98,7 @@ class OrchesApp extends StatelessWidget {
                     brightness: Brightness.light,
                   ),
             useMaterial3: true,
+            textTheme: TypographyHelper.getTextTheme(context),
           ).copyWith(
             highlightColor: Colors.transparent,
             pageTransitionsTheme: const PageTransitionsTheme(
@@ -132,6 +134,7 @@ class OrchesApp extends StatelessWidget {
                     brightness: Brightness.dark,
                   ),
             useMaterial3: true,
+            textTheme: TypographyHelper.getTextTheme(context),
           ).copyWith(
             highlightColor: Colors.transparent,
             pageTransitionsTheme: const PageTransitionsTheme(
