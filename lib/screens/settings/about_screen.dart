@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 /// TODO: Replace with your actual GitHub repo URL
 const String _githubUrl = 'https://github.com/Abhishek-Maurya2/antimatter';
-const String _appVersion = '1.2.0';
+const String _appVersion = '1.3.0';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -158,12 +158,10 @@ class AboutScreen extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: () async {
                         final uri = Uri.parse(_githubUrl);
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(
-                            uri,
-                            mode: LaunchMode.externalApplication,
-                          );
-                        }
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
                       },
                       icon: Icon(Symbols.open_in_new),
                       label: Text('View on GitHub'),

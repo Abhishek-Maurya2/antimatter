@@ -4,11 +4,48 @@ import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:settings_tiles/settings_tiles.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/task.dart';
 import '../settings_screen.dart';
 
-class BackupRestoreScreen extends StatelessWidget {
+class BackupRestoreScreen extends StatefulWidget {
   const BackupRestoreScreen({super.key});
+
+  @override
+  State<BackupRestoreScreen> createState() => _BackupRestoreScreenState();
+}
+
+class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
+  bool _isSyncing = false;
+  bool? _isSyncWorking;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSyncStatus();
+  }
+
+  Future<void> _checkSyncStatus() async {
+    setState(() {
+      _isSyncing = true;
+    });
+    try {
+      await Supabase.instance.client.from('tasks').select().limit(1);
+      if (mounted) {
+        setState(() {
+          _isSyncWorking = true;
+          _isSyncing = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isSyncWorking = false;
+          _isSyncing = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,17 +149,24 @@ class BackupRestoreScreen extends StatelessWidget {
                   tiles: [
                     SettingActionTile(
                       icon: iconContainer(
-                        Symbols.cloud_done,
+                        _isSyncWorking == true
+                            ? Symbols.cloud_done
+                            : Symbols.cloud_off,
                         isLight ? Color(0xffe6deff) : Color(0xff493e76),
                         isLight ? Color(0xff493e76) : Color(0xffe6deff),
                       ),
                       title: Text('Cloud Sync'),
-                      description: Text('Supabase sync is active'),
+                      description: Text(
+                        _isSyncing
+                            ? 'Checking sync status...'
+                            : (_isSyncWorking == true
+                                  ? 'Supabase sync is active and working'
+                                  : 'Supabase sync is currently unavailable'),
+                      ),
                       onTap: () {
-                        _showSnackBar(
-                          context,
-                          'Supabase sync is running in the background',
-                        );
+                        if (!_isSyncing) {
+                          _checkSyncStatus();
+                        }
                       },
                     ),
                   ],

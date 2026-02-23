@@ -1,7 +1,7 @@
 name: orches
 description: "AntiMatter - A Material 3 Expressive Task Manager App."
 publish_to: 'none'
-version: 1.2.0+2
+version: 1.3.0+3
 
 environment:
   sdk: ^3.11.0
