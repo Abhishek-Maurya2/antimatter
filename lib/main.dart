@@ -206,21 +206,26 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  bool _isLoading = true;
+  // Static flag — survives widget rebuilds & app resumes within the same process.
+  // The splash only ever shows once: the very first cold launch.
+  static bool _hasLoaded = false;
+
+  bool _showSplash = !_hasLoaded;
 
   @override
   void initState() {
     super.initState();
-    _initializeApp();
+    if (!_hasLoaded) {
+      _runSplash();
+    }
   }
 
-  Future<void> _initializeApp() async {
-    // Simulate initialization delay to show the loading screen
+  Future<void> _runSplash() async {
     await Future.delayed(const Duration(milliseconds: 1800));
-
+    _hasLoaded = true;
     if (mounted) {
       setState(() {
-        _isLoading = false;
+        _showSplash = false;
       });
     }
   }
@@ -231,7 +236,7 @@ class _AppShellState extends State<AppShell> {
       duration: const Duration(milliseconds: 400),
       switchInCurve: Curves.easeOut,
       switchOutCurve: Curves.easeIn,
-      child: _isLoading
+      child: _showSplash
           ? const LoadingScreen(key: ValueKey('loading'))
           : const HomeScreen(key: ValueKey('home')),
     );
