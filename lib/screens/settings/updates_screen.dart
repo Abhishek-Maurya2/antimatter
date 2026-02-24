@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/material_symbols_icons.dart';
@@ -7,7 +6,6 @@ import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 const String _githubOwner = 'Abhishek-Maurya2';
@@ -107,15 +105,6 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
 
   Future<void> _downloadAndInstall() async {
     if (_downloadUrl == null) return;
-
-    // Request storage permission on older Android versions
-    if (Platform.isAndroid) {
-      final status = await Permission.storage.request();
-      if (status.isDenied) {
-        setState(() => _downloadError = 'Storage permission denied');
-        return;
-      }
-    }
 
     setState(() {
       _isDownloading = true;
