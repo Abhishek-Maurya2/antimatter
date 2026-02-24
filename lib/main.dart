@@ -94,27 +94,47 @@ class OrchesApp extends StatelessWidget {
     );
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
+    // Build color schemes first so we can reference their colors in appBarTheme
+    final lightColorScheme = isMonochrome(themeController.seedColor)
+        ? ColorScheme.fromSeed(
+            seedColor: themeController.seedColor,
+            brightness: Brightness.light,
+            dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
+          )
+        : useVibrantVariant
+        ? ColorScheme.fromSeed(
+            seedColor: themeController.seedColor,
+            brightness: Brightness.light,
+            dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
+          )
+        : ColorScheme.fromSeed(
+            seedColor: themeController.seedColor,
+            brightness: Brightness.light,
+          );
+
+    final darkColorScheme = isMonochrome(themeController.seedColor)
+        ? ColorScheme.fromSeed(
+            seedColor: themeController.seedColor,
+            brightness: Brightness.dark,
+            dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
+          )
+        : useVibrantVariant
+        ? ColorScheme.fromSeed(
+            seedColor: themeController.seedColor,
+            brightness: Brightness.dark,
+            dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
+          )
+        : ColorScheme.fromSeed(
+            seedColor: themeController.seedColor,
+            brightness: Brightness.dark,
+          );
+
     return MaterialApp(
       title: 'AntiMatter',
       debugShowCheckedModeBanner: false,
       theme:
           ThemeData.from(
-            colorScheme: isMonochrome(themeController.seedColor)
-                ? ColorScheme.fromSeed(
-                    seedColor: themeController.seedColor,
-                    brightness: Brightness.light,
-                    dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
-                  )
-                : useVibrantVariant
-                ? ColorScheme.fromSeed(
-                    seedColor: themeController.seedColor,
-                    brightness: Brightness.light,
-                    dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
-                  )
-                : ColorScheme.fromSeed(
-                    seedColor: themeController.seedColor,
-                    brightness: Brightness.light,
-                  ),
+            colorScheme: lightColorScheme,
             useMaterial3: true,
             textTheme: TypographyHelper.getTextTheme(context),
           ).copyWith(
@@ -124,6 +144,7 @@ class OrchesApp extends StatelessWidget {
                     fontFamily: 'RobotoFlex',
                     fontWeight: FontWeight.w700,
                     fontSize: 24,
+                    color: lightColorScheme.onSurface,
                   ),
             ),
             highlightColor: Colors.transparent,
@@ -143,22 +164,7 @@ class OrchesApp extends StatelessWidget {
           ),
       darkTheme:
           ThemeData.from(
-            colorScheme: isMonochrome(themeController.seedColor)
-                ? ColorScheme.fromSeed(
-                    seedColor: themeController.seedColor,
-                    brightness: Brightness.dark,
-                    dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
-                  )
-                : useVibrantVariant
-                ? ColorScheme.fromSeed(
-                    seedColor: themeController.seedColor,
-                    brightness: Brightness.dark,
-                    dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
-                  )
-                : ColorScheme.fromSeed(
-                    seedColor: themeController.seedColor,
-                    brightness: Brightness.dark,
-                  ),
+            colorScheme: darkColorScheme,
             useMaterial3: true,
             textTheme: TypographyHelper.getTextTheme(context),
           ).copyWith(
@@ -168,6 +174,7 @@ class OrchesApp extends StatelessWidget {
                     fontFamily: 'RobotoFlex',
                     fontWeight: FontWeight.w700,
                     fontSize: 24,
+                    color: darkColorScheme.onSurface,
                   ),
             ),
             highlightColor: Colors.transparent,

@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
+import 'package:orches/widgets/m3_button_group.dart';
 
 class SessionScreen extends StatefulWidget {
-  const SessionScreen({super.key});
+  final VoidCallback? onBack;
+  const SessionScreen({super.key, this.onBack});
 
   @override
   State<SessionScreen> createState() => _SessionScreenState();
@@ -76,7 +78,13 @@ class _SessionScreenState extends State<SessionScreen> {
                   borderRadius: BorderRadius.circular(50),
                 ),
                 child: IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    if (widget.onBack != null) {
+                      widget.onBack!();
+                    } else {
+                      Navigator.of(context).pop();
+                    }
+                  },
                   icon: Icon(
                     Symbols.arrow_back,
                     color: colorTheme.onSurface,
@@ -127,41 +135,22 @@ class _SessionScreenState extends State<SessionScreen> {
                     ),
                   ),
                   const SizedBox(height: 48),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      FilledButton.icon(
+                  M3ButtonGroup(
+                    isActive: _isRunning,
+                    activeIndex: 0,
+                    items: [
+                      M3ButtonGroupItem(
+                        icon: _isRunning
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                        label: _isRunning ? 'Pause' : 'Start',
                         onPressed: _toggleTimer,
-                        icon: Icon(_isRunning ? Icons.pause : Icons.play_arrow),
-                        label: Text(_isRunning ? 'Pause' : 'Start'),
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size(160, 0),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 20,
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                       ),
-                      const SizedBox(height: 16),
-                      OutlinedButton.icon(
+                      M3ButtonGroupItem(
+                        icon: Icons.stop_rounded,
+                        label: 'Stop',
                         onPressed: _resetTimer,
-                        icon: const Icon(Icons.stop),
-                        label: const Text('Stop'),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(160, 0),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 20,
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        enabled: _isRunning || _seconds > 0,
                       ),
                     ],
                   ),

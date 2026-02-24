@@ -161,7 +161,13 @@ class _HomeScreenState extends State<HomeScreen> {
         final bool isExpanded = constraints.maxWidth >= 840;
 
         final Widget bodyContent = _selectedDrawerIndex == 7
-            ? const SessionScreen()
+            ? SessionScreen(
+                onBack: () {
+                  setState(() {
+                    _selectedDrawerIndex = 0;
+                  });
+                },
+              )
             : Stack(
                 children: [
                   CustomRefreshIndicator(
