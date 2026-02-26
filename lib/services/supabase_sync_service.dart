@@ -18,18 +18,37 @@ class SupabaseSyncService {
   Future<void> pullTasks() async {
     try {
       _isSyncingFromServer = true;
-      final List<Map<String, dynamic>> response = await _supabase
-          .from('tasks')
-          .select();
+      List<Map<String, dynamic>>? response;
+      int retryCount = 0;
+      const maxRetries = 3;
 
-      for (final row in response) {
-        final task = Task.fromJson(row);
-        // Put the remote task into the local box (upsert by ID)
-        await _tasksBox.put(task.id, task);
+      while (retryCount < maxRetries) {
+        try {
+          response = await _supabase
+              .from('tasks')
+              .select()
+              .timeout(const Duration(seconds: 15));
+          break; // Success
+        } catch (e) {
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            rethrow;
+          }
+          // Exponential backoff
+          await Future.delayed(Duration(seconds: 2 * retryCount));
+        }
       }
-      debugPrint(
-        'Supabase Sync: Successfully pulled ${response.length} tasks.',
-      );
+
+      if (response != null) {
+        for (final row in response) {
+          final task = Task.fromJson(row);
+          // Put the remote task into the local box (upsert by ID)
+          await _tasksBox.put(task.id, task);
+        }
+        debugPrint(
+          'Supabase Sync: Successfully pulled ${response.length} tasks.',
+        );
+      }
     } catch (e) {
       debugPrint('Supabase Sync: Error pulling tasks - $e');
     } finally {
@@ -44,7 +63,25 @@ class SupabaseSyncService {
 
     try {
       final taskJson = task.toJson();
-      await _supabase.from('tasks').upsert(taskJson);
+      int retryCount = 0;
+      const maxRetries = 3;
+
+      while (retryCount < maxRetries) {
+        try {
+          await _supabase
+              .from('tasks')
+              .upsert(taskJson)
+              .timeout(const Duration(seconds: 15));
+          break; // Success
+        } catch (e) {
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            rethrow;
+          }
+          await Future.delayed(Duration(seconds: 2 * retryCount));
+        }
+      }
+
       debugPrint('Supabase Sync: Pushed task ${task.id}');
     } catch (e) {
       debugPrint('Supabase Sync: Error pushing task ${task.id} - $e');

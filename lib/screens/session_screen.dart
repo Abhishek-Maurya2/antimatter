@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:orches/widgets/m3_button_group.dart';
+import '../utils/preferences_helper.dart';
 
 class SessionScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -21,6 +22,8 @@ class _SessionScreenState extends State<SessionScreen>
 
   // Ambient mode state
   bool _isAmbient = false;
+  bool _ambientModeEnabled = true;
+  int _ambientIntervalSeconds = 5;
   Timer? _ambientTimer;
   late AnimationController _ambientFadeController;
   late Animation<double> _ambientFadeAnimation;
@@ -28,6 +31,7 @@ class _SessionScreenState extends State<SessionScreen>
   @override
   void initState() {
     super.initState();
+    _loadAmbientSettings();
     _ambientFadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -36,6 +40,13 @@ class _SessionScreenState extends State<SessionScreen>
       parent: _ambientFadeController,
       curve: Curves.easeInOut,
     );
+  }
+
+  void _loadAmbientSettings() {
+    _ambientModeEnabled = PreferencesHelper.getBool('ambientModeEnabled') ?? true;
+    final savedInterval = PreferencesHelper.getInt('ambientModeIntervalSeconds') ??
+        5;
+    _ambientIntervalSeconds = savedInterval.clamp(1, 60);
   }
 
   void _toggleTimer() {
@@ -48,8 +59,9 @@ class _SessionScreenState extends State<SessionScreen>
           _seconds++;
         });
       });
-      // Start 5-second countdown to ambient mode
-      _startAmbientTimer();
+      if (_ambientModeEnabled) {
+        _startAmbientTimer();
+      }
     }
     setState(() {
       _isRunning = !_isRunning;
@@ -69,8 +81,9 @@ class _SessionScreenState extends State<SessionScreen>
   // ===== Ambient Mode Logic =====
 
   void _startAmbientTimer() {
+    if (!_ambientModeEnabled) return;
     _cancelAmbientTimer();
-    _ambientTimer = Timer(const Duration(seconds: 5), () {
+    _ambientTimer = Timer(Duration(seconds: _ambientIntervalSeconds), () {
       _enterAmbientMode();
     });
   }
@@ -81,7 +94,7 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _enterAmbientMode() {
-    if (!_isRunning || _isAmbient) return;
+    if (!_isRunning || _isAmbient || !_ambientModeEnabled) return;
     setState(() => _isAmbient = true);
     _ambientFadeController.forward();
     // Go fullscreen immersive
@@ -98,7 +111,7 @@ class _SessionScreenState extends State<SessionScreen>
     // Restore system UI
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     // Restart ambient timer if still running
-    if (_isRunning) {
+    if (_isRunning && _ambientModeEnabled) {
       _startAmbientTimer();
     }
   }

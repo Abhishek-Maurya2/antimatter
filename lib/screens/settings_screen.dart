@@ -5,6 +5,7 @@ import 'settings/appearance_screen.dart';
 import 'settings/notifications_screen.dart';
 import 'settings/categories_screen.dart';
 import 'settings/backup_restore_screen.dart';
+import 'settings/sessions_screen.dart';
 import 'settings/updates_screen.dart';
 import 'settings/about_screen.dart';
 import 'settings/wavy_demo_screen.dart';
@@ -133,6 +134,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => const BackupRestoreScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                SettingSection(
+                  styleTile: true,
+                  tiles: [
+                    SettingActionTile(
+                      icon: iconContainer(
+                        Symbols.timer,
+                        isLight ? Color(0xffc3f0d1) : Color(0xff0f5132),
+                        isLight ? Color(0xff0f5132) : Color(0xffc3f0d1),
+                      ),
+                      title: Text('Sessions'),
+                      description: Text('Ambient mode and timer behavior'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SessionsScreen(),
                           ),
                         );
                       },

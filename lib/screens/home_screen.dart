@@ -12,6 +12,7 @@ import 'package:orches/screens/task_editor_screen.dart';
 import 'package:orches/widgets/sort_split_button.dart';
 import 'package:orches/widgets/task_floating_toolbar.dart';
 import 'package:orches/screens/session_screen.dart';
+import 'package:orches/utils/preferences_helper.dart';
 
 enum TaskSortOption { newest, oldest, dueDate }
 
@@ -28,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late Box<Task> _tasksBox;
   List<Task> _tasks = [];
-  TaskSortOption _currentSort = TaskSortOption.newest;
+  TaskSortOption _currentSort = TaskSortOption.oldest;
   Task? _selectedTaskForToolbar;
   int _selectedDrawerIndex = 0;
   String? _selectedLabelFilter;
@@ -150,6 +151,14 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _tasksBox = Hive.box<Task>('tasksBox');
     _tasks = _tasksBox.values.toList();
+
+    final savedSort = PreferencesHelper.getString('task_sort_preference');
+    if (savedSort != null) {
+      _currentSort = TaskSortOption.values.firstWhere(
+        (e) => e.name == savedSort,
+        orElse: () => TaskSortOption.oldest,
+      );
+    }
   }
 
   @override
@@ -357,6 +366,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       setState(() {
                                         _currentSort = option;
                                       });
+                                      PreferencesHelper.setString(
+                                        'task_sort_preference',
+                                        option.name,
+                                      );
                                     },
                                     colorTheme: colorTheme,
                                   ),
