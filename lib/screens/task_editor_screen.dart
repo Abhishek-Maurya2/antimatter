@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:orches/models/task.dart';
+import 'package:orches/services/audio_service.dart';
 
 class TaskEditorScreen extends StatelessWidget {
   final Task? task;
@@ -418,6 +419,9 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                       onChanged: (value) {
                         setState(() {
                           subTask.isCompleted = value ?? false;
+                          if (subTask.isCompleted) {
+                            AudioService().playTickSound();
+                          }
                         });
                       },
                     ),

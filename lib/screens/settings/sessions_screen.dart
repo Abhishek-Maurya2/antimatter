@@ -23,9 +23,10 @@ class _SessionsScreenState extends State<SessionsScreen> {
   }
 
   void _loadSettings() {
-    _ambientModeEnabled = PreferencesHelper.getBool('ambientModeEnabled') ?? true;
-    final savedInterval = PreferencesHelper.getInt('ambientModeIntervalSeconds') ??
-        5;
+    _ambientModeEnabled =
+        PreferencesHelper.getBool('ambientModeEnabled') ?? true;
+    final savedInterval =
+        PreferencesHelper.getInt('ambientModeIntervalSeconds') ?? 5;
     _ambientIntervalSeconds = savedInterval.clamp(1, 60);
     setState(() {});
   }
@@ -103,7 +104,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                         PreferencesHelper.setBool('ambientModeEnabled', value);
                       },
                     ),
-                    SettingSliderTile(
+                    SettingCustomSliderTile(
                       enabled: _ambientModeEnabled,
                       icon: iconContainer(
                         Symbols.timer,
@@ -112,11 +113,9 @@ class _SessionsScreenState extends State<SessionsScreen> {
                       ),
                       title: Text('Ambient Interval'),
                       description: Text('Time before ambient mode starts'),
-                      dialogTitle: 'Ambient Interval (seconds)',
+                      dialogTitle: 'Ambient Interval',
                       value: SettingTileValue('$_ambientIntervalSeconds sec'),
-                      min: 1,
-                      max: 60,
-                      divisions: 59,
+                      values: const [1.0, 5.0, 10.0, 15.0, 30.0, 60.0],
                       initialValue: _ambientIntervalSeconds.toDouble(),
                       label: (value) => '${value.round()} sec',
                       onSubmitted: (value) {

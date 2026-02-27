@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:settings_tiles/src/tiles/widgets/cancel_button.dart';
 import 'package:settings_tiles/src/tiles/widgets/ok_button.dart';
+import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 
 class SettingCustomSliderDialog extends StatefulWidget {
   const SettingCustomSliderDialog({
@@ -23,8 +24,7 @@ class SettingCustomSliderDialog extends StatefulWidget {
   final void Function(double)? onChanged;
 
   @override
-  State<SettingCustomSliderDialog> createState() =>
-      _SettingCustomSliderDialogState();
+  State<SettingCustomSliderDialog> createState() => _SettingCustomSliderDialogState();
 }
 
 class _SettingCustomSliderDialogState extends State<SettingCustomSliderDialog> {
@@ -62,14 +62,38 @@ class _SettingCustomSliderDialogState extends State<SettingCustomSliderDialog> {
     return AlertDialog.adaptive(
       title: Text(widget.title),
       content: SingleChildScrollView(
-        child: Slider(
-          value: _index.toDouble(),
-          label: widget.label != null
-              ? widget.label!(_value)
-              : _value.toStringAsFixed(2),
-          max: widget.values.length - 1,
-          divisions: widget.values.length - 1,
-          onChanged: _onChanged,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  height: 14,
+                  child: WavyLinearProgressIndicator(
+                    value: _index / (widget.values.length - 1),
+                    minHeight: 4.0,
+                    waveAmplitude: 3.0,
+                    waveLength: 24.0,
+                  ),
+                ),
+              ),
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: Colors.transparent,
+                  inactiveTrackColor: Colors.transparent,
+                ),
+                child: Slider(
+                  value: _index.toDouble(),
+                  label: widget.label != null ? widget.label!(_value) : _value.toStringAsFixed(2),
+                  max: (widget.values.length - 1).toDouble(),
+                  divisions: widget.values.length - 1,
+                  onChanged: _onChanged,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [

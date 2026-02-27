@@ -11,6 +11,7 @@ class TaskTile extends SettingTile {
     required this.checked,
     required this.onChanged,
     this.deadline,
+    this.isDeadlineMissed = false,
     this.subTasks,
     this.backgroundColor,
     this.onPressed,
@@ -40,6 +41,9 @@ class TaskTile extends SettingTile {
 
   /// Optional deadline widget displayed below the description.
   final Widget? deadline;
+
+  /// Whether the deadline has been missed.
+  final bool isDeadlineMissed;
 
   /// Optional list of widgets representing sub-tasks.
   final List<SettingTile>? subTasks;
@@ -81,7 +85,7 @@ class TaskTile extends SettingTile {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: colorScheme.tertiaryContainer,
+                        color: isDeadlineMissed ? colorScheme.errorContainer : colorScheme.tertiaryContainer,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -90,12 +94,13 @@ class TaskTile extends SettingTile {
                           Icon(
                             Icons.schedule,
                             size: 14,
-                            color: colorScheme.onTertiaryContainer,
+                            color: isDeadlineMissed ? colorScheme.onErrorContainer : colorScheme.onTertiaryContainer,
                           ),
                           const SizedBox(width: 4),
                           DefaultTextStyle(
                             style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                                  color: colorScheme.onTertiaryContainer,
+                                  color:
+                                      isDeadlineMissed ? colorScheme.onErrorContainer : colorScheme.onTertiaryContainer,
                                 ),
                             child: deadline!,
                           ),

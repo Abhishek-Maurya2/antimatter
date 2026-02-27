@@ -11,6 +11,8 @@ environment:
 
 dependencies:
   easy_localization: ^3.0.7+1
+  expressive_loading_indicator:
+    path: ../expressive_loading_indicator_modified
   flex_color_picker: ^3.7.1
 
   flutter:

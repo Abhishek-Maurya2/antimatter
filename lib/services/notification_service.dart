@@ -24,16 +24,25 @@ class NotificationService {
 
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
-    );
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        );
 
     const InitializationSettings initializationSettings =
         InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsIOS,
+          macOS: initializationSettingsIOS,
+          linux: LinuxInitializationSettings(
+            defaultActionName: 'Open notification',
+          ),
+          windows: WindowsInitializationSettings(
+            appName: 'Orches',
+            appUserModelId: 'com.example.orches',
+            guid: 'b4a1b0b5-1e35-430c-80a2-231a4df8342f',
+          ),
+        );
 
     await _notificationsPlugin.initialize(
       settings: initializationSettings,
@@ -54,26 +63,32 @@ class NotificationService {
   }
 
   Future<void> scheduleDeadlineReminder(
-      Task task, int minutesBeforeDeadline) async {
+    Task task,
+    int minutesBeforeDeadline,
+  ) async {
     if (task.deadline == null) return;
 
     final dueDate = task.deadline!;
-    final scheduledDate = dueDate.subtract(Duration(minutes: minutesBeforeDeadline));
+    final scheduledDate = dueDate.subtract(
+      Duration(minutes: minutesBeforeDeadline),
+    );
 
     // Don't schedule if the time has already passed
     if (scheduledDate.isBefore(DateTime.now())) return;
 
-    final tz.TZDateTime tzScheduledDate =
-        tz.TZDateTime.from(scheduledDate, tz.local);
+    final tz.TZDateTime tzScheduledDate = tz.TZDateTime.from(
+      scheduledDate,
+      tz.local,
+    );
 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      'task_deadlines_channel',
-      'Task Deadlines',
-      channelDescription: 'Notifications for approaching task deadlines',
-      importance: Importance.max,
-      priority: Priority.high,
-    );
+          'task_deadlines_channel',
+          'Task Deadlines',
+          channelDescription: 'Notifications for approaching task deadlines',
+          importance: Importance.max,
+          priority: Priority.high,
+        );
 
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
@@ -98,8 +113,13 @@ class NotificationService {
   Future<void> scheduleDailySummary(int pendingCount) async {
     // Schedule for 9:00 AM every day
     final now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduledDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, 9);
+    tz.TZDateTime scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      9,
+    );
 
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
@@ -107,12 +127,12 @@ class NotificationService {
 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      'daily_summary_channel',
-      'Daily Summary',
-      channelDescription: 'Daily overview of pending tasks',
-      importance: Importance.defaultImportance,
-      priority: Priority.defaultPriority,
-    );
+          'daily_summary_channel',
+          'Daily Summary',
+          channelDescription: 'Daily overview of pending tasks',
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+        );
 
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
