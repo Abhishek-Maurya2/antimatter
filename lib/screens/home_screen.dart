@@ -14,6 +14,7 @@ import 'package:orches/widgets/task_floating_toolbar.dart';
 import 'package:orches/screens/session_screen.dart';
 import 'package:orches/utils/preferences_helper.dart';
 import 'package:orches/main.dart';
+import 'package:orches/services/notification_service.dart';
 
 enum TaskSortOption { newest, oldest, dueDate }
 
@@ -37,27 +38,51 @@ class _HomeScreenState extends State<HomeScreen> {
   Task? _editingTask;
   bool _isEditingNewTask = false;
 
-  void _handleTaskResult(dynamic result) {
+  void _handleTaskResult(dynamic result) async {
     if (result == null) return;
-    setState(() {
-      if (result == 'DELETE' && _editingTask != null && !_isEditingNewTask) {
+    
+    final bool notificationsEnabled = PreferencesHelper.getBool('notificationsEnabled') ?? false;
+    final bool deadlineReminders = PreferencesHelper.getBool('deadlineReminders') ?? true;
+    final String savedKey = PreferencesHelper.getString('reminderTime') ?? '30min';
+    int minutes = 30;
+    if (savedKey == '15min') minutes = 15;
+    else if (savedKey == '1hr') minutes = 60;
+    else if (savedKey == '1day') minutes = 1440;
+
+    if (result == 'DELETE' && _editingTask != null && !_isEditingNewTask) {
+      final index = _tasks.indexWhere((t) => t.id == _editingTask!.id);
+      if (index != -1) {
+        setState(() {
+          _tasks.removeAt(index);
+        });
+        await _tasksBox.delete(_editingTask!.id);
+        await NotificationService().cancelNotification(_editingTask!.id.hashCode);
+      }
+    } else if (result is Task) {
+      if (_isEditingNewTask) {
+        setState(() {
+          _tasks.add(result);
+        });
+        await _tasksBox.put(result.id, result);
+        if (notificationsEnabled && deadlineReminders && result.deadline != null && !result.isCompleted) {
+          await NotificationService().scheduleDeadlineReminder(result, minutes);
+        }
+      } else if (_editingTask != null) {
         final index = _tasks.indexWhere((t) => t.id == _editingTask!.id);
         if (index != -1) {
-          _tasks.removeAt(index);
-          _tasksBox.delete(_editingTask!.id);
-        }
-      } else if (result is Task) {
-        if (_isEditingNewTask) {
-          _tasks.add(result);
-          _tasksBox.put(result.id, result);
-        } else if (_editingTask != null) {
-          final index = _tasks.indexWhere((t) => t.id == _editingTask!.id);
-          if (index != -1) {
+          setState(() {
             _tasks[index] = result;
-            _tasksBox.put(result.id, result);
+          });
+          await _tasksBox.put(result.id, result);
+          if (notificationsEnabled && deadlineReminders && result.deadline != null && !result.isCompleted) {
+            await NotificationService().scheduleDeadlineReminder(result, minutes);
+          } else if (result.isCompleted || result.deadline == null) {
+             await NotificationService().cancelNotification(result.id.hashCode);
           }
         }
       }
+    }
+    setState(() {
       _editingTask = null;
       _isEditingNewTask = false;
     });
@@ -574,11 +599,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                             );
                                           }).toList(),
                                           checked: task.isCompleted,
-                                          onChanged: (value) {
+                                          onChanged: (value) async {
                                             setState(() {
                                               task.isCompleted = value ?? false;
-                                              task.save();
                                             });
+                                            await task.save();
+                                            if (task.isCompleted) {
+                                              await NotificationService().cancelNotification(task.id.hashCode);
+                                            } else {
+                                              final bool notificationsEnabled = PreferencesHelper.getBool('notificationsEnabled') ?? false;
+                                              final bool deadlineReminders = PreferencesHelper.getBool('deadlineReminders') ?? true;
+                                              final String savedKey = PreferencesHelper.getString('reminderTime') ?? '30min';
+                                              int minutes = 30;
+                                              if (savedKey == '15min') minutes = 15;
+                                              else if (savedKey == '1hr') minutes = 60;
+                                              else if (savedKey == '1day') minutes = 1440;
+                                              
+                                              if (notificationsEnabled && deadlineReminders && task.deadline != null) {
+                                                await NotificationService().scheduleDeadlineReminder(task, minutes);
+                                              }
+                                            }
                                           },
                                           onLongPress: () {
                                             setState(() {
@@ -790,11 +830,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                             );
                                           }).toList(),
                                           checked: task.isCompleted,
-                                          onChanged: (value) {
+                                          onChanged: (value) async {
                                             setState(() {
                                               task.isCompleted = value ?? false;
-                                              task.save();
                                             });
+                                            await task.save();
+                                            if (task.isCompleted) {
+                                              await NotificationService().cancelNotification(task.id.hashCode);
+                                            } else {
+                                              final bool notificationsEnabled = PreferencesHelper.getBool('notificationsEnabled') ?? false;
+                                              final bool deadlineReminders = PreferencesHelper.getBool('deadlineReminders') ?? true;
+                                              final String savedKey = PreferencesHelper.getString('reminderTime') ?? '30min';
+                                              int minutes = 30;
+                                              if (savedKey == '15min') minutes = 15;
+                                              else if (savedKey == '1hr') minutes = 60;
+                                              else if (savedKey == '1day') minutes = 1440;
+                                              
+                                              if (notificationsEnabled && deadlineReminders && task.deadline != null) {
+                                                await NotificationService().scheduleDeadlineReminder(task, minutes);
+                                              }
+                                            }
                                           },
                                           onLongPress: () {
                                             setState(() {

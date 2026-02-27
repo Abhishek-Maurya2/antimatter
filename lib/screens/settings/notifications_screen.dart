@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:settings_tiles/settings_tiles.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:hive/hive.dart';
+import '../../models/task.dart';
 import '../../utils/preferences_helper.dart';
+import '../../services/notification_service.dart';
+import '../../main.dart';
 import '../settings_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -41,6 +45,36 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     setState(() {});
   }
 
+  Future<void> _rescheduleAll() async {
+    if (!_notificationsEnabled) {
+      await NotificationService().cancelAllNotifications();
+      return;
+    }
+
+    await NotificationService().cancelAllNotifications();
+    final tasksBox = Hive.box<Task>('tasksBox');
+    
+    // Reschedule deadline reminders
+    if (_deadlineReminders) {
+      final tasks = tasksBox.values.where((t) => !t.isCompleted && !t.isDeleted).toList();
+      final key = _reminderOptions.entries.firstWhere((e) => e.value == _reminderTime).key;
+      int minutes = 30;
+      if (key == '15min') minutes = 15;
+      else if (key == '1hr') minutes = 60;
+      else if (key == '1day') minutes = 1440;
+
+      for (var task in tasks) {
+        await NotificationService().scheduleDeadlineReminder(task, minutes);
+      }
+    }
+
+    // Reschedule daily summary
+    if (_dailySummary) {
+      final tasks = tasksBox.values.where((t) => !t.isCompleted && !t.isDeleted).toList();
+      await NotificationService().scheduleDailySummary(tasks.length);
+    }
+  }
+
   Future<void> _handleNotificationToggle(bool value) async {
     if (value) {
       // Requesting to enable — check permission first
@@ -77,12 +111,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       // Turning off — no permission needed
       setState(() => _notificationsEnabled = false);
       PreferencesHelper.setBool('notificationsEnabled', false);
+      await _rescheduleAll();
     }
   }
 
   void _enableNotifications() {
     setState(() => _notificationsEnabled = true);
     PreferencesHelper.setBool('notificationsEnabled', true);
+    _rescheduleAll();
   }
 
   void _showPermissionDeniedDialog() {
@@ -218,6 +254,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 'deadlineReminders',
                                 value,
                               );
+                              _rescheduleAll();
                             }
                           : null,
                     ),
@@ -238,6 +275,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             .firstWhere((e) => e.value == value)
                             .key;
                         PreferencesHelper.setString('reminderTime', key);
+                        if (_notificationsEnabled && _deadlineReminders) {
+                          _rescheduleAll();
+                        }
                       },
                     ),
                     SettingSwitchTile(
@@ -253,6 +293,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           ? (value) {
                               setState(() => _dailySummary = value);
                               PreferencesHelper.setBool('dailySummary', value);
+                              _rescheduleAll();
                             }
                           : null,
                     ),

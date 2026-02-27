@@ -15,6 +15,7 @@ import 'screens/home_screen.dart';
 import 'models/task.dart';
 import 'services/home_widget_service.dart';
 import 'services/supabase_sync_service.dart';
+import 'services/notification_service.dart';
 
 // Initialize Supabase details
 const String supaUrl = 'https://gztupoebzdjjdcttenkb.supabase.co';
@@ -39,6 +40,9 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(TaskAdapter());
   final tasksBox = await Hive.openBox<Task>('tasksBox');
+
+  // Initialize notifications
+  await NotificationService().init();
 
   // Initialize and start Sync Service
   syncService = SupabaseSyncService(tasksBox);
