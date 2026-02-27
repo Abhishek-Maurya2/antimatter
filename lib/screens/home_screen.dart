@@ -13,6 +13,7 @@ import 'package:orches/widgets/sort_split_button.dart';
 import 'package:orches/widgets/task_floating_toolbar.dart';
 import 'package:orches/screens/session_screen.dart';
 import 'package:orches/utils/preferences_helper.dart';
+import 'package:orches/main.dart';
 
 enum TaskSortOption { newest, oldest, dueDate }
 
@@ -181,12 +182,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   CustomRefreshIndicator(
                     onRefresh: () async {
-                      // Simulate network refresh
-                      await Future.delayed(const Duration(seconds: 3));
+                      await syncService.pullTasks();
+                      if (context.mounted) {
+                        setState(() {
+                          _tasks = _tasksBox.values.toList();
+                        });
+                      }
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Tasks refreshed'),
+                            content: const Text('Tasks refreshed'),
                             behavior: SnackBarBehavior.floating,
                             width: 500,
                             shape: RoundedRectangleBorder(
