@@ -31,6 +31,8 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
   String? _downloadError;
   String? _downloadedFilePath;
   String _currentVersion = '';
+  DateTime? _downloadStartTime;
+  double _downloadSpeedKbps = 0.0;
 
   @override
   void initState() {
@@ -109,8 +111,10 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
     setState(() {
       _isDownloading = true;
       _downloadProgress = 0.0;
+      _downloadSpeedKbps = 0.0;
       _downloadError = null;
       _downloadedFilePath = null;
+      _downloadStartTime = DateTime.now();
     });
 
     try {
@@ -122,9 +126,20 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
         _downloadUrl!,
         filePath,
         onReceiveProgress: (received, total) {
-          if (total > 0) {
+          if (total > 0 && _downloadStartTime != null) {
+            final now = DateTime.now();
+            final elapsedSeconds =
+                now.difference(_downloadStartTime!).inMilliseconds / 1000.0;
+
+            double speed = 0.0;
+            if (elapsedSeconds > 0) {
+              // Speed in KB/s
+              speed = (received / 1024) / elapsedSeconds;
+            }
+
             setState(() {
               _downloadProgress = received / total;
+              _downloadSpeedKbps = speed;
             });
           }
         },
@@ -147,26 +162,64 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
 
   Widget _buildDownloadSection(ColorScheme colorTheme) {
     if (_isDownloading) {
-      return Column(
-        children: [
-          SizedBox(
-            width: 200,
-            child: WavyLinearProgressIndicator(
-              value: _downloadProgress,
-              minHeight: 4.0,
-              waveAmplitude: 3.0,
-              waveLength: 24.0,
+      String speedText = '';
+      if (_downloadSpeedKbps > 1024) {
+        speedText = '${(_downloadSpeedKbps / 1024).toStringAsFixed(1)} MB/s';
+      } else if (_downloadSpeedKbps > 0) {
+        speedText = '${_downloadSpeedKbps.toStringAsFixed(0)} KB/s';
+      } else {
+        speedText = 'Calculating...';
+      }
+
+      return Padding(
+        padding: const EdgeInsets.only(top: 16.0),
+        child: Column(
+          children: [
+            SizedBox(
+              width: 80,
+              height: 80,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Positioned.fill(
+                    child: WavyCircularProgressIndicator(
+                      value: _downloadProgress,
+                      strokeWidth: 5.0,
+                      waveAmplitude: 3.0,
+                      waveLength: 20.0,
+                      color: colorTheme.primary,
+                    ),
+                  ),
+                  Text(
+                    '${(_downloadProgress * 100).toStringAsFixed(0)}%',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'RobotoFlex',
+                      color: colorTheme.onPrimaryContainer,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${(_downloadProgress * 100).toStringAsFixed(0)}%',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: colorTheme.onPrimaryContainer,
+            const SizedBox(height: 16),
+            Text(
+              'Downloading update...',
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: colorTheme.onPrimaryContainer,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              speedText,
+              style: TextStyle(
+                fontSize: 13,
+                color: colorTheme.onPrimaryContainer.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
       );
     }
 
