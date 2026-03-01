@@ -17,6 +17,7 @@ import 'package:orches/utils/preferences_helper.dart';
 import 'package:orches/main.dart';
 import 'package:orches/services/notification_service.dart';
 import 'package:orches/services/audio_service.dart';
+import 'package:orches/widgets/floating_nav_bar.dart';
 
 enum TaskSortOption { newest, oldest, dueDate }
 
@@ -29,13 +30,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  bool _isGridView = false;
 
   late Box<Task> _tasksBox;
   List<Task> _tasks = [];
   TaskSortOption _currentSort = TaskSortOption.oldest;
   Task? _selectedTaskForToolbar;
-  int _selectedDrawerIndex = 0;
+  // Top-level nav: 0=Overview, 1=Tasks, 2=Session, 3=Settings
+  int _navIndex = 0;
+  // Tasks sub-filter: 0=All, 1=Today, 2=Upcoming, 3=Completed, 4=Labels, 5=Archive, 6=Trash
+  int _taskSubFilter = 0;
   String? _selectedLabelFilter;
   Task? _editingTask;
   bool _isEditingNewTask = false;
@@ -139,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (!titleMatch && !descMatch && !labelMatch) return false;
       }
 
-      if (_selectedDrawerIndex == 7) {
+      if (_taskSubFilter == 6) {
         // Trash
         return task.isDeleted;
       }
@@ -147,12 +150,10 @@ class _HomeScreenState extends State<HomeScreen> {
       // For all other views, exclude deleted tasks
       if (task.isDeleted) return false;
 
-      switch (_selectedDrawerIndex) {
-        case 0: // Overview (handled separately)
-          return false;
-        case 1: // All tasks
+      switch (_taskSubFilter) {
+        case 0: // All tasks
           return !task.isArchived;
-        case 2: // Today
+        case 1: // Today
           if (task.isArchived || task.deadline == null) return false;
           final taskDate = DateTime(
             task.deadline!.year,
@@ -160,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
             task.deadline!.day,
           );
           return taskDate.isAtSameMomentAs(today);
-        case 3: // Upcoming
+        case 2: // Upcoming
           if (task.isArchived || task.deadline == null) return false;
           final taskDate = DateTime(
             task.deadline!.year,
@@ -168,17 +169,15 @@ class _HomeScreenState extends State<HomeScreen> {
             task.deadline!.day,
           );
           return taskDate.isAfter(today);
-        case 4: // Completed
+        case 3: // Completed
           return task.isCompleted && !task.isArchived;
-        case 5: // Labels
+        case 4: // Labels
           if (_selectedLabelFilter != null) {
             return task.labels.contains(_selectedLabelFilter) &&
                 !task.isArchived;
           }
-          // If no label is selected, perhaps show all tasks that have at least one label,
-          // or just an empty list. Let's show all labeled tasks by default.
           return task.labels.isNotEmpty && !task.isArchived;
-        case 6: // Archive
+        case 5: // Archive
           return task.isArchived;
         default:
           return !task.isArchived;
@@ -237,949 +236,29 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, constraints) {
         final bool isExpanded = constraints.maxWidth >= 840;
 
-        final Widget bodyContent = _selectedDrawerIndex == 0
-            ? OverviewPage(
-                onNavigateToTasks: () {
-                  setState(() {
-                    _selectedDrawerIndex = 1;
-                  });
-                },
-              )
-            : _selectedDrawerIndex == 8
-            ? SessionScreen(
-                onBack: () {
-                  setState(() {
-                    _selectedDrawerIndex = 0;
-                  });
-                },
-              )
-            : Stack(
-                children: [
-                  CustomRefreshIndicator(
-                    onRefresh: () async {
-                      await syncService.pullTasks();
-                      if (context.mounted) {
-                        setState(() {
-                          _tasks = _tasksBox.values.toList();
-                        });
-                      }
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Tasks refreshed'),
-                            behavior: SnackBarBehavior.floating,
-                            width: 500,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    builder: (context, child, controller) {
-                      return Stack(
-                        children: [
-                          child,
-                          AnimatedBuilder(
-                            animation: controller,
-                            builder: (context, _) {
-                              final double opacity = (controller.value * 2)
-                                  .clamp(0.0, 1.0);
-                              final double scale = (controller.value * 1.5)
-                                  .clamp(0.0, 1.0);
-
-                              return Positioned(
-                                top:
-                                    110 *
-                                    controller.value, // Move down as we pull
-                                left: 0,
-                                right: 0,
-                                child: Opacity(
-                                  opacity: opacity,
-                                  child: Transform.scale(
-                                    scale: scale,
-                                    child: Center(
-                                      child: Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: colorTheme.surface,
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withValues(
-                                                alpha: 0.1,
-                                              ),
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ],
-                                        ),
-                                        child: SizedBox(
-                                          width: 32,
-                                          height: 32,
-                                          child: ExpressiveLoadingIndicator(
-                                            activeSize: 52,
-                                            color: colorTheme.primary,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                    child: CustomScrollView(
-                      slivers: [
-                        // Search bar app bar
-                        SliverToBoxAdapter(
-                          child: SafeArea(
-                            bottom: false,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(1, 8, 16, 8),
-                              child: Row(
-                                children: [
-                                  if (!isExpanded) ...[
-                                    // Hamburger menu
-                                    IconButton(
-                                      onPressed: () {
-                                        _scaffoldKey.currentState?.openDrawer();
-                                      },
-                                      icon: Icon(
-                                        Symbols.menu,
-                                        fill: 0,
-                                        weight: 400,
-                                        color: colorTheme.onSurface,
-                                      ),
-                                    ),
-                                  ],
-                                  // Search bar
-                                  Expanded(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: colorTheme.surface,
-                                        borderRadius: BorderRadius.circular(28),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                      ),
-                                      alignment: Alignment.centerLeft,
-                                      height: 58,
-                                      child: TextField(
-                                        controller: _searchController,
-                                        textAlignVertical:
-                                            TextAlignVertical.center,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _searchQuery = value;
-                                          });
-                                        },
-                                        decoration: InputDecoration(
-                                          hintText: 'Search Tasks',
-                                          hintStyle: TextStyle(
-                                            color: colorTheme.onSurfaceVariant,
-                                          ),
-                                          border: InputBorder.none,
-                                          isCollapsed: true,
-                                          prefixIcon: Icon(
-                                            Symbols.search,
-                                            fill: 0,
-                                            weight: 400,
-                                            color: colorTheme.onSurfaceVariant,
-                                          ),
-                                          suffixIcon: _searchQuery.isNotEmpty
-                                              ? IconButton(
-                                                  icon: Icon(
-                                                    Symbols.close,
-                                                    fill: 0,
-                                                    weight: 400,
-                                                    color: colorTheme
-                                                        .onSurfaceVariant,
-                                                  ),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      _searchController.clear();
-                                                      _searchQuery = '';
-                                                    });
-                                                  },
-                                                )
-                                              : null,
-                                        ),
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: colorTheme.onSurface,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-
-                                  // Avatar → Settings
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 0),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                const SettingsScreen(),
-                                          ),
-                                        );
-                                      },
-                                      child: CircleAvatar(
-                                        radius: 24,
-                                        backgroundColor:
-                                            colorTheme.primaryContainer,
-                                        backgroundImage: const AssetImage(
-                                          'assets/profile.jpg',
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Content
-                        if (_tasks.isEmpty)
-                          SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: _buildEmptyState(context, colorTheme),
-                          )
-                        else
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 0.0,
-                                vertical: 8.0,
-                              ),
-                              child: Column(
-                                children: [
-                                  if (isExpanded &&
-                                      _selectedDrawerIndex != 6 &&
-                                      _selectedDrawerIndex != 7)
-                                    Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        16,
-                                        0,
-                                        16,
-                                        16,
-                                      ),
-                                    ),
-                                  SortSplitButton(
-                                    currentSort: _currentSort,
-                                    onSortChanged: (option) {
-                                      setState(() {
-                                        _currentSort = option;
-                                      });
-                                      PreferencesHelper.setString(
-                                        'task_sort_preference',
-                                        option.name,
-                                      );
-                                    },
-                                    colorTheme: colorTheme,
-                                  ),
-                                  if (_selectedDrawerIndex == 5)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16.0,
-                                        vertical: 8.0,
-                                      ),
-                                      child: SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        child: Row(
-                                          children: [
-                                            ChoiceChip(
-                                              label: Text('All Labeled'),
-                                              selected:
-                                                  _selectedLabelFilter == null,
-                                              onSelected: (selected) {
-                                                if (selected) {
-                                                  setState(() {
-                                                    _selectedLabelFilter = null;
-                                                  });
-                                                }
-                                              },
-                                              selectedColor:
-                                                  colorTheme.secondaryContainer,
-                                              labelStyle: TextStyle(
-                                                color:
-                                                    _selectedLabelFilter == null
-                                                    ? colorTheme
-                                                          .onSecondaryContainer
-                                                    : colorTheme.onSurface,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            ..._uniqueLabels.map((label) {
-                                              final isSelected =
-                                                  _selectedLabelFilter == label;
-                                              return Padding(
-                                                padding: const EdgeInsets.only(
-                                                  right: 8.0,
-                                                ),
-                                                child: ChoiceChip(
-                                                  label: Text(label),
-                                                  selected: isSelected,
-                                                  onSelected: (selected) {
-                                                    setState(() {
-                                                      _selectedLabelFilter =
-                                                          selected
-                                                          ? label
-                                                          : null;
-                                                    });
-                                                  },
-                                                  selectedColor: colorTheme
-                                                      .secondaryContainer,
-                                                  labelStyle: TextStyle(
-                                                    color: isSelected
-                                                        ? colorTheme
-                                                              .onSecondaryContainer
-                                                        : colorTheme.onSurface,
-                                                  ),
-                                                ),
-                                              );
-                                            }),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  if (_sortedTasks
-                                      .where((t) => !t.isCompleted)
-                                      .isNotEmpty) ...[
-                                    SettingSection(
-                                      title: Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 4,
-                                          bottom: 8,
-                                        ),
-                                        child: Text(
-                                          'Active',
-                                          style: TextStyle(
-                                            color: colorTheme.primary,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      styleTile: true,
-                                      tiles: _sortedTasks.where((t) => !t.isCompleted).map((
-                                        task,
-                                      ) {
-                                        return TaskTile(
-                                          title: Text(task.title),
-                                          description:
-                                              (task.description != null &&
-                                                      task
-                                                          .description!
-                                                          .isNotEmpty) ||
-                                                  task.labels.isNotEmpty
-                                              ? Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    if (task.description !=
-                                                            null &&
-                                                        task
-                                                            .description!
-                                                            .isNotEmpty)
-                                                      Text(task.description!),
-                                                    if (task.labels.isNotEmpty)
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              top: 4.0,
-                                                            ),
-                                                        child: Wrap(
-                                                          spacing: 4,
-                                                          runSpacing: 4,
-                                                          children: task.labels
-                                                              .map(
-                                                                (
-                                                                  label,
-                                                                ) => Container(
-                                                                  padding:
-                                                                      const EdgeInsets.symmetric(
-                                                                        horizontal:
-                                                                            6,
-                                                                        vertical:
-                                                                            2,
-                                                                      ),
-                                                                  decoration: BoxDecoration(
-                                                                    color: colorTheme
-                                                                        .surfaceContainerHigh,
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                          4,
-                                                                        ),
-                                                                    border: Border.all(
-                                                                      color: colorTheme
-                                                                          .outlineVariant,
-                                                                    ),
-                                                                  ),
-                                                                  child: Text(
-                                                                    label,
-                                                                    style: TextStyle(
-                                                                      fontSize:
-                                                                          10,
-                                                                      color: colorTheme
-                                                                          .onSurfaceVariant,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              )
-                                                              .toList(),
-                                                        ),
-                                                      ),
-                                                  ],
-                                                )
-                                              : null,
-                                          isDeadlineMissed:
-                                              task.deadline != null &&
-                                              task.deadline!.isBefore(
-                                                DateTime.now(),
-                                              ),
-                                          deadline: task.deadline != null
-                                              ? Text(
-                                                  formatDeadline(
-                                                    task.deadline,
-                                                  )!,
-                                                )
-                                              : null,
-                                          subTasks: task.subTasks.map((
-                                            subTask,
-                                          ) {
-                                            return TaskTile(
-                                              backgroundColor: colorTheme
-                                                  .surfaceContainerHigh,
-                                              title: Text(
-                                                subTask.title,
-                                                style: Theme.of(
-                                                  context,
-                                                ).textTheme.bodyMedium,
-                                              ),
-                                              description:
-                                                  subTask.description != null &&
-                                                      subTask
-                                                          .description!
-                                                          .isNotEmpty
-                                                  ? Text(
-                                                      subTask.description!,
-                                                      style: Theme.of(
-                                                        context,
-                                                      ).textTheme.bodySmall,
-                                                    )
-                                                  : null,
-                                              checked: subTask.isCompleted,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  subTask.isCompleted =
-                                                      value ?? false;
-                                                  if (subTask.isCompleted) {
-                                                    AudioService()
-                                                        .playTickSound();
-                                                  }
-                                                  task.save();
-                                                });
-                                              },
-                                            );
-                                          }).toList(),
-                                          checked: task.isCompleted,
-                                          onChanged: (value) async {
-                                            setState(() {
-                                              task.isCompleted = value ?? false;
-                                            });
-                                            await task.save();
-                                            if (task.isCompleted) {
-                                              AudioService().playTickSound();
-                                              await NotificationService()
-                                                  .cancelNotification(
-                                                    task.id.hashCode,
-                                                  );
-                                            } else {
-                                              final bool notificationsEnabled =
-                                                  PreferencesHelper.getBool(
-                                                    'notificationsEnabled',
-                                                  ) ??
-                                                  false;
-                                              final bool deadlineReminders =
-                                                  PreferencesHelper.getBool(
-                                                    'deadlineReminders',
-                                                  ) ??
-                                                  true;
-                                              final String savedKey =
-                                                  PreferencesHelper.getString(
-                                                    'reminderTime',
-                                                  ) ??
-                                                  '30min';
-                                              int minutes = 30;
-                                              if (savedKey == '15min')
-                                                minutes = 15;
-                                              else if (savedKey == '1hr')
-                                                minutes = 60;
-                                              else if (savedKey == '1day')
-                                                minutes = 1440;
-
-                                              if (notificationsEnabled &&
-                                                  deadlineReminders &&
-                                                  task.deadline != null) {
-                                                await NotificationService()
-                                                    .scheduleDeadlineReminder(
-                                                      task,
-                                                      minutes,
-                                                    );
-                                              }
-                                            }
-                                          },
-                                          onLongPress: () {
-                                            setState(() {
-                                              _selectedTaskForToolbar = task;
-                                            });
-                                          },
-                                          onPressed: () async {
-                                            if (isExpanded) {
-                                              setState(() {
-                                                _editingTask = task;
-                                                _isEditingNewTask = false;
-                                              });
-                                            } else {
-                                              final updatedTask =
-                                                  await Navigator.of(
-                                                    context,
-                                                  ).push<dynamic>(
-                                                    MaterialPageRoute(
-                                                      builder: (_) =>
-                                                          TaskEditorScreen(
-                                                            task: task,
-                                                          ),
-                                                    ),
-                                                  );
-                                              if (updatedTask != null) {
-                                                setState(() {
-                                                  _editingTask = task;
-                                                  _isEditingNewTask = false;
-                                                });
-                                                _handleTaskResult(updatedTask);
-                                              }
-                                            }
-                                          },
-                                        );
-                                      }).toList(),
-                                    ),
-                                    SizedBox(height: 16),
-                                  ],
-                                  if (_sortedTasks
-                                      .where((t) => t.isCompleted)
-                                      .isNotEmpty)
-                                    SettingSection(
-                                      title: Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 4,
-                                          bottom: 8,
-                                        ),
-                                        child: Text(
-                                          'Completed',
-                                          style: TextStyle(
-                                            color: colorTheme.primary,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      styleTile: true,
-                                      tiles: _sortedTasks.where((t) => t.isCompleted).map((
-                                        task,
-                                      ) {
-                                        return TaskTile(
-                                          title: Text(
-                                            task.title,
-                                            style: TextStyle(
-                                              decoration:
-                                                  TextDecoration.lineThrough,
-                                              color:
-                                                  colorTheme.onSurfaceVariant,
-                                            ),
-                                          ),
-                                          description:
-                                              (task.description != null &&
-                                                      task
-                                                          .description!
-                                                          .isNotEmpty) ||
-                                                  task.labels.isNotEmpty
-                                              ? Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    if (task.description !=
-                                                            null &&
-                                                        task
-                                                            .description!
-                                                            .isNotEmpty)
-                                                      Text(
-                                                        task.description!,
-                                                        style: TextStyle(
-                                                          decoration:
-                                                              TextDecoration
-                                                                  .lineThrough,
-                                                          color: colorTheme
-                                                              .onSurfaceVariant,
-                                                        ),
-                                                      ),
-                                                    if (task.labels.isNotEmpty)
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              top: 4.0,
-                                                            ),
-                                                        child: Wrap(
-                                                          spacing: 4,
-                                                          runSpacing: 4,
-                                                          children: task.labels
-                                                              .map(
-                                                                (
-                                                                  label,
-                                                                ) => Container(
-                                                                  padding:
-                                                                      const EdgeInsets.symmetric(
-                                                                        horizontal:
-                                                                            6,
-                                                                        vertical:
-                                                                            2,
-                                                                      ),
-                                                                  decoration: BoxDecoration(
-                                                                    color: colorTheme
-                                                                        .surfaceContainerHigh,
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                          4,
-                                                                        ),
-                                                                    border: Border.all(
-                                                                      color: colorTheme
-                                                                          .outlineVariant
-                                                                          .withValues(
-                                                                            alpha:
-                                                                                0.5,
-                                                                          ),
-                                                                    ),
-                                                                  ),
-                                                                  child: Text(
-                                                                    label,
-                                                                    style: TextStyle(
-                                                                      fontSize:
-                                                                          10,
-                                                                      color: colorTheme
-                                                                          .onSurfaceVariant
-                                                                          .withValues(
-                                                                            alpha:
-                                                                                0.6,
-                                                                          ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              )
-                                                              .toList(),
-                                                        ),
-                                                      ),
-                                                  ],
-                                                )
-                                              : null,
-                                          deadline: task.deadline != null
-                                              ? Text(
-                                                  formatDeadline(
-                                                    task.deadline,
-                                                  )!,
-                                                  style: TextStyle(
-                                                    decoration: TextDecoration
-                                                        .lineThrough,
-                                                  ),
-                                                )
-                                              : null,
-                                          subTasks: task.subTasks.map((
-                                            subTask,
-                                          ) {
-                                            return TaskTile(
-                                              backgroundColor: colorTheme
-                                                  .surfaceContainerHigh,
-                                              title: Text(
-                                                subTask.title,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.copyWith(
-                                                      decoration: TextDecoration
-                                                          .lineThrough,
-                                                      color: colorTheme
-                                                          .onSurfaceVariant,
-                                                    ),
-                                              ),
-                                              description:
-                                                  subTask.description != null &&
-                                                      subTask
-                                                          .description!
-                                                          .isNotEmpty
-                                                  ? Text(
-                                                      subTask.description!,
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall
-                                                          ?.copyWith(
-                                                            decoration:
-                                                                TextDecoration
-                                                                    .lineThrough,
-                                                            color: colorTheme
-                                                                .onSurfaceVariant,
-                                                          ),
-                                                    )
-                                                  : null,
-                                              checked: subTask.isCompleted,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  subTask.isCompleted =
-                                                      value ?? false;
-                                                  if (subTask.isCompleted) {
-                                                    AudioService()
-                                                        .playTickSound();
-                                                  }
-                                                  task.save();
-                                                });
-                                              },
-                                            );
-                                          }).toList(),
-                                          checked: task.isCompleted,
-                                          onChanged: (value) async {
-                                            setState(() {
-                                              task.isCompleted = value ?? false;
-                                            });
-                                            await task.save();
-                                            if (task.isCompleted) {
-                                              AudioService().playTickSound();
-                                              await NotificationService()
-                                                  .cancelNotification(
-                                                    task.id.hashCode,
-                                                  );
-                                            } else {
-                                              final bool notificationsEnabled =
-                                                  PreferencesHelper.getBool(
-                                                    'notificationsEnabled',
-                                                  ) ??
-                                                  false;
-                                              final bool deadlineReminders =
-                                                  PreferencesHelper.getBool(
-                                                    'deadlineReminders',
-                                                  ) ??
-                                                  true;
-                                              final String savedKey =
-                                                  PreferencesHelper.getString(
-                                                    'reminderTime',
-                                                  ) ??
-                                                  '30min';
-                                              int minutes = 30;
-                                              if (savedKey == '15min')
-                                                minutes = 15;
-                                              else if (savedKey == '1hr')
-                                                minutes = 60;
-                                              else if (savedKey == '1day')
-                                                minutes = 1440;
-
-                                              if (notificationsEnabled &&
-                                                  deadlineReminders &&
-                                                  task.deadline != null) {
-                                                await NotificationService()
-                                                    .scheduleDeadlineReminder(
-                                                      task,
-                                                      minutes,
-                                                    );
-                                              }
-                                            }
-                                          },
-                                          onLongPress: () {
-                                            setState(() {
-                                              _selectedTaskForToolbar = task;
-                                            });
-                                          },
-                                          onPressed: () async {
-                                            if (isExpanded) {
-                                              setState(() {
-                                                _editingTask = task;
-                                                _isEditingNewTask = false;
-                                              });
-                                            } else {
-                                              final updatedTask =
-                                                  await Navigator.of(
-                                                    context,
-                                                  ).push<dynamic>(
-                                                    MaterialPageRoute(
-                                                      builder: (_) =>
-                                                          TaskEditorScreen(
-                                                            task: task,
-                                                          ),
-                                                    ),
-                                                  );
-                                              if (updatedTask != null) {
-                                                setState(() {
-                                                  _editingTask = task;
-                                                  _isEditingNewTask = false;
-                                                });
-                                                _handleTaskResult(updatedTask);
-                                              }
-                                            }
-                                          },
-                                        );
-                                      }).toList(),
-                                    ),
-                                  SizedBox(height: 25),
-                                ],
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  if (_selectedTaskForToolbar != null)
-                    Positioned.fill(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          setState(() {
-                            _selectedTaskForToolbar = null;
-                          });
-                        },
-                        child: Container(
-                          color: Colors.black.withValues(alpha: 0),
-                        ),
-                      ),
-                    ),
-                  if (_selectedTaskForToolbar != null)
-                    AnimatedPositioned(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOutCubic,
-                      bottom: 32,
-                      left: 0,
-                      right: 0,
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: TaskFloatingToolbar(
-                          task: _selectedTaskForToolbar!,
-                          colorTheme: colorTheme,
-                          onComplete: () async {
-                            final task = _selectedTaskForToolbar!;
-                            setState(() {
-                              task.isCompleted = !task.isCompleted;
-                              task.save();
-                            });
-
-                            if (task.isCompleted) {
-                              AudioService().playTickSound();
-                              await NotificationService().cancelNotification(
-                                task.id.hashCode,
-                              );
-                            } else {
-                              final bool notificationsEnabled =
-                                  PreferencesHelper.getBool(
-                                    'notificationsEnabled',
-                                  ) ??
-                                  false;
-                              final bool deadlineReminders =
-                                  PreferencesHelper.getBool(
-                                    'deadlineReminders',
-                                  ) ??
-                                  true;
-                              final String savedKey =
-                                  PreferencesHelper.getString('reminderTime') ??
-                                  '30min';
-                              int minutes = 30;
-                              if (savedKey == '15min')
-                                minutes = 15;
-                              else if (savedKey == '1hr')
-                                minutes = 60;
-                              else if (savedKey == '1day')
-                                minutes = 1440;
-
-                              if (notificationsEnabled &&
-                                  deadlineReminders &&
-                                  task.deadline != null) {
-                                await NotificationService()
-                                    .scheduleDeadlineReminder(task, minutes);
-                              }
-                            }
-
-                            setState(() {
-                              _selectedTaskForToolbar = null;
-                            });
-                          },
-                          onEdit: () async {
-                            final taskToEdit = _selectedTaskForToolbar!;
-                            setState(() {
-                              _selectedTaskForToolbar = null;
-                            });
-                            if (isExpanded) {
-                              setState(() {
-                                _editingTask = taskToEdit;
-                                _isEditingNewTask = false;
-                              });
-                            } else {
-                              final updatedTask = await Navigator.of(context)
-                                  .push<dynamic>(
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          TaskEditorScreen(task: taskToEdit),
-                                    ),
-                                  );
-                              if (updatedTask != null) {
-                                setState(() {
-                                  _editingTask = taskToEdit;
-                                  _isEditingNewTask = false;
-                                });
-                                _handleTaskResult(updatedTask);
-                              }
-                            }
-                          },
-                          onDelete: () {
-                            setState(() {
-                              if (_selectedTaskForToolbar!.isDeleted) {
-                                // Permanent delete
-                                final index = _tasks.indexWhere(
-                                  (t) => t.id == _selectedTaskForToolbar!.id,
-                                );
-                                if (index != -1) {
-                                  _tasks.removeAt(index);
-                                  _tasksBox.delete(_selectedTaskForToolbar!.id);
-                                }
-                              } else {
-                                // Soft delete (Move to trash)
-                                _selectedTaskForToolbar!.isDeleted = true;
-                                _selectedTaskForToolbar!.save();
-                              }
-                              _selectedTaskForToolbar = null;
-                            });
-                          },
-                          onArchive: () {
-                            setState(() {
-                              _selectedTaskForToolbar!.isArchived =
-                                  !_selectedTaskForToolbar!.isArchived;
-                              _selectedTaskForToolbar!.save();
-                              _selectedTaskForToolbar = null;
-                            });
-                          },
-                          onRestore: () {
-                            setState(() {
-                              _selectedTaskForToolbar!.isDeleted = false;
-                              _selectedTaskForToolbar!.save();
-                              _selectedTaskForToolbar = null;
-                            });
-                          },
-                          onClose: () {
-                            setState(() {
-                              _selectedTaskForToolbar = null;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                ],
-              );
+        // Build the body based on top-level nav index
+        Widget bodyContent;
+        if (_navIndex == 0) {
+          bodyContent = OverviewPage(
+            onNavigateToTasks: () {
+              setState(() {
+                _navIndex = 1;
+                _taskSubFilter = 0;
+              });
+            },
+          );
+        } else if (_navIndex == 2) {
+          bodyContent = SessionScreen(
+            onBack: () => setState(() => _navIndex = 0),
+          );
+        } else if (_navIndex == 3) {
+          bodyContent = SettingsScreen(
+            onBack: () => setState(() => _navIndex = 0),
+          );
+        } else {
+          // Nav 1 = Tasks page
+          bodyContent = _buildTasksPage(context, colorTheme, isExpanded);
+        }
 
         return Scaffold(
           key: _scaffoldKey,
@@ -1188,7 +267,32 @@ class _HomeScreenState extends State<HomeScreen> {
           body: Row(
             children: [
               if (isExpanded) _buildDrawer(context, colorTheme),
-              Expanded(child: bodyContent),
+              Expanded(
+                child: Stack(
+                  children: [
+                    bodyContent,
+                    if (!isExpanded)
+                      Positioned(
+                        bottom: 32,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: FloatingNavBar(
+                            selectedIndex: _navIndex,
+                            onItemSelected: (index) {
+                              setState(() {
+                                _navIndex = index;
+                                if (index == 1 && _taskSubFilter == -1) {
+                                  _taskSubFilter = 0;
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
               if (isExpanded && (_editingTask != null || _isEditingNewTask))
                 Container(
                   width: 350,
@@ -1214,12 +318,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           floatingActionButton:
-              (_selectedDrawerIndex == 0 ||
-                  _selectedDrawerIndex == 6 ||
-                  _selectedDrawerIndex == 7 ||
-                  _selectedDrawerIndex == 8)
-              ? null
-              : FloatingActionButton(
+              _navIndex == 1 && _taskSubFilter != 5 && _taskSubFilter != 6
+              ? FloatingActionButton(
                   onPressed: () async {
                     if (isExpanded) {
                       setState(() {
@@ -1232,7 +332,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           builder: (_) => const TaskEditorScreen(),
                         ),
                       );
-
                       if (newTask != null) {
                         setState(() {
                           _tasks.add(newTask);
@@ -1247,18 +346,891 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(Symbols.add, fill: 1, weight: 500, size: 24),
-                ),
+                )
+              : null,
         );
       },
     );
   }
 
+  Widget _buildTasksPage(
+    BuildContext context,
+    ColorScheme colorTheme,
+    bool isExpanded,
+  ) {
+    return Stack(
+      children: [
+        CustomRefreshIndicator(
+          onRefresh: () async {
+            await syncService.pullTasks();
+            if (context.mounted) {
+              setState(() {
+                _tasks = _tasksBox.values.toList();
+              });
+            }
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Tasks refreshed'),
+                  behavior: SnackBarBehavior.floating,
+                  width: 500,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+            }
+          },
+          builder: (context, child, controller) {
+            return Stack(
+              children: [
+                child,
+                AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, _) {
+                    final double opacity = (controller.value * 2).clamp(
+                      0.0,
+                      1.0,
+                    );
+                    final double scale = (controller.value * 1.5).clamp(
+                      0.0,
+                      1.0,
+                    );
+
+                    return Positioned(
+                      top: 110 * controller.value, // Move down as we pull
+                      left: 0,
+                      right: 0,
+                      child: Opacity(
+                        opacity: opacity,
+                        child: Transform.scale(
+                          scale: scale,
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: colorTheme.surface,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: SizedBox(
+                                width: 32,
+                                height: 32,
+                                child: ExpressiveLoadingIndicator(
+                                  activeSize: 52,
+                                  color: colorTheme.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+          child: CustomScrollView(
+            slivers: [
+              // Search bar app bar
+              SliverToBoxAdapter(
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(1, 8, 16, 8),
+                    child: Row(
+                      children: [
+                        if (!isExpanded) ...[
+                          // Hamburger menu
+                          IconButton(
+                            onPressed: () {
+                              _scaffoldKey.currentState?.openDrawer();
+                            },
+                            icon: Icon(
+                              Symbols.menu,
+                              fill: 0,
+                              weight: 400,
+                              color: colorTheme.onSurface,
+                            ),
+                          ),
+                        ],
+                        // Search bar
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: colorTheme.surface,
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            alignment: Alignment.centerLeft,
+                            height: 58,
+                            child: TextField(
+                              controller: _searchController,
+                              textAlignVertical: TextAlignVertical.center,
+                              onChanged: (value) {
+                                setState(() {
+                                  _searchQuery = value;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                hintText: 'Search Tasks',
+                                hintStyle: TextStyle(
+                                  color: colorTheme.onSurfaceVariant,
+                                ),
+                                border: InputBorder.none,
+                                isCollapsed: true,
+                                prefixIcon: Icon(
+                                  Symbols.search,
+                                  fill: 0,
+                                  weight: 400,
+                                  color: colorTheme.onSurfaceVariant,
+                                ),
+                                suffixIcon: _searchQuery.isNotEmpty
+                                    ? IconButton(
+                                        icon: Icon(
+                                          Symbols.close,
+                                          fill: 0,
+                                          weight: 400,
+                                          color: colorTheme.onSurfaceVariant,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _searchController.clear();
+                                            _searchQuery = '';
+                                          });
+                                        },
+                                      )
+                                    : null,
+                              ),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: colorTheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // Avatar → Settings
+                        Padding(
+                          padding: const EdgeInsets.only(right: 0),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const SettingsScreen(),
+                                ),
+                              );
+                            },
+                            child: CircleAvatar(
+                              radius: 24,
+                              backgroundColor: colorTheme.primaryContainer,
+                              backgroundImage: const AssetImage(
+                                'assets/profile.jpg',
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // Content
+              if (_tasks.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _buildEmptyState(context, colorTheme),
+                )
+              else
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 0.0,
+                      vertical: 8.0,
+                    ),
+                    child: Column(
+                      children: [
+                        if (isExpanded &&
+                            _taskSubFilter != 5 &&
+                            _taskSubFilter != 6)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          ),
+                        SortSplitButton(
+                          currentSort: _currentSort,
+                          onSortChanged: (option) {
+                            setState(() {
+                              _currentSort = option;
+                            });
+                            PreferencesHelper.setString(
+                              'task_sort_preference',
+                              option.name,
+                            );
+                          },
+                          colorTheme: colorTheme,
+                        ),
+                        if (_taskSubFilter == 4)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8.0,
+                            ),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  ChoiceChip(
+                                    label: Text('All Labeled'),
+                                    selected: _selectedLabelFilter == null,
+                                    onSelected: (selected) {
+                                      if (selected) {
+                                        setState(() {
+                                          _selectedLabelFilter = null;
+                                        });
+                                      }
+                                    },
+                                    selectedColor:
+                                        colorTheme.secondaryContainer,
+                                    labelStyle: TextStyle(
+                                      color: _selectedLabelFilter == null
+                                          ? colorTheme.onSecondaryContainer
+                                          : colorTheme.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ..._uniqueLabels.map((label) {
+                                    final isSelected =
+                                        _selectedLabelFilter == label;
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        right: 8.0,
+                                      ),
+                                      child: ChoiceChip(
+                                        label: Text(label),
+                                        selected: isSelected,
+                                        onSelected: (selected) {
+                                          setState(() {
+                                            _selectedLabelFilter = selected
+                                                ? label
+                                                : null;
+                                          });
+                                        },
+                                        selectedColor:
+                                            colorTheme.secondaryContainer,
+                                        labelStyle: TextStyle(
+                                          color: isSelected
+                                              ? colorTheme.onSecondaryContainer
+                                              : colorTheme.onSurface,
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (_sortedTasks
+                            .where((t) => !t.isCompleted)
+                            .isNotEmpty) ...[
+                          SettingSection(
+                            title: Padding(
+                              padding: const EdgeInsets.only(
+                                left: 4,
+                                bottom: 8,
+                              ),
+                              child: Text(
+                                'Active',
+                                style: TextStyle(
+                                  color: colorTheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            styleTile: true,
+                            tiles: _sortedTasks.where((t) => !t.isCompleted).map((
+                              task,
+                            ) {
+                              return TaskTile(
+                                title: Text(task.title),
+                                description:
+                                    (task.description != null &&
+                                            task.description!.isNotEmpty) ||
+                                        task.labels.isNotEmpty
+                                    ? Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          if (task.description != null &&
+                                              task.description!.isNotEmpty)
+                                            Text(task.description!),
+                                          if (task.labels.isNotEmpty)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 4.0,
+                                              ),
+                                              child: Wrap(
+                                                spacing: 4,
+                                                runSpacing: 4,
+                                                children: task.labels
+                                                    .map(
+                                                      (label) => Container(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: colorTheme
+                                                              .surfaceContainerHigh,
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                4,
+                                                              ),
+                                                          border: Border.all(
+                                                            color: colorTheme
+                                                                .outlineVariant,
+                                                          ),
+                                                        ),
+                                                        child: Text(
+                                                          label,
+                                                          style: TextStyle(
+                                                            fontSize: 10,
+                                                            color: colorTheme
+                                                                .onSurfaceVariant,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    )
+                                                    .toList(),
+                                              ),
+                                            ),
+                                        ],
+                                      )
+                                    : null,
+                                isDeadlineMissed:
+                                    task.deadline != null &&
+                                    task.deadline!.isBefore(DateTime.now()),
+                                deadline: task.deadline != null
+                                    ? Text(formatDeadline(task.deadline)!)
+                                    : null,
+                                subTasks: task.subTasks.map((subTask) {
+                                  return TaskTile(
+                                    backgroundColor:
+                                        colorTheme.surfaceContainerHigh,
+                                    title: Text(
+                                      subTask.title,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium,
+                                    ),
+                                    description:
+                                        subTask.description != null &&
+                                            subTask.description!.isNotEmpty
+                                        ? Text(
+                                            subTask.description!,
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.bodySmall,
+                                          )
+                                        : null,
+                                    checked: subTask.isCompleted,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        subTask.isCompleted = value ?? false;
+                                        if (subTask.isCompleted) {
+                                          AudioService().playTickSound();
+                                        }
+                                        task.save();
+                                      });
+                                    },
+                                  );
+                                }).toList(),
+                                checked: task.isCompleted,
+                                onChanged: (value) async {
+                                  setState(() {
+                                    task.isCompleted = value ?? false;
+                                  });
+                                  await task.save();
+                                  if (task.isCompleted) {
+                                    AudioService().playTickSound();
+                                    await NotificationService()
+                                        .cancelNotification(task.id.hashCode);
+                                  } else {
+                                    final bool notificationsEnabled =
+                                        PreferencesHelper.getBool(
+                                          'notificationsEnabled',
+                                        ) ??
+                                        false;
+                                    final bool deadlineReminders =
+                                        PreferencesHelper.getBool(
+                                          'deadlineReminders',
+                                        ) ??
+                                        true;
+                                    final String savedKey =
+                                        PreferencesHelper.getString(
+                                          'reminderTime',
+                                        ) ??
+                                        '30min';
+                                    int minutes = 30;
+                                    if (savedKey == '15min')
+                                      minutes = 15;
+                                    else if (savedKey == '1hr')
+                                      minutes = 60;
+                                    else if (savedKey == '1day')
+                                      minutes = 1440;
+
+                                    if (notificationsEnabled &&
+                                        deadlineReminders &&
+                                        task.deadline != null) {
+                                      await NotificationService()
+                                          .scheduleDeadlineReminder(
+                                            task,
+                                            minutes,
+                                          );
+                                    }
+                                  }
+                                },
+                                onLongPress: () {
+                                  setState(() {
+                                    _selectedTaskForToolbar = task;
+                                  });
+                                },
+                                onPressed: () async {
+                                  if (isExpanded) {
+                                    setState(() {
+                                      _editingTask = task;
+                                      _isEditingNewTask = false;
+                                    });
+                                  } else {
+                                    final updatedTask =
+                                        await Navigator.of(
+                                          context,
+                                        ).push<dynamic>(
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                TaskEditorScreen(task: task),
+                                          ),
+                                        );
+                                    if (updatedTask != null) {
+                                      setState(() {
+                                        _editingTask = task;
+                                        _isEditingNewTask = false;
+                                      });
+                                      _handleTaskResult(updatedTask);
+                                    }
+                                  }
+                                },
+                              );
+                            }).toList(),
+                          ),
+                          SizedBox(height: 16),
+                        ],
+                        if (_sortedTasks.where((t) => t.isCompleted).isNotEmpty)
+                          SettingSection(
+                            title: Padding(
+                              padding: const EdgeInsets.only(
+                                left: 4,
+                                bottom: 8,
+                              ),
+                              child: Text(
+                                'Completed',
+                                style: TextStyle(
+                                  color: colorTheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            styleTile: true,
+                            tiles: _sortedTasks.where((t) => t.isCompleted).map((
+                              task,
+                            ) {
+                              return TaskTile(
+                                title: Text(
+                                  task.title,
+                                  style: TextStyle(
+                                    decoration: TextDecoration.lineThrough,
+                                    color: colorTheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                description:
+                                    (task.description != null &&
+                                            task.description!.isNotEmpty) ||
+                                        task.labels.isNotEmpty
+                                    ? Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          if (task.description != null &&
+                                              task.description!.isNotEmpty)
+                                            Text(
+                                              task.description!,
+                                              style: TextStyle(
+                                                decoration:
+                                                    TextDecoration.lineThrough,
+                                                color:
+                                                    colorTheme.onSurfaceVariant,
+                                              ),
+                                            ),
+                                          if (task.labels.isNotEmpty)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 4.0,
+                                              ),
+                                              child: Wrap(
+                                                spacing: 4,
+                                                runSpacing: 4,
+                                                children: task.labels
+                                                    .map(
+                                                      (label) => Container(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: colorTheme
+                                                              .surfaceContainerHigh,
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                4,
+                                                              ),
+                                                          border: Border.all(
+                                                            color: colorTheme
+                                                                .outlineVariant
+                                                                .withValues(
+                                                                  alpha: 0.5,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                        child: Text(
+                                                          label,
+                                                          style: TextStyle(
+                                                            fontSize: 10,
+                                                            color: colorTheme
+                                                                .onSurfaceVariant
+                                                                .withValues(
+                                                                  alpha: 0.6,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    )
+                                                    .toList(),
+                                              ),
+                                            ),
+                                        ],
+                                      )
+                                    : null,
+                                deadline: task.deadline != null
+                                    ? Text(
+                                        formatDeadline(task.deadline)!,
+                                        style: TextStyle(
+                                          decoration:
+                                              TextDecoration.lineThrough,
+                                        ),
+                                      )
+                                    : null,
+                                subTasks: task.subTasks.map((subTask) {
+                                  return TaskTile(
+                                    backgroundColor:
+                                        colorTheme.surfaceContainerHigh,
+                                    title: Text(
+                                      subTask.title,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            decoration:
+                                                TextDecoration.lineThrough,
+                                            color: colorTheme.onSurfaceVariant,
+                                          ),
+                                    ),
+                                    description:
+                                        subTask.description != null &&
+                                            subTask.description!.isNotEmpty
+                                        ? Text(
+                                            subTask.description!,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  decoration: TextDecoration
+                                                      .lineThrough,
+                                                  color: colorTheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                          )
+                                        : null,
+                                    checked: subTask.isCompleted,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        subTask.isCompleted = value ?? false;
+                                        if (subTask.isCompleted) {
+                                          AudioService().playTickSound();
+                                        }
+                                        task.save();
+                                      });
+                                    },
+                                  );
+                                }).toList(),
+                                checked: task.isCompleted,
+                                onChanged: (value) async {
+                                  setState(() {
+                                    task.isCompleted = value ?? false;
+                                  });
+                                  await task.save();
+                                  if (task.isCompleted) {
+                                    AudioService().playTickSound();
+                                    await NotificationService()
+                                        .cancelNotification(task.id.hashCode);
+                                  } else {
+                                    final bool notificationsEnabled =
+                                        PreferencesHelper.getBool(
+                                          'notificationsEnabled',
+                                        ) ??
+                                        false;
+                                    final bool deadlineReminders =
+                                        PreferencesHelper.getBool(
+                                          'deadlineReminders',
+                                        ) ??
+                                        true;
+                                    final String savedKey =
+                                        PreferencesHelper.getString(
+                                          'reminderTime',
+                                        ) ??
+                                        '30min';
+                                    int minutes = 30;
+                                    if (savedKey == '15min')
+                                      minutes = 15;
+                                    else if (savedKey == '1hr')
+                                      minutes = 60;
+                                    else if (savedKey == '1day')
+                                      minutes = 1440;
+
+                                    if (notificationsEnabled &&
+                                        deadlineReminders &&
+                                        task.deadline != null) {
+                                      await NotificationService()
+                                          .scheduleDeadlineReminder(
+                                            task,
+                                            minutes,
+                                          );
+                                    }
+                                  }
+                                },
+                                onLongPress: () {
+                                  setState(() {
+                                    _selectedTaskForToolbar = task;
+                                  });
+                                },
+                                onPressed: () async {
+                                  if (isExpanded) {
+                                    setState(() {
+                                      _editingTask = task;
+                                      _isEditingNewTask = false;
+                                    });
+                                  } else {
+                                    final updatedTask =
+                                        await Navigator.of(
+                                          context,
+                                        ).push<dynamic>(
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                TaskEditorScreen(task: task),
+                                          ),
+                                        );
+                                    if (updatedTask != null) {
+                                      setState(() {
+                                        _editingTask = task;
+                                        _isEditingNewTask = false;
+                                      });
+                                      _handleTaskResult(updatedTask);
+                                    }
+                                  }
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        SizedBox(height: 25),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (_selectedTaskForToolbar != null)
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                setState(() {
+                  _selectedTaskForToolbar = null;
+                });
+              },
+              child: Container(color: Colors.black.withValues(alpha: 0)),
+            ),
+          ),
+        if (_selectedTaskForToolbar != null)
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            bottom: 32,
+            left: 0,
+            right: 0,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: TaskFloatingToolbar(
+                task: _selectedTaskForToolbar!,
+                colorTheme: colorTheme,
+                onComplete: () async {
+                  final task = _selectedTaskForToolbar!;
+                  setState(() {
+                    task.isCompleted = !task.isCompleted;
+                    task.save();
+                  });
+
+                  if (task.isCompleted) {
+                    AudioService().playTickSound();
+                    await NotificationService().cancelNotification(
+                      task.id.hashCode,
+                    );
+                  } else {
+                    final bool notificationsEnabled =
+                        PreferencesHelper.getBool('notificationsEnabled') ??
+                        false;
+                    final bool deadlineReminders =
+                        PreferencesHelper.getBool('deadlineReminders') ?? true;
+                    final String savedKey =
+                        PreferencesHelper.getString('reminderTime') ?? '30min';
+                    int minutes = 30;
+                    if (savedKey == '15min')
+                      minutes = 15;
+                    else if (savedKey == '1hr')
+                      minutes = 60;
+                    else if (savedKey == '1day')
+                      minutes = 1440;
+
+                    if (notificationsEnabled &&
+                        deadlineReminders &&
+                        task.deadline != null) {
+                      await NotificationService().scheduleDeadlineReminder(
+                        task,
+                        minutes,
+                      );
+                    }
+                  }
+
+                  setState(() {
+                    _selectedTaskForToolbar = null;
+                  });
+                },
+                onEdit: () async {
+                  final taskToEdit = _selectedTaskForToolbar!;
+                  setState(() {
+                    _selectedTaskForToolbar = null;
+                  });
+                  if (isExpanded) {
+                    setState(() {
+                      _editingTask = taskToEdit;
+                      _isEditingNewTask = false;
+                    });
+                  } else {
+                    final updatedTask = await Navigator.of(context)
+                        .push<dynamic>(
+                          MaterialPageRoute(
+                            builder: (_) => TaskEditorScreen(task: taskToEdit),
+                          ),
+                        );
+                    if (updatedTask != null) {
+                      setState(() {
+                        _editingTask = taskToEdit;
+                        _isEditingNewTask = false;
+                      });
+                      _handleTaskResult(updatedTask);
+                    }
+                  }
+                },
+                onDelete: () {
+                  setState(() {
+                    if (_selectedTaskForToolbar!.isDeleted) {
+                      // Permanent delete
+                      final index = _tasks.indexWhere(
+                        (t) => t.id == _selectedTaskForToolbar!.id,
+                      );
+                      if (index != -1) {
+                        _tasks.removeAt(index);
+                        _tasksBox.delete(_selectedTaskForToolbar!.id);
+                      }
+                    } else {
+                      // Soft delete (Move to trash)
+                      _selectedTaskForToolbar!.isDeleted = true;
+                      _selectedTaskForToolbar!.save();
+                    }
+                    _selectedTaskForToolbar = null;
+                  });
+                },
+                onArchive: () {
+                  setState(() {
+                    _selectedTaskForToolbar!.isArchived =
+                        !_selectedTaskForToolbar!.isArchived;
+                    _selectedTaskForToolbar!.save();
+                    _selectedTaskForToolbar = null;
+                  });
+                },
+                onRestore: () {
+                  setState(() {
+                    _selectedTaskForToolbar!.isDeleted = false;
+                    _selectedTaskForToolbar!.save();
+                    _selectedTaskForToolbar = null;
+                  });
+                },
+                onClose: () {
+                  setState(() {
+                    _selectedTaskForToolbar = null;
+                  });
+                },
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildDrawer(BuildContext context, ColorScheme colorTheme) {
+    // Map _navIndex and _taskSubFilter to a flat index for the drawer selection highlight
+    int drawerSelectedIndex;
+    if (_navIndex == 0) {
+      drawerSelectedIndex = 0; // Overview
+    } else if (_navIndex == 1) {
+      // Maps to taskSubFilters 0-6 (All Tasks through Trash) -> Drawer 1-7
+      drawerSelectedIndex = _taskSubFilter + 1;
+    } else if (_navIndex == 2) {
+      drawerSelectedIndex = 8; // Session
+    } else {
+      drawerSelectedIndex = -1; // Settings not in drawer
+    }
+
     return NavigationDrawer(
-      selectedIndex: _selectedDrawerIndex,
+      selectedIndex: drawerSelectedIndex,
       onDestinationSelected: (index) {
         setState(() {
-          _selectedDrawerIndex = index;
+          if (index == 0) {
+            _navIndex = 0;
+          } else if (index >= 1 && index <= 7) {
+            _navIndex = 1;
+            _taskSubFilter = index - 1;
+          } else if (index == 8) {
+            _navIndex = 2;
+          }
         });
         // Close modal drawer if applicable (i.e. not in expanded view)
         final scaffoldState = _scaffoldKey.currentState;
