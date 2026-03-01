@@ -12,6 +12,7 @@ import 'package:orches/screens/task_editor_screen.dart';
 import 'package:orches/widgets/sort_split_button.dart';
 import 'package:orches/widgets/task_floating_toolbar.dart';
 import 'package:orches/screens/session_screen.dart';
+import 'package:orches/screens/overview/overview_page.dart';
 import 'package:orches/utils/preferences_helper.dart';
 import 'package:orches/main.dart';
 import 'package:orches/services/notification_service.dart';
@@ -38,6 +39,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _selectedLabelFilter;
   Task? _editingTask;
   bool _isEditingNewTask = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   void _handleTaskResult(dynamic result) async {
     if (result == null) return;
@@ -121,9 +124,22 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Task> get _filteredTasks {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+    final query = _searchQuery.toLowerCase().trim();
 
     return _tasks.where((task) {
-      if (_selectedDrawerIndex == 6) {
+      // Apply search filter first
+      if (query.isNotEmpty) {
+        final titleMatch = task.title.toLowerCase().contains(query);
+        final descMatch = (task.description ?? '').toLowerCase().contains(
+          query,
+        );
+        final labelMatch = task.labels.any(
+          (l) => l.toLowerCase().contains(query),
+        );
+        if (!titleMatch && !descMatch && !labelMatch) return false;
+      }
+
+      if (_selectedDrawerIndex == 7) {
         // Trash
         return task.isDeleted;
       }
@@ -132,9 +148,11 @@ class _HomeScreenState extends State<HomeScreen> {
       if (task.isDeleted) return false;
 
       switch (_selectedDrawerIndex) {
-        case 0: // All tasks
+        case 0: // Overview (handled separately)
+          return false;
+        case 1: // All tasks
           return !task.isArchived;
-        case 1: // Today
+        case 2: // Today
           if (task.isArchived || task.deadline == null) return false;
           final taskDate = DateTime(
             task.deadline!.year,
@@ -142,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
             task.deadline!.day,
           );
           return taskDate.isAtSameMomentAs(today);
-        case 2: // Upcoming
+        case 3: // Upcoming
           if (task.isArchived || task.deadline == null) return false;
           final taskDate = DateTime(
             task.deadline!.year,
@@ -150,9 +168,9 @@ class _HomeScreenState extends State<HomeScreen> {
             task.deadline!.day,
           );
           return taskDate.isAfter(today);
-        case 3: // Completed
+        case 4: // Completed
           return task.isCompleted && !task.isArchived;
-        case 4: // Labels
+        case 5: // Labels
           if (_selectedLabelFilter != null) {
             return task.labels.contains(_selectedLabelFilter) &&
                 !task.isArchived;
@@ -160,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // If no label is selected, perhaps show all tasks that have at least one label,
           // or just an empty list. Let's show all labeled tasks by default.
           return task.labels.isNotEmpty && !task.isArchived;
-        case 5: // Archive
+        case 6: // Archive
           return task.isArchived;
         default:
           return !task.isArchived;
@@ -206,6 +224,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
 
@@ -213,7 +237,15 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, constraints) {
         final bool isExpanded = constraints.maxWidth >= 840;
 
-        final Widget bodyContent = _selectedDrawerIndex == 7
+        final Widget bodyContent = _selectedDrawerIndex == 0
+            ? OverviewPage(
+                onNavigateToTasks: () {
+                  setState(() {
+                    _selectedDrawerIndex = 1;
+                  });
+                },
+              )
+            : _selectedDrawerIndex == 8
             ? SessionScreen(
                 onBack: () {
                   setState(() {
@@ -337,14 +369,44 @@ class _HomeScreenState extends State<HomeScreen> {
                                       alignment: Alignment.centerLeft,
                                       height: 58,
                                       child: TextField(
+                                        controller: _searchController,
+                                        textAlignVertical:
+                                            TextAlignVertical.center,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _searchQuery = value;
+                                          });
+                                        },
                                         decoration: InputDecoration(
                                           hintText: 'Search Tasks',
                                           hintStyle: TextStyle(
                                             color: colorTheme.onSurfaceVariant,
                                           ),
                                           border: InputBorder.none,
-                                          isDense: true,
-                                          contentPadding: EdgeInsets.zero,
+                                          isCollapsed: true,
+                                          prefixIcon: Icon(
+                                            Symbols.search,
+                                            fill: 0,
+                                            weight: 400,
+                                            color: colorTheme.onSurfaceVariant,
+                                          ),
+                                          suffixIcon: _searchQuery.isNotEmpty
+                                              ? IconButton(
+                                                  icon: Icon(
+                                                    Symbols.close,
+                                                    fill: 0,
+                                                    weight: 400,
+                                                    color: colorTheme
+                                                        .onSurfaceVariant,
+                                                  ),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      _searchController.clear();
+                                                      _searchQuery = '';
+                                                    });
+                                                  },
+                                                )
+                                              : null,
                                         ),
                                         style: TextStyle(
                                           fontSize: 16,
@@ -398,8 +460,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Column(
                                 children: [
                                   if (isExpanded &&
-                                      _selectedDrawerIndex != 5 &&
-                                      _selectedDrawerIndex != 6)
+                                      _selectedDrawerIndex != 6 &&
+                                      _selectedDrawerIndex != 7)
                                     Padding(
                                       padding: const EdgeInsets.fromLTRB(
                                         16,
@@ -421,7 +483,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     },
                                     colorTheme: colorTheme,
                                   ),
-                                  if (_selectedDrawerIndex == 4)
+                                  if (_selectedDrawerIndex == 5)
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 16.0,
@@ -1152,9 +1214,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           floatingActionButton:
-              (_selectedDrawerIndex == 5 ||
+              (_selectedDrawerIndex == 0 ||
                   _selectedDrawerIndex == 6 ||
-                  _selectedDrawerIndex == 7)
+                  _selectedDrawerIndex == 7 ||
+                  _selectedDrawerIndex == 8)
               ? null
               : FloatingActionButton(
                   onPressed: () async {
@@ -1198,8 +1261,10 @@ class _HomeScreenState extends State<HomeScreen> {
           _selectedDrawerIndex = index;
         });
         // Close modal drawer if applicable (i.e. not in expanded view)
-        if (Scaffold.of(context).hasDrawer &&
-            Scaffold.of(context).isDrawerOpen) {
+        final scaffoldState = _scaffoldKey.currentState;
+        if (scaffoldState != null &&
+            scaffoldState.hasDrawer &&
+            scaffoldState.isDrawerOpen) {
           Navigator.pop(context);
         }
       },
@@ -1216,6 +1281,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         Divider(indent: 28, endIndent: 28),
+        NavigationDrawerDestination(
+          icon: Icon(Symbols.dashboard, fill: 0, weight: 400),
+          selectedIcon: Icon(Symbols.dashboard, fill: 1, weight: 400),
+          label: Text('Overview'),
+        ),
         NavigationDrawerDestination(
           icon: Icon(Symbols.task_alt, fill: 0, weight: 400),
           selectedIcon: Icon(Symbols.task_alt, fill: 1, weight: 400),

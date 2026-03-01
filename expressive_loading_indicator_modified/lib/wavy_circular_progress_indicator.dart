@@ -10,6 +10,7 @@ class WavyCircularProgressIndicator extends ProgressIndicator {
   final double strokeWidth;
   final double waveAmplitude;
   final double waveLength;
+  final bool showTrack;
 
   const WavyCircularProgressIndicator({
     super.key,
@@ -19,6 +20,7 @@ class WavyCircularProgressIndicator extends ProgressIndicator {
     this.strokeWidth = 4.0,
     this.waveAmplitude = 3.0,
     this.waveLength = 20.0,
+    this.showTrack = true,
     super.semanticsLabel,
     super.semanticsValue,
   });
@@ -78,6 +80,7 @@ class _WavyCircularProgressIndicatorState
                 strokeWidth: widget.strokeWidth,
                 waveAmplitude: widget.waveAmplitude,
                 waveLength: widget.waveLength,
+                showTrack: widget.showTrack,
               ),
             );
           },
@@ -98,6 +101,7 @@ class _WavyCircularPainter extends CustomPainter {
   final double strokeWidth;
   final double waveAmplitude;
   final double waveLength;
+  final bool showTrack;
 
   _WavyCircularPainter({
     required this.value,
@@ -107,6 +111,7 @@ class _WavyCircularPainter extends CustomPainter {
     required this.strokeWidth,
     required this.waveAmplitude,
     required this.waveLength,
+    required this.showTrack,
   });
 
   /// Builds TWO copies of a wavy circle path so that we can extract any
@@ -202,7 +207,9 @@ class _WavyCircularPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     // Draw smooth track circle
-    canvas.drawCircle(center, radius, trackPaint);
+    if (showTrack) {
+      canvas.drawCircle(center, radius, trackPaint);
+    }
 
     // Build the full wavy path (2 copies for wrapping)
     final wavyPath = _buildFullWavyCirclePath(radius, center);
@@ -244,6 +251,7 @@ class _WavyCircularPainter extends CustomPainter {
         oldDelegate.trackColor != trackColor ||
         oldDelegate.strokeWidth != strokeWidth ||
         oldDelegate.waveAmplitude != waveAmplitude ||
-        oldDelegate.waveLength != waveLength;
+        oldDelegate.waveLength != waveLength ||
+        oldDelegate.showTrack != showTrack;
   }
 }
