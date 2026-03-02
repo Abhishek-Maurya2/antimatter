@@ -31,6 +31,9 @@ class Task extends HiveObject {
   @HiveField(8, defaultValue: [])
   List<String> labels;
 
+  @HiveField(9)
+  DateTime? completedAt;
+
   Task({
     required this.id,
     required this.title,
@@ -41,6 +44,7 @@ class Task extends HiveObject {
     this.isArchived = false,
     this.isDeleted = false,
     this.labels = const [],
+    this.completedAt,
   });
 
   /// Factory constructor to create a Task from JSON (e.g. from Supabase)
@@ -60,6 +64,9 @@ class Task extends HiveObject {
           [],
       isArchived: json['is_archived'] as bool? ?? false,
       isDeleted: json['is_deleted'] as bool? ?? false,
+      completedAt: json['completed_at'] != null
+          ? DateTime.parse(json['completed_at'] as String).toLocal()
+          : null,
       labels:
           (json['labels'] as List<dynamic>?)
               ?.map((e) => e as String)

@@ -16,6 +16,9 @@ class FloatingNavItem {
 class FloatingNavBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onItemSelected;
+  final IconData? pageActionIcon;
+  final String? pageActionTooltip;
+  final VoidCallback? onPageActionTap;
 
   static const _items = [
     FloatingNavItem(
@@ -44,6 +47,9 @@ class FloatingNavBar extends StatelessWidget {
     super.key,
     required this.selectedIndex,
     required this.onItemSelected,
+    this.pageActionIcon,
+    this.pageActionTooltip,
+    this.onPageActionTap,
   });
 
   @override
@@ -52,7 +58,7 @@ class FloatingNavBar extends StatelessWidget {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: bottomPadding + 16, left: 24, right: 24),
+      padding: EdgeInsets.only(bottom: bottomPadding, left: 24, right: 24),
       child: Center(
         child: Material(
           elevation: 3,
@@ -64,16 +70,57 @@ class FloatingNavBar extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               spacing: 4,
-              children: List.generate(_items.length, (index) {
-                return _NavBarItem(
-                  item: _items[index],
-                  isSelected: selectedIndex == index,
-                  onTap: () => onItemSelected(index),
-                  colorTheme: colorTheme,
-                );
-              }),
+              children:
+                  List.generate(_items.length, (index) {
+                    return _NavBarItem(
+                      item: _items[index],
+                      isSelected: selectedIndex == index,
+                      onTap: () => onItemSelected(index),
+                      colorTheme: colorTheme,
+                    );
+                  })..addAll([
+                    if (onPageActionTap != null && pageActionIcon != null) ...[
+                      _PageActionButton(
+                        icon: pageActionIcon!,
+                        tooltip: pageActionTooltip,
+                        onTap: onPageActionTap!,
+                        colorTheme: colorTheme,
+                      ),
+                    ],
+                  ]),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PageActionButton extends StatelessWidget {
+  final IconData icon;
+  final String? tooltip;
+  final VoidCallback onTap;
+  final ColorScheme colorTheme;
+
+  const _PageActionButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+    required this.colorTheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip ?? '',
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorTheme.primary,
+          borderRadius: BorderRadius.circular(50),
+        ),
+        child: IconButton(
+          onPressed: onTap,
+          icon: Icon(icon, fill: 0, size: 24, color: colorTheme.onPrimary),
         ),
       ),
     );

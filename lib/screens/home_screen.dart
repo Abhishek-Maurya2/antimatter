@@ -24,11 +24,12 @@ enum TaskSortOption { newest, oldest, dueDate }
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  @override
+  @override 
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const Duration _completedRetention = Duration(days: 7);
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late Box<Task> _tasksBox;
@@ -44,6 +45,89 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isEditingNewTask = false;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+
+  Future<void> _openCreateTaskEditor(bool isExpanded) async {
+    if (isExpanded) {
+      setState(() {
+        _editingTask = null;
+        _isEditingNewTask = true;
+      });
+      return;
+    }
+
+    final newTask = await Navigator.of(
+      context,
+    ).push<Task>(MaterialPageRoute(builder: (_) => const TaskEditorScreen()));
+
+    if (newTask != null) {
+      setState(() {
+        _tasks.add(newTask);
+        _tasksBox.put(newTask.id, newTask);
+      });
+    }
+  }
+
+  Future<void> _setTaskCompleted(Task task, bool isCompleted) async {
+    task.isCompleted = isCompleted;
+    task.completedAt = isCompleted
+        ? (task.completedAt ?? DateTime.now())
+        : null;
+
+    await task.save();
+
+    if (task.isCompleted) {
+      AudioService().playTickSound();
+      await NotificationService().cancelNotification(task.id.hashCode);
+    } else {
+      final bool notificationsEnabled =
+          PreferencesHelper.getBool('notificationsEnabled') ?? false;
+      final bool deadlineReminders =
+          PreferencesHelper.getBool('deadlineReminders') ?? true;
+      final String savedKey =
+          PreferencesHelper.getString('reminderTime') ?? '30min';
+      int minutes = 30;
+      if (savedKey == '15min') {
+        minutes = 15;
+      } else if (savedKey == '1hr') {
+        minutes = 60;
+      } else if (savedKey == '1day') {
+        minutes = 1440;
+      }
+
+      if (notificationsEnabled && deadlineReminders && task.deadline != null) {
+        await NotificationService().scheduleDeadlineReminder(task, minutes);
+      }
+    }
+  }
+
+  Future<void> _autoMoveOldCompletedTasksToTrash() async {
+    final now = DateTime.now();
+    bool changed = false;
+
+    for (final task in _tasksBox.values) {
+      if (!task.isCompleted || task.isDeleted) continue;
+
+      final completedAt = task.completedAt;
+      if (completedAt == null) {
+        task.completedAt = now;
+        await task.save();
+        changed = true;
+        continue;
+      }
+
+      if (now.difference(completedAt) >= _completedRetention) {
+        task.isDeleted = true;
+        await task.save();
+        changed = true;
+      }
+    }
+
+    if (changed && mounted) {
+      setState(() {
+        _tasks = _tasksBox.values.toList();
+      });
+    }
+  }
 
   void _handleTaskResult(dynamic result) async {
     if (result == null) return;
@@ -63,18 +147,25 @@ class _HomeScreenState extends State<HomeScreen> {
       minutes = 1440;
 
     if (result == 'DELETE' && _editingTask != null && !_isEditingNewTask) {
+      final deletedTaskId = _editingTask!.id;
       final index = _tasks.indexWhere((t) => t.id == _editingTask!.id);
       if (index != -1) {
         setState(() {
           _tasks.removeAt(index);
         });
         await _tasksBox.delete(_editingTask!.id);
+        await syncService.deleteTask(deletedTaskId);
         await NotificationService().cancelNotification(
           _editingTask!.id.hashCode,
         );
       }
     } else if (result is Task) {
       if (_isEditingNewTask) {
+        if (result.isCompleted && result.completedAt == null) {
+          result.completedAt = DateTime.now();
+        } else if (!result.isCompleted) {
+          result.completedAt = null;
+        }
         setState(() {
           _tasks.add(result);
         });
@@ -91,6 +182,11 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             _tasks[index] = result;
           });
+          if (result.isCompleted && result.completedAt == null) {
+            result.completedAt = DateTime.now();
+          } else if (!result.isCompleted) {
+            result.completedAt = null;
+          }
           await _tasksBox.put(result.id, result);
           if (notificationsEnabled &&
               deadlineReminders &&
@@ -110,6 +206,8 @@ class _HomeScreenState extends State<HomeScreen> {
       _editingTask = null;
       _isEditingNewTask = false;
     });
+
+    await _autoMoveOldCompletedTasksToTrash();
   }
 
   List<String> get _uniqueLabels {
@@ -220,6 +318,10 @@ class _HomeScreenState extends State<HomeScreen> {
         orElse: () => TaskSortOption.oldest,
       );
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _autoMoveOldCompletedTasksToTrash();
+    });
   }
 
   @override
@@ -287,6 +389,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                 }
                               });
                             },
+                            pageActionIcon: _navIndex == 1 ? Symbols.add : null,
+                            pageActionTooltip: _navIndex == 1
+                                ? 'Add task'
+                                : null,
+                            onPageActionTap: _navIndex == 1
+                                ? () => _openCreateTaskEditor(isExpanded)
+                                : null,
                           ),
                         ),
                       ),
@@ -317,37 +426,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
             ],
           ),
-          floatingActionButton:
-              _navIndex == 1 && _taskSubFilter != 5 && _taskSubFilter != 6
-              ? FloatingActionButton(
-                  onPressed: () async {
-                    if (isExpanded) {
-                      setState(() {
-                        _editingTask = null;
-                        _isEditingNewTask = true;
-                      });
-                    } else {
-                      final newTask = await Navigator.of(context).push<Task>(
-                        MaterialPageRoute(
-                          builder: (_) => const TaskEditorScreen(),
-                        ),
-                      );
-                      if (newTask != null) {
-                        setState(() {
-                          _tasks.add(newTask);
-                          _tasksBox.put(newTask.id, newTask);
-                        });
-                      }
-                    }
-                  },
-                  backgroundColor: colorTheme.primaryContainer,
-                  foregroundColor: colorTheme.onPrimaryContainer,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(Symbols.add, fill: 1, weight: 500, size: 24),
-                )
-              : null,
         );
       },
     );
@@ -363,6 +441,7 @@ class _HomeScreenState extends State<HomeScreen> {
         CustomRefreshIndicator(
           onRefresh: () async {
             await syncService.pullTasks();
+            await _autoMoveOldCompletedTasksToTrash();
             if (context.mounted) {
               setState(() {
                 _tasks = _tasksBox.values.toList();
@@ -755,48 +834,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 }).toList(),
                                 checked: task.isCompleted,
                                 onChanged: (value) async {
+                                  final isCompleted = value ?? false;
                                   setState(() {
-                                    task.isCompleted = value ?? false;
+                                    task.isCompleted = isCompleted;
                                   });
-                                  await task.save();
-                                  if (task.isCompleted) {
-                                    AudioService().playTickSound();
-                                    await NotificationService()
-                                        .cancelNotification(task.id.hashCode);
-                                  } else {
-                                    final bool notificationsEnabled =
-                                        PreferencesHelper.getBool(
-                                          'notificationsEnabled',
-                                        ) ??
-                                        false;
-                                    final bool deadlineReminders =
-                                        PreferencesHelper.getBool(
-                                          'deadlineReminders',
-                                        ) ??
-                                        true;
-                                    final String savedKey =
-                                        PreferencesHelper.getString(
-                                          'reminderTime',
-                                        ) ??
-                                        '30min';
-                                    int minutes = 30;
-                                    if (savedKey == '15min')
-                                      minutes = 15;
-                                    else if (savedKey == '1hr')
-                                      minutes = 60;
-                                    else if (savedKey == '1day')
-                                      minutes = 1440;
-
-                                    if (notificationsEnabled &&
-                                        deadlineReminders &&
-                                        task.deadline != null) {
-                                      await NotificationService()
-                                          .scheduleDeadlineReminder(
-                                            task,
-                                            minutes,
-                                          );
-                                    }
-                                  }
+                                  await _setTaskCompleted(task, isCompleted);
+                                  await _autoMoveOldCompletedTasksToTrash();
                                 },
                                 onLongPress: () {
                                   setState(() {
@@ -983,48 +1026,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 }).toList(),
                                 checked: task.isCompleted,
                                 onChanged: (value) async {
+                                  final isCompleted = value ?? false;
                                   setState(() {
-                                    task.isCompleted = value ?? false;
+                                    task.isCompleted = isCompleted;
                                   });
-                                  await task.save();
-                                  if (task.isCompleted) {
-                                    AudioService().playTickSound();
-                                    await NotificationService()
-                                        .cancelNotification(task.id.hashCode);
-                                  } else {
-                                    final bool notificationsEnabled =
-                                        PreferencesHelper.getBool(
-                                          'notificationsEnabled',
-                                        ) ??
-                                        false;
-                                    final bool deadlineReminders =
-                                        PreferencesHelper.getBool(
-                                          'deadlineReminders',
-                                        ) ??
-                                        true;
-                                    final String savedKey =
-                                        PreferencesHelper.getString(
-                                          'reminderTime',
-                                        ) ??
-                                        '30min';
-                                    int minutes = 30;
-                                    if (savedKey == '15min')
-                                      minutes = 15;
-                                    else if (savedKey == '1hr')
-                                      minutes = 60;
-                                    else if (savedKey == '1day')
-                                      minutes = 1440;
-
-                                    if (notificationsEnabled &&
-                                        deadlineReminders &&
-                                        task.deadline != null) {
-                                      await NotificationService()
-                                          .scheduleDeadlineReminder(
-                                            task,
-                                            minutes,
-                                          );
-                                    }
-                                  }
+                                  await _setTaskCompleted(task, isCompleted);
+                                  await _autoMoveOldCompletedTasksToTrash();
                                 },
                                 onLongPress: () {
                                   setState(() {
@@ -1093,41 +1100,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 colorTheme: colorTheme,
                 onComplete: () async {
                   final task = _selectedTaskForToolbar!;
+                  final isCompleted = !task.isCompleted;
                   setState(() {
-                    task.isCompleted = !task.isCompleted;
-                    task.save();
+                    task.isCompleted = isCompleted;
                   });
-
-                  if (task.isCompleted) {
-                    AudioService().playTickSound();
-                    await NotificationService().cancelNotification(
-                      task.id.hashCode,
-                    );
-                  } else {
-                    final bool notificationsEnabled =
-                        PreferencesHelper.getBool('notificationsEnabled') ??
-                        false;
-                    final bool deadlineReminders =
-                        PreferencesHelper.getBool('deadlineReminders') ?? true;
-                    final String savedKey =
-                        PreferencesHelper.getString('reminderTime') ?? '30min';
-                    int minutes = 30;
-                    if (savedKey == '15min')
-                      minutes = 15;
-                    else if (savedKey == '1hr')
-                      minutes = 60;
-                    else if (savedKey == '1day')
-                      minutes = 1440;
-
-                    if (notificationsEnabled &&
-                        deadlineReminders &&
-                        task.deadline != null) {
-                      await NotificationService().scheduleDeadlineReminder(
-                        task,
-                        minutes,
-                      );
-                    }
-                  }
+                  await _setTaskCompleted(task, isCompleted);
+                  await _autoMoveOldCompletedTasksToTrash();
 
                   setState(() {
                     _selectedTaskForToolbar = null;
@@ -1159,39 +1137,50 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
                   }
                 },
-                onDelete: () {
-                  setState(() {
-                    if (_selectedTaskForToolbar!.isDeleted) {
-                      // Permanent delete
-                      final index = _tasks.indexWhere(
-                        (t) => t.id == _selectedTaskForToolbar!.id,
-                      );
+                onDelete: () async {
+                  final task = _selectedTaskForToolbar;
+                  if (task == null) return;
+
+                  if (task.isDeleted) {
+                    setState(() {
+                      final index = _tasks.indexWhere((t) => t.id == task.id);
                       if (index != -1) {
                         _tasks.removeAt(index);
-                        _tasksBox.delete(_selectedTaskForToolbar!.id);
                       }
-                    } else {
-                      // Soft delete (Move to trash)
-                      _selectedTaskForToolbar!.isDeleted = true;
-                      _selectedTaskForToolbar!.save();
-                    }
-                    _selectedTaskForToolbar = null;
-                  });
+                      _selectedTaskForToolbar = null;
+                    });
+                    await _tasksBox.delete(task.id);
+                    await syncService.deleteTask(task.id);
+                  } else {
+                    setState(() {
+                      task.isDeleted = true;
+                      _selectedTaskForToolbar = null;
+                    });
+                    await task.save();
+                    await syncService.pushTask(task);
+                  }
                 },
-                onArchive: () {
+                onArchive: () async {
+                  final task = _selectedTaskForToolbar;
+                  if (task == null) return;
+
                   setState(() {
-                    _selectedTaskForToolbar!.isArchived =
-                        !_selectedTaskForToolbar!.isArchived;
-                    _selectedTaskForToolbar!.save();
+                    task.isArchived = !task.isArchived;
                     _selectedTaskForToolbar = null;
                   });
+                  await task.save();
+                  await syncService.pushTask(task);
                 },
-                onRestore: () {
+                onRestore: () async {
+                  final task = _selectedTaskForToolbar;
+                  if (task == null) return;
+
                   setState(() {
-                    _selectedTaskForToolbar!.isDeleted = false;
-                    _selectedTaskForToolbar!.save();
+                    task.isDeleted = false;
                     _selectedTaskForToolbar = null;
                   });
+                  await task.save();
+                  await syncService.pushTask(task);
                 },
                 onClose: () {
                   setState(() {
