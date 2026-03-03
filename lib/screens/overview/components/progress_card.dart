@@ -19,7 +19,7 @@ class ProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
-    final bgColor = containerColor ?? colorTheme.surfaceContainerHighest;
+    final bgColor = containerColor ?? colorTheme.surface;
     final progress = total == 0 ? 0.0 : completed / total;
 
     return AnimatedContainer(
@@ -36,11 +36,11 @@ class ProgressCard extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w800,
               color: colorTheme.onSurface,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
 
           if (total == 0)
             // Empty state

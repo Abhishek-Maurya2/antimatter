@@ -24,7 +24,7 @@ enum TaskSortOption { newest, oldest, dueDate }
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  @override 
+  @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
@@ -488,7 +488,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: colorTheme.surface,
+                                color: colorTheme.secondaryContainer,
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(

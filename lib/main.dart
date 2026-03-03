@@ -3,9 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:animations/animations.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'package:hive_flutter/hive_flutter.dart';
-
 import 'utils/theme_controller.dart';
 import 'utils/preferences_helper.dart';
 import 'utils/typography_helper.dart';

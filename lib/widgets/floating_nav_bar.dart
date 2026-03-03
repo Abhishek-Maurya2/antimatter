@@ -69,7 +69,7 @@ class FloatingNavBar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              spacing: 4,
+              spacing: 2,
               children:
                   List.generate(_items.length, (index) {
                     return _NavBarItem(
@@ -120,7 +120,13 @@ class _PageActionButton extends StatelessWidget {
         ),
         child: IconButton(
           onPressed: onTap,
-          icon: Icon(icon, fill: 0, size: 24, color: colorTheme.onPrimary),
+          icon: Icon(
+            icon,
+            fill: 1,
+            size: 28,
+            weight: 900,
+            color: colorTheme.onPrimary,
+          ),
         ),
       ),
     );
@@ -152,7 +158,7 @@ class _NavBarItem extends StatelessWidget {
           color: isSelected ? colorTheme.surfaceContainer : Colors.transparent,
           borderRadius: BorderRadius.circular(50),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -162,6 +168,7 @@ class _NavBarItem extends StatelessWidget {
                 isSelected ? item.selectedIcon : item.icon,
                 key: ValueKey(isSelected),
                 fill: isSelected ? 1 : 0,
+                weight: isSelected ? 900 : 950,
                 size: 24,
                 color: isSelected
                     ? colorTheme.onSurface
@@ -174,7 +181,7 @@ class _NavBarItem extends StatelessWidget {
                 curve: Curves.easeOutCubic,
                 child: isSelected
                     ? Padding(
-                        padding: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.only(left: 6),
                         child: Text(
                           item.label,
                           style: Theme.of(context).textTheme.labelLarge

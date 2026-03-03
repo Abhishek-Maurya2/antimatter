@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 
@@ -174,12 +175,154 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 24),
+
+                  // --- Buttons section ---
+                  Text(
+                    'Buttons',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: colorTheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _DemoCard(
+                    title: 'Spring Motion Button',
+                    colorTheme: colorTheme,
+                    child: Center(
+                      child: _SpringPhysicsButton(
+                        icon: Symbols.play_arrow,
+                        label: 'Animate',
+                        onPressed: () {},
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 100),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SpringPhysicsButton extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  const _SpringPhysicsButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  @override
+  State<_SpringPhysicsButton> createState() => _SpringPhysicsButtonState();
+}
+
+class _SpringPhysicsButtonState extends State<_SpringPhysicsButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pressController;
+
+  final SpringDescription _spring = SpringDescription.withDampingRatio(
+    ratio: 0.6,
+    stiffness: 200.0,
+    mass: 1.0,
+  );
+
+  bool _pressedVisual = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pressController = AnimationController.unbounded(vsync: this)..value = 0.0;
+  }
+
+  @override
+  void dispose() {
+    _pressController.dispose();
+    super.dispose();
+  }
+
+  void _animateTo(double target, double velocity) {
+    _pressController.animateWith(
+      SpringSimulation(
+        _spring,
+        _pressController.value,
+        target,
+        velocity,
+        snapToEnd: true,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorTheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTapDown: (_) {
+        setState(() => _pressedVisual = true);
+        _animateTo(1.0, 0.0);
+      },
+      onTapUp: (_) {
+        setState(() => _pressedVisual = false);
+        _animateTo(0.0, 0.0);
+        widget.onPressed();
+      },
+      onTapCancel: () {
+        setState(() => _pressedVisual = false);
+        _animateTo(0.0, 0.0);
+      },
+      child: AnimatedBuilder(
+        animation: _pressController,
+        builder: (context, _) {
+          final motion = _pressController.value;
+          final scale = (1 - (0.08 * motion)).clamp(0.90, 1.04);
+          final radius = (24 - (10 * motion)).clamp(12.0, 28.0);
+
+          return Transform.scale(
+            scale: scale,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              decoration: BoxDecoration(
+                color: _pressedVisual
+                    ? colorTheme.primary
+                    : colorTheme.primaryContainer,
+                borderRadius: BorderRadius.circular(radius),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    widget.icon,
+                    fill: 1,
+                    size: 20,
+                    color: _pressedVisual
+                        ? colorTheme.onPrimary
+                        : colorTheme.onPrimaryContainer,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    widget.label,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: _pressedVisual
+                          ? colorTheme.onPrimary
+                          : colorTheme.onPrimaryContainer,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

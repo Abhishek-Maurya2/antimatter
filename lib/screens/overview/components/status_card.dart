@@ -50,7 +50,7 @@ class _StatusCardState extends State<StatusCard>
   @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
-    final bgColor = widget.containerColor ?? colorTheme.surfaceContainerHighest;
+    final bgColor = widget.containerColor ?? colorTheme.surface;
     final fgColor = widget.contentColor ?? colorTheme.onSurface;
 
     return GestureDetector(
@@ -92,6 +92,8 @@ class _StatusCardState extends State<StatusCard>
                 widget.title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: fgColor.withValues(alpha: 0.8),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 20,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -106,7 +108,7 @@ class _StatusCardState extends State<StatusCard>
                   return Text(
                     value.toString(),
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                       color: fgColor,
                     ),
                   );

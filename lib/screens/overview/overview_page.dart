@@ -84,73 +84,108 @@ class OverviewPage extends StatelessWidget {
                 ),
               ),
 
-              // Staggered grid content
+              // Bento content
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                sliver: SliverLayoutBuilder(
-                  builder: (context, constraints) {
-                    final width = constraints.crossAxisExtent;
-                    final crossAxisCount = width >= 600 ? 3 : 2;
-
-                    return SliverGrid(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio: 1.1,
-                      ),
-                      delegate: SliverChildListDelegate([
-                        // All Tasks card
-                        StatusCard(
-                          icon: Symbols.task_alt,
-                          title: 'All Tasks',
-                          count: totalTasks,
-                          containerColor: colorTheme.surfaceContainerHighest,
-                          onTap: onNavigateToTasks,
-                        ),
-                        // Completed card
-                        StatusCard(
-                          icon: Symbols.check_circle,
-                          title: 'Completed',
-                          count: completedTasks,
-                          containerColor: colorTheme.secondaryContainer,
-                          contentColor: colorTheme.onSecondaryContainer,
-                        ),
-                        // Pending card
-                        StatusCard(
-                          icon: Symbols.pending,
-                          title: 'Pending',
-                          count: pendingTasks,
-                          containerColor: colorTheme.errorContainer,
-                          contentColor: colorTheme.onErrorContainer,
-                        ),
-                      ]),
-                    );
-                  },
-                ),
-              ),
-
-              // Today's Progress
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                 sliver: SliverToBoxAdapter(
-                  child: ProgressCard(
-                    title: "Today's Tasks",
-                    total: todayTasks.length,
-                    completed: todayCompleted,
-                  ),
-                ),
-              ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      const spacing = 12.0;
+                      final isWide = constraints.maxWidth >= 760;
+                      final availableWidth = constraints.maxWidth;
+                      final halfWidth = (availableWidth - spacing) / 2;
 
-              const SliverToBoxAdapter(child: SizedBox(height: 12)),
+                      final allCardWidth = halfWidth;
+                      final completedCardWidth = halfWidth;
+                      final pendingCardWidth = halfWidth;
+                      final upcomingCardWidth = halfWidth;
+                      final progressCardWidth = halfWidth;
+                      final topCardHeight = isWide ? 180.0 : 160.0;
+                      final pendingHeight = isWide ? 180.0 : 160.0;
+                      final upcomingHeight = isWide ? 300.0 : 260.0;
+                      final allCardHeight = topCardHeight;
+                      final completedCardHeight = topCardHeight;
+                      final pendingCardHeight = pendingHeight;
+                      final progressCardHeight =
+                          pendingCardHeight + spacing + upcomingHeight;
 
-              // Upcoming Tasks List
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                sliver: SliverToBoxAdapter(
-                  child: ListCard(
-                    title: 'Upcoming Tasks',
-                    tasks: upcomingTasks,
+                      return Column(
+                        children: [
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: allCardWidth,
+                                height: allCardHeight,
+                                child: StatusCard(
+                                  icon: Symbols.task_alt,
+                                  title: 'All Tasks',
+                                  count: totalTasks,
+                                  containerColor: colorTheme.surface,
+                                  onTap: onNavigateToTasks,
+                                ),
+                              ),
+                              const SizedBox(width: spacing),
+                              SizedBox(
+                                width: completedCardWidth,
+                                height: completedCardHeight,
+                                child: StatusCard(
+                                  icon: Symbols.check_circle,
+                                  title: 'Completed',
+                                  count: completedTasks,
+                                  containerColor: colorTheme.secondaryContainer,
+                                  contentColor: colorTheme.onSecondaryContainer,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: spacing),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: pendingCardWidth,
+                                child: Column(
+                                  children: [
+                                    SizedBox(
+                                      width: pendingCardWidth,
+                                      height: pendingCardHeight,
+                                      child: StatusCard(
+                                        icon: Symbols.pending,
+                                        title: 'Pending',
+                                        count: pendingTasks,
+                                        containerColor:
+                                            colorTheme.errorContainer,
+                                        contentColor:
+                                            colorTheme.onErrorContainer,
+                                      ),
+                                    ),
+                                    const SizedBox(height: spacing),
+                                    SizedBox(
+                                      width: upcomingCardWidth,
+                                      height: upcomingHeight,
+                                      child: ListCard(
+                                        title: 'Upcoming',
+                                        tasks: upcomingTasks,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: spacing),
+                              SizedBox(
+                                width: progressCardWidth,
+                                height: 280,
+                                child: ProgressCard(
+                                  title: "Today's Tasks",
+                                  total: todayTasks.length,
+                                  completed: todayCompleted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
