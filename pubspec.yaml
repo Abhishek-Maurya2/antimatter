@@ -1,7 +1,7 @@
 name: orches
 description: "AntiMatter - A Material 3 Expressive Task Manager App."
 publish_to: 'none'
-version: 2.8.0
+version: 2.9.0
 
 environment:
   sdk: ^3.11.0
@@ -69,6 +69,9 @@ flutter:
           weight: 600
         - asset: assets/fonts/nato-Bold.ttf
           weight: 700
+    - family: GoogleSansFlex
+      fonts:
+        - asset: assets/fonts/GoogleSansFlex-VariableFont_GRAD,ROND,opsz,slnt,wdth,wght.ttf
 
 flutter_launcher_icons:
   android: "launcher_icon"

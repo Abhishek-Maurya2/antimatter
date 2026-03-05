@@ -24,6 +24,20 @@ class TaskFloatingToolbar extends StatelessWidget {
     required this.colorTheme,
   });
 
+  Widget _buildActionIcon({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onPressed,
+    required Color color,
+    double weight = 400,
+  }) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: Icon(icon, color: color, weight: weight),
+      tooltip: tooltip,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isCompleted = task.isCompleted;
@@ -34,58 +48,58 @@ class TaskFloatingToolbar extends StatelessWidget {
       borderRadius: BorderRadius.circular(50),
       color: colorTheme.primaryContainer,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(24)),
         child: Row(
           mainAxisSize: MainAxisSize.min,
+          spacing: 4,
           children: [
             if (task.isDeleted) ...[
-              IconButton(
-                onPressed: onRestore,
-                icon: Icon(
-                  Symbols.restore_from_trash,
-                  color: colorTheme.onPrimaryContainer,
-                ),
+              _buildActionIcon(
+                icon: Symbols.restore_from_trash,
                 tooltip: 'Restore Task',
+                onPressed: onRestore,
+                color: colorTheme.onPrimaryContainer,
               ),
             ] else ...[
-              IconButton(
-                onPressed: onComplete,
-                icon: Icon(
-                  isCompleted ? Symbols.undo : Symbols.check,
-                  color: colorTheme.onPrimaryContainer,
-                ),
+              _buildActionIcon(
+                icon: isCompleted ? Symbols.undo : Symbols.check,
                 tooltip: isCompleted ? 'Undo Complete' : 'Mark as Complete',
+                onPressed: onComplete,
+                color: colorTheme.onPrimaryContainer,
+                weight: 900,
               ),
-              IconButton(
-                onPressed: onEdit,
-                icon: Icon(Symbols.edit, color: colorTheme.onPrimaryContainer),
+              _buildActionIcon(
+                icon: Symbols.edit,
                 tooltip: 'Edit Task',
+                onPressed: onEdit,
+                color: colorTheme.onPrimaryContainer,
               ),
-              IconButton(
-                onPressed: onArchive,
-                icon: Icon(
-                  task.isArchived ? Symbols.unarchive : Symbols.archive,
-                  color: colorTheme.onPrimaryContainer,
-                ),
+              _buildActionIcon(
+                icon: task.isArchived ? Symbols.unarchive : Symbols.archive,
                 tooltip: task.isArchived ? 'Unarchive Task' : 'Archive Task',
+                onPressed: onArchive,
+                color: colorTheme.onPrimaryContainer,
               ),
             ],
-            IconButton(
-              onPressed: onDelete,
-              icon: Icon(Symbols.delete_outline, color: colorTheme.error),
+            _buildActionIcon(
+              icon: Symbols.delete_outline,
               tooltip: task.isDeleted ? 'Delete Permanently' : 'Move to Trash',
+              onPressed: onDelete,
+              color: colorTheme.error,
             ),
             Container(
-              width: 1,
-              height: 24,
-              margin: const EdgeInsets.symmetric(horizontal: 8),
-              color: colorTheme.outlineVariant,
-            ),
-            IconButton(
-              onPressed: onClose,
-              icon: Icon(Symbols.close, color: colorTheme.onPrimaryContainer),
-              tooltip: 'Close',
+              decoration: BoxDecoration(
+                color: colorTheme.primary,
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: _buildActionIcon(
+                icon: Symbols.close,
+                tooltip: 'Close',
+                onPressed: onClose,
+                color: colorTheme.onPrimary,
+                weight: 900,
+              ),
             ),
           ],
         ),

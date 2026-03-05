@@ -6,7 +6,7 @@ import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:settings_tiles/settings_tiles.dart';
-import 'package:intl/intl.dart';
+import 'package:orches/utils/date_utils.dart';
 import 'package:orches/models/task.dart';
 import 'package:orches/screens/task_editor_screen.dart';
 import 'package:orches/widgets/sort_split_button.dart';
@@ -36,6 +36,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Task> _tasks = [];
   TaskSortOption _currentSort = TaskSortOption.oldest;
   Task? _selectedTaskForToolbar;
+  Task?
+  _previousTaskForToolbar; // Used to keep the toolbar rendered while it animates out
   // Top-level nav: 0=Overview, 1=Tasks, 2=Session, 3=Settings
   int _navIndex = 0;
   // Tasks sub-filter: 0=All, 1=Today, 2=Upcoming, 3=Completed, 4=Labels, 5=Archive, 6=Trash
@@ -374,8 +376,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     bodyContent,
                     if (!isExpanded)
-                      Positioned(
-                        bottom: 32,
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOutCubic,
+                        bottom: _selectedTaskForToolbar != null ? -100 : 32,
                         left: 0,
                         right: 0,
                         child: Center(
@@ -1074,122 +1078,146 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+        // A transparent backdrop to dismiss the toolbar.
         if (_selectedTaskForToolbar != null)
           Positioned.fill(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () {
                 setState(() {
+                  _previousTaskForToolbar = _selectedTaskForToolbar;
                   _selectedTaskForToolbar = null;
                 });
               },
               child: Container(color: Colors.black.withValues(alpha: 0)),
             ),
           ),
-        if (_selectedTaskForToolbar != null)
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-            bottom: 32,
-            left: 0,
-            right: 0,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: TaskFloatingToolbar(
-                task: _selectedTaskForToolbar!,
-                colorTheme: colorTheme,
-                onComplete: () async {
-                  final task = _selectedTaskForToolbar!;
-                  final isCompleted = !task.isCompleted;
-                  setState(() {
-                    task.isCompleted = isCompleted;
-                  });
-                  await _setTaskCompleted(task, isCompleted);
-                  await _autoMoveOldCompletedTasksToTrash();
 
-                  setState(() {
-                    _selectedTaskForToolbar = null;
-                  });
-                },
-                onEdit: () async {
-                  final taskToEdit = _selectedTaskForToolbar!;
-                  setState(() {
-                    _selectedTaskForToolbar = null;
-                  });
-                  if (isExpanded) {
-                    setState(() {
-                      _editingTask = taskToEdit;
-                      _isEditingNewTask = false;
-                    });
-                  } else {
-                    final updatedTask = await Navigator.of(context)
-                        .push<dynamic>(
-                          MaterialPageRoute(
-                            builder: (_) => TaskEditorScreen(task: taskToEdit),
-                          ),
-                        );
-                    if (updatedTask != null) {
+        // The floating toolbar itself, animating in and out
+        AnimatedPositioned(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          bottom: _selectedTaskForToolbar != null ? 32 : -100,
+          left: 0,
+          right: 0,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child:
+                _selectedTaskForToolbar != null ||
+                    _previousTaskForToolbar != null
+                ? TaskFloatingToolbar(
+                    task: _selectedTaskForToolbar ?? _previousTaskForToolbar!,
+                    colorTheme: colorTheme,
+                    onComplete: () async {
+                      final task = _selectedTaskForToolbar;
+                      if (task == null) return;
+                      final isCompleted = !task.isCompleted;
                       setState(() {
-                        _editingTask = taskToEdit;
-                        _isEditingNewTask = false;
+                        task.isCompleted = isCompleted;
                       });
-                      _handleTaskResult(updatedTask);
-                    }
-                  }
-                },
-                onDelete: () async {
-                  final task = _selectedTaskForToolbar;
-                  if (task == null) return;
+                      await _setTaskCompleted(task, isCompleted);
+                      await _autoMoveOldCompletedTasksToTrash();
 
-                  if (task.isDeleted) {
-                    setState(() {
-                      final index = _tasks.indexWhere((t) => t.id == task.id);
-                      if (index != -1) {
-                        _tasks.removeAt(index);
+                      setState(() {
+                        _previousTaskForToolbar = _selectedTaskForToolbar;
+                        _selectedTaskForToolbar = null;
+                      });
+                    },
+                    onEdit: () async {
+                      final taskToEdit = _selectedTaskForToolbar;
+                      if (taskToEdit == null) return;
+
+                      setState(() {
+                        _previousTaskForToolbar = _selectedTaskForToolbar;
+                        _selectedTaskForToolbar = null;
+                      });
+
+                      // Wait for animation
+                      await Future.delayed(const Duration(milliseconds: 200));
+
+                      if (isExpanded) {
+                        setState(() {
+                          _editingTask = taskToEdit;
+                          _isEditingNewTask = false;
+                        });
+                      } else {
+                        final updatedTask = await Navigator.of(context)
+                            .push<dynamic>(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    TaskEditorScreen(task: taskToEdit),
+                              ),
+                            );
+                        if (updatedTask != null) {
+                          setState(() {
+                            _editingTask = taskToEdit;
+                            _isEditingNewTask = false;
+                          });
+                          _handleTaskResult(updatedTask);
+                        }
                       }
-                      _selectedTaskForToolbar = null;
-                    });
-                    await _tasksBox.delete(task.id);
-                    await syncService.deleteTask(task.id);
-                  } else {
-                    setState(() {
-                      task.isDeleted = true;
-                      _selectedTaskForToolbar = null;
-                    });
-                    await task.save();
-                    await syncService.pushTask(task);
-                  }
-                },
-                onArchive: () async {
-                  final task = _selectedTaskForToolbar;
-                  if (task == null) return;
+                    },
+                    onDelete: () async {
+                      final task = _selectedTaskForToolbar;
+                      if (task == null) return;
 
-                  setState(() {
-                    task.isArchived = !task.isArchived;
-                    _selectedTaskForToolbar = null;
-                  });
-                  await task.save();
-                  await syncService.pushTask(task);
-                },
-                onRestore: () async {
-                  final task = _selectedTaskForToolbar;
-                  if (task == null) return;
+                      if (task.isDeleted) {
+                        setState(() {
+                          final index = _tasks.indexWhere(
+                            (t) => t.id == task.id,
+                          );
+                          if (index != -1) {
+                            _tasks.removeAt(index);
+                          }
+                          _previousTaskForToolbar = _selectedTaskForToolbar;
+                          _selectedTaskForToolbar = null;
+                        });
+                        await _tasksBox.delete(task.id);
+                        await syncService.deleteTask(task.id);
+                      } else {
+                        setState(() {
+                          task.isDeleted = true;
+                          _previousTaskForToolbar = _selectedTaskForToolbar;
+                          _selectedTaskForToolbar = null;
+                        });
+                        await task.save();
+                        await syncService.pushTask(task);
+                      }
+                    },
+                    onArchive: () async {
+                      final task = _selectedTaskForToolbar;
+                      if (task == null) return;
 
-                  setState(() {
-                    task.isDeleted = false;
-                    _selectedTaskForToolbar = null;
-                  });
-                  await task.save();
-                  await syncService.pushTask(task);
-                },
-                onClose: () {
-                  setState(() {
-                    _selectedTaskForToolbar = null;
-                  });
-                },
-              ),
-            ),
+                      setState(() {
+                        task.isArchived = !task.isArchived;
+                        _previousTaskForToolbar = _selectedTaskForToolbar;
+                        _selectedTaskForToolbar = null;
+                      });
+                      await task.save();
+                      await syncService.pushTask(task);
+                    },
+                    onRestore: () async {
+                      final task = _selectedTaskForToolbar;
+                      if (task == null) return;
+
+                      setState(() {
+                        task.isDeleted = false;
+                        _previousTaskForToolbar = _selectedTaskForToolbar;
+                        _selectedTaskForToolbar = null;
+                      });
+                      await task.save();
+                      await syncService.pushTask(task);
+                    },
+                    onClose: () {
+                      setState(() {
+                        _previousTaskForToolbar = _selectedTaskForToolbar;
+                        _selectedTaskForToolbar = null;
+                      });
+                    },
+                  )
+                : const SizedBox.shrink(),
           ),
+        ),
       ],
     );
   }
@@ -1345,7 +1373,5 @@ class _HomeScreenState extends State<HomeScreen> {
 
 String? formatDeadline(DateTime? deadline) {
   if (deadline == null) return null;
-  final time = DateFormat('h:mm a').format(deadline);
-  final day = DateFormat('E d').format(deadline);
-  return '$time, $day';
+  return SystemDateUtils.formatRelativeDeadline(deadline);
 }

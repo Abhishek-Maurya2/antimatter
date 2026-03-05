@@ -6,6 +6,7 @@ import 'package:orches/models/task.dart';
 import 'package:orches/screens/overview/components/status_card.dart';
 import 'package:orches/screens/overview/components/progress_card.dart';
 import 'package:orches/screens/overview/components/list_card.dart';
+import 'package:orches/screens/overview/components/activity_heat_map.dart';
 
 class OverviewPage extends StatelessWidget {
   final VoidCallback? onNavigateToTasks;
@@ -66,17 +67,37 @@ class OverviewPage extends StatelessWidget {
                       children: [
                         Text(
                           _getGreeting(),
-                          style: Theme.of(context).textTheme.headlineMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: colorTheme.onSurface,
-                              ),
+                          style: TextStyle(
+                            fontFamily: 'GoogleSansFlex',
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: colorTheme.onSurface,
+                            fontVariations: const [
+                              FontVariation('wght', 700),
+                              FontVariation('wdth', 100),
+                              FontVariation('ROND', 100),
+                              FontVariation('GRAD', 0),
+                              FontVariation('opsz', 28),
+                              FontVariation('slnt', 0),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           DateFormat('EEEE, MMMM d').format(now),
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(color: colorTheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontFamily: 'GoogleSansFlex',
+                            fontSize: 16,
+                            color: colorTheme.onSurfaceVariant,
+                            fontVariations: const [
+                              FontVariation('wght', 400),
+                              FontVariation('wdth', 100),
+                              FontVariation('ROND', 50),
+                              FontVariation('GRAD', 0),
+                              FontVariation('opsz', 16),
+                              FontVariation('slnt', 0),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -86,7 +107,7 @@ class OverviewPage extends StatelessWidget {
 
               // Bento content
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                 sliver: SliverToBoxAdapter(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
@@ -188,6 +209,12 @@ class OverviewPage extends StatelessWidget {
                     },
                   ),
                 ),
+              ),
+
+              // Activity Heat Map
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                sliver: SliverToBoxAdapter(child: ActivityHeatMap()),
               ),
             ],
           ),

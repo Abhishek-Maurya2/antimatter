@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:settings_tiles/settings_tiles.dart';
+import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 
 import '../../utils/preferences_helper.dart';
 import '../settings_screen.dart';
@@ -104,26 +105,29 @@ class _SessionsScreenState extends State<SessionsScreen> {
                         PreferencesHelper.setBool('ambientModeEnabled', value);
                       },
                     ),
-                    SettingCustomSliderTile(
+                    SettingInlineSliderTile(
                       enabled: _ambientModeEnabled,
                       icon: iconContainer(
                         Symbols.timer,
                         isLight ? Color(0xffd6e3ff) : Color(0xff284777),
                         isLight ? Color(0xff284777) : Color(0xffd6e3ff),
                       ),
-                      title: Text('Ambient Interval'),
-                      description: Text('Time before ambient mode starts'),
-                      dialogTitle: 'Ambient Interval',
-                      value: SettingTileValue('$_ambientIntervalSeconds sec'),
-                      values: const [1.0, 5.0, 10.0, 15.0, 30.0, 60.0],
-                      initialValue: _ambientIntervalSeconds.toDouble(),
-                      label: (value) => '${value.round()} sec',
-                      onSubmitted: (value) {
-                        final seconds = value.round();
-                        setState(() => _ambientIntervalSeconds = seconds);
+                      title: const Text('Ambient Interval'),
+                      description: const Text(
+                        'Time before ambient mode starts',
+                      ),
+                      sliderValue: _ambientIntervalSeconds.toDouble(),
+                      min: 1.0,
+                      max: 60.0,
+                      divisions: 59,
+                      label: (val) => '${val.round()} sec',
+                      onChanged: (val) {
+                        setState(() => _ambientIntervalSeconds = val.round());
+                      },
+                      onChangeEnd: (val) {
                         PreferencesHelper.setInt(
                           'ambientModeIntervalSeconds',
-                          seconds,
+                          val.round(),
                         );
                       },
                     ),
@@ -134,6 +138,136 @@ class _SessionsScreenState extends State<SessionsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class SettingInlineSliderTile extends SettingTile {
+  final double sliderValue;
+  final double min;
+  final double max;
+  final int divisions;
+  final String Function(double) label;
+  final ValueChanged<double> onChanged;
+  final ValueChanged<double> onChangeEnd;
+
+  const SettingInlineSliderTile({
+    super.key,
+    super.enabled = true,
+    super.icon,
+    super.title,
+    super.description,
+    super.visible = true,
+    required this.sliderValue,
+    required this.min,
+    required this.max,
+    required this.divisions,
+    required this.label,
+    required this.onChanged,
+    required this.onChangeEnd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!visible) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    return Opacity(
+      opacity: enabled ? 1.0 : 0.5,
+      child: IgnorePointer(
+        ignoring: !enabled,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[icon!, const SizedBox(width: 16)],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (title != null)
+                          DefaultTextStyle(
+                            style: textTheme.bodyLarge!.copyWith(
+                              color: colorScheme.onSurface,
+                            ),
+                            child: title!,
+                          ),
+                        if (description != null) ...[
+                          const SizedBox(height: 2),
+                          DefaultTextStyle(
+                            style: textTheme.bodyMedium!.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            child: description!,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    label(sliderValue),
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  if (icon != null) const SizedBox(width: 56),
+                  Expanded(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: SizedBox(
+                              height: 16,
+                              child: WavyLinearProgressIndicator(
+                                value: (sliderValue - min) / (max - min),
+                                minHeight: 6.0,
+                                waveAmplitude: 4,
+                                waveLength: 25,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor: Colors.transparent,
+                            inactiveTrackColor: Colors.transparent,
+                          ),
+                          child: Slider(
+                            value: sliderValue,
+                            min: min,
+                            max: max,
+                            divisions: divisions,
+                            label: label(sliderValue),
+                            onChanged: onChanged,
+                            onChangeEnd: onChangeEnd,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

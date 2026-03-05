@@ -35,9 +35,19 @@ class ProgressCard extends StatelessWidget {
           // Header
           Text(
             title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            style: TextStyle(
+              fontFamily: 'GoogleSansFlex',
+              fontSize: 22,
               fontWeight: FontWeight.w800,
               color: colorTheme.onSurface,
+              fontVariations: const [
+                FontVariation('wght', 800),
+                FontVariation('wdth', 100),
+                FontVariation('ROND', 80),
+                FontVariation('GRAD', 0),
+                FontVariation('opsz', 22),
+                FontVariation('slnt', 0),
+              ],
             ),
           ),
           const SizedBox(height: 10),
@@ -116,9 +126,19 @@ class ProgressCard extends StatelessWidget {
                     ),
                     child: Text(
                       '$completed / $total',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      style: TextStyle(
+                        fontFamily: 'GoogleSansFlex',
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: colorTheme.primary,
+                        fontVariations: const [
+                          FontVariation('wght', 700),
+                          FontVariation('wdth', 100),
+                          FontVariation('ROND', 100),
+                          FontVariation('GRAD', 0),
+                          FontVariation('opsz', 14),
+                          FontVariation('slnt', 0),
+                        ],
                       ),
                     ),
                   ),
@@ -136,11 +156,20 @@ class ProgressCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           'All done!',
-                          style: Theme.of(context).textTheme.labelMedium
-                              ?.copyWith(
-                                color: colorTheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          style: TextStyle(
+                            fontFamily: 'GoogleSansFlex',
+                            fontSize: 12,
+                            color: colorTheme.primary,
+                            fontWeight: FontWeight.w600,
+                            fontVariations: const [
+                              FontVariation('wght', 600),
+                              FontVariation('wdth', 100),
+                              FontVariation('ROND', 100),
+                              FontVariation('GRAD', 0),
+                              FontVariation('opsz', 12),
+                              FontVariation('slnt', 0),
+                            ],
+                          ),
                         ),
                       ],
                     ),
