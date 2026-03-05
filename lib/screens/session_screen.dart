@@ -43,10 +43,9 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _loadAmbientSettings() {
-    _ambientModeEnabled =
-        PreferencesHelper.getBool('ambientModeEnabled') ?? true;
-    final savedInterval =
-        PreferencesHelper.getInt('ambientModeIntervalSeconds') ?? 5;
+    _ambientModeEnabled = PreferencesHelper.getBool('ambientModeEnabled') ?? true;
+    final savedInterval = PreferencesHelper.getInt('ambientModeIntervalSeconds') ??
+        5;
     _ambientIntervalSeconds = savedInterval.clamp(1, 60);
   }
 
@@ -191,44 +190,29 @@ class _SessionScreenState extends State<SessionScreen>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       SizedBox(
-                        width: 270,
-                        height: 270,
+                        width: 220,
+                        height: 220,
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
                             SizedBox(
-                              width: 270,
-                              height: 270,
+                              width: 220,
+                              height: 220,
                               child: WavyCircularProgressIndicator(
                                 value: _isRunning ? 0.3 : 0.0,
                                 strokeWidth: 8.0,
                                 waveAmplitude: 6,
                                 waveLength: 22.0,
-                                backgroundColor: const Color.fromARGB(
-                                  0,
-                                  255,
-                                  255,
-                                  255,
-                                ),
                               ),
                             ),
                             Text(
                               _formatTime(),
                               style: TextStyle(
-                                fontFamily: 'GoogleSansFlex',
                                 fontSize: 52,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.bold,
                                 color: colorTheme.primary,
                                 fontFeatures: const [
                                   FontFeature.tabularFigures(),
-                                ],
-                                fontVariations: const [
-                                  FontVariation('wght', 800),
-                                  FontVariation('wdth', 130),
-                                  FontVariation('ROND', 100),
-                                  FontVariation('GRAD', 0),
-                                  FontVariation('opsz', 52),
-                                  FontVariation('slnt', 0),
                                 ],
                               ),
                             ),
@@ -281,14 +265,14 @@ class _SessionScreenState extends State<SessionScreen>
                   color: Colors.black,
                   child: Center(
                     child: SizedBox(
-                      width: 270,
-                      height: 270,
+                      width: 220,
+                      height: 220,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
                           SizedBox(
-                            width: 270,
-                            height: 270,
+                            width: 220,
+                            height: 220,
                             child: WavyCircularProgressIndicator(
                               value: 0.3,
                               strokeWidth: 6.0,
@@ -301,20 +285,11 @@ class _SessionScreenState extends State<SessionScreen>
                           Text(
                             _formatTime(),
                             style: TextStyle(
-                              fontFamily: 'GoogleSansFlex',
                               fontSize: 52,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.bold,
                               color: Colors.white.withValues(alpha: 0.5),
                               fontFeatures: const [
                                 FontFeature.tabularFigures(),
-                              ],
-                              fontVariations: const [
-                                FontVariation('wght', 800),
-                                FontVariation('wdth', 130),
-                                FontVariation('ROND', 100),
-                                FontVariation('GRAD', 0),
-                                FontVariation('opsz', 52),
-                                FontVariation('slnt', 0),
                               ],
                             ),
                           ),
