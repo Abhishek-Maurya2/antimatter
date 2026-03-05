@@ -232,19 +232,19 @@ class SettingInlineSliderTile extends SettingTile {
                       children: [
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: SizedBox(
-                              height: 16,
-                              child: WavyLinearProgressIndicator(
-                                value: (sliderValue - min) / (max - min),
-                                minHeight: 6.0,
-                                waveAmplitude: 4,
-                                waveLength: 25,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: SizedBox(
+                                height: 16,
+                                child: WavyLinearProgressIndicator(
+                                  value: (sliderValue - min) / (max - min),
+                                  minHeight: 6.0,
+                                  waveAmplitude: 4,
+                                  waveLength: 25,
+                                ),
                               ),
                             ),
                           ),
-                        ),
                         SliderTheme(
                           data: SliderTheme.of(context).copyWith(
                             activeTrackColor: Colors.transparent,
