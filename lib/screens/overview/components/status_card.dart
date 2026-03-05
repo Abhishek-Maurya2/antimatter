@@ -90,10 +90,19 @@ class _StatusCardState extends State<StatusCard>
               // Title
               Text(
                 widget.title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: fgColor.withValues(alpha: 0.8),
-                  fontWeight: FontWeight.w800,
+                style: TextStyle(
+                  fontFamily: 'GoogleSansFlex',
                   fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: fgColor.withValues(alpha: 0.8),
+                  fontVariations: const [
+                    FontVariation('wght', 800),
+                    FontVariation('wdth', 100),
+                    FontVariation('ROND', 80),
+                    FontVariation('GRAD', 0),
+                    FontVariation('opsz', 20),
+                    FontVariation('slnt', 0),
+                  ],
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -107,9 +116,19 @@ class _StatusCardState extends State<StatusCard>
                 builder: (context, value, _) {
                   return Text(
                     value.toString(),
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    style: TextStyle(
+                      fontFamily: 'GoogleSansFlex',
+                      fontSize: 36,
                       fontWeight: FontWeight.w800,
                       color: fgColor,
+                      fontVariations: const [
+                        FontVariation('wght', 800),
+                        FontVariation('wdth', 100),
+                        FontVariation('ROND', 100),
+                        FontVariation('GRAD', 0),
+                        FontVariation('opsz', 36),
+                        FontVariation('slnt', 0),
+                      ],
                     ),
                   );
                 },

@@ -17,6 +17,7 @@ import 'package:material_new_shapes/material_new_shapes.dart';
 
 export 'wavy_linear_progress_indicator.dart';
 export 'wavy_circular_progress_indicator.dart';
+export 'spring_button.dart';
 
 /// A Material Design loading indicator.
 ///

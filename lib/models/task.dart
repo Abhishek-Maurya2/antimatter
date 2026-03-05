@@ -87,6 +87,7 @@ class Task extends HiveObject {
       'is_archived': isArchived,
       'is_deleted': isDeleted,
       'labels': labels,
+      'completed_at': completedAt?.toUtc().toIso8601String(),
     };
   }
 }

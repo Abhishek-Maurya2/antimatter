@@ -38,9 +38,19 @@ class ListCard extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  style: TextStyle(
+                    fontFamily: 'GoogleSansFlex',
+                    fontSize: 22,
                     fontWeight: FontWeight.w800,
                     color: colorTheme.onSurface,
+                    fontVariations: const [
+                      FontVariation('wght', 800),
+                      FontVariation('wdth', 100),
+                      FontVariation('ROND', 80),
+                      FontVariation('GRAD', 0),
+                      FontVariation('opsz', 22),
+                      FontVariation('slnt', 0),
+                    ],
                   ),
                 ),
               ),
@@ -61,9 +71,19 @@ class ListCard extends StatelessWidget {
                 ),
                 child: Text(
                   '${tasks.length}',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  style: TextStyle(
+                    fontFamily: 'GoogleSansFlex',
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: colorTheme.primary,
+                    fontVariations: const [
+                      FontVariation('wght', 700),
+                      FontVariation('wdth', 100),
+                      FontVariation('ROND', 100),
+                      FontVariation('GRAD', 0),
+                      FontVariation('opsz', 14),
+                      FontVariation('slnt', 0),
+                    ],
                   ),
                 ),
               ),
