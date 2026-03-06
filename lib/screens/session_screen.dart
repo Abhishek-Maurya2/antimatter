@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:m3e_collection/m3e_collection.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:button_m3e/button_m3e.dart';
@@ -186,32 +187,14 @@ class _SessionScreenState extends State<SessionScreen>
                   automaticallyImplyLeading: false,
                   leadingWidth: 80,
                   leading: Center(
-                    child: Container(
-                      width: 60,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: colorTheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: IconButton(
-                        onPressed: () {
-                          if (widget.onBack != null) {
-                            widget.onBack!();
-                          } else {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        icon: Icon(
-                          Symbols.arrow_back,
-                          color: colorTheme.onSurface,
-                          size: 25,
-                        ),
-                        tooltip: 'Back',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ),
-                  ),
+              child: IconButtonM3E(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Symbols.arrow_back),
+                tooltip: 'Back',
+                variant: IconButtonM3EVariant.tonal,
+                width: IconButtonM3EWidth.wide,
+              ),
+            ),
                   backgroundColor: colorTheme.surfaceContainer,
                   scrolledUnderElevation: 1,
                   expandedHeight: 120,

@@ -13,7 +13,7 @@ class SettingSection extends StatelessWidget {
     this.title,
     this.divider,
     this.styleTile = false,
-    this.PrimarySwitch = false,
+    this.primarySwitch = false,
     this.errorTile = false,
     this.backgroundColor,
     this.padding,
@@ -28,7 +28,7 @@ class SettingSection extends StatelessWidget {
   /// A divider displayed between the setting tiles.
   final Divider? divider;
   final bool styleTile;
-  final bool PrimarySwitch;
+  final bool primarySwitch;
   final bool errorTile;
   final Color? backgroundColor;
   final EdgeInsetsGeometry? padding;
@@ -40,7 +40,7 @@ class SettingSection extends StatelessWidget {
 
     final borderRadius = isTaskSelected
         ? BorderRadius.circular(50)
-        : PrimarySwitch
+        : primarySwitch
             ? BorderRadius.circular(50)
             : isOnly
                 ? BorderRadius.circular(36)
@@ -63,7 +63,7 @@ class SettingSection extends StatelessWidget {
     return Material(
       color: isTaskSelected
           ? Theme.of(context).colorScheme.tertiaryContainer
-          : PrimarySwitch
+          : primarySwitch
               ? Theme.of(context).colorScheme.primaryContainer
               : errorTile
                   ? Theme.of(context).colorScheme.errorContainer

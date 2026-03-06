@@ -7,8 +7,7 @@ import 'package:settings_tiles/settings_tiles.dart';
 import 'package:orches/utils/date_utils.dart';
 import 'package:orches/models/task.dart';
 import 'package:orches/screens/task_editor_screen.dart';
-import 'package:m3e_collection/m3e_collection.dart'
-    hide ExpressiveLoadingIndicator;
+import 'package:m3e_collection/m3e_collection.dart';
 import 'package:orches/widgets/task_floating_toolbar.dart';
 import 'package:orches/utils/preferences_helper.dart';
 import 'package:orches/main.dart';
@@ -48,6 +47,10 @@ class TaskScreenState extends State<TaskScreen> {
   bool _isEditingNewTask = false;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+
+  int _completedTasksLimit = 5;
+  bool _isLoadingMoreCompletedTasks = false;
+  final ScrollController _scrollController = ScrollController();
 
   void _toggleTaskSelection(Task task) {
     setState(() {
@@ -337,6 +340,7 @@ class TaskScreenState extends State<TaskScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _tasksBox = Hive.box<Task>('tasksBox');
     _tasks = _tasksBox.values.toList();
 
@@ -353,8 +357,37 @@ class TaskScreenState extends State<TaskScreen> {
     });
   }
 
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 50 &&
+        !_isLoadingMoreCompletedTasks) {
+      _loadMoreCompletedTasks();
+    }
+  }
+
+  Future<void> _loadMoreCompletedTasks() async {
+    final completedCount = _sortedTasks.where((t) => t.isCompleted).length;
+    if (_completedTasksLimit >= completedCount) return;
+
+    if (mounted) {
+      setState(() {
+        _isLoadingMoreCompletedTasks = true;
+      });
+    }
+
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    if (mounted) {
+      setState(() {
+        _completedTasksLimit += 5;
+        _isLoadingMoreCompletedTasks = false;
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -471,6 +504,7 @@ class TaskScreenState extends State<TaskScreen> {
             );
           },
           child: CustomScrollView(
+            controller: _scrollController,
             slivers: [
               // Search bar app bar
               SliverToBoxAdapter(
@@ -873,87 +907,99 @@ class TaskScreenState extends State<TaskScreen> {
                               ),
                             ),
                             styleTile: true,
-                            tiles: _sortedTasks.where((t) => t.isCompleted).map(
-                              (task) {
-                                return TaskTile(
-                                  titleText: task.title,
-                                  descriptionText:
-                                      task.description?.isNotEmpty == true
-                                      ? task.description
-                                      : null,
-                                  labels: task.labels,
-                                  deadlineText: task.deadline != null
-                                      ? formatDeadline(task.deadline)
-                                      : null,
-                                  subTasks: task.subTasks.map((subTask) {
-                                    return TaskTile(
-                                      backgroundColor:
-                                          colorTheme.surfaceContainerHigh,
-                                      titleText: subTask.title,
-                                      descriptionText:
-                                          subTask.description?.isNotEmpty ==
-                                              true
-                                          ? subTask.description
-                                          : null,
-                                      checked: subTask.isCompleted,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          subTask.isCompleted = value ?? false;
-                                          if (subTask.isCompleted) {
-                                            AudioService().playTickSound();
-                                          }
-                                          task.save();
-                                        });
-                                      },
-                                    );
-                                  }).toList(),
-                                  isSelected: _selectedTasksForToolbar.contains(
-                                    task,
-                                  ),
-                                  checked: task.isCompleted,
-                                  onChanged: (value) async {
-                                    final isCompleted = value ?? false;
-                                    setState(() {
-                                      task.isCompleted = isCompleted;
-                                    });
-                                    await _setTaskCompleted(task, isCompleted);
-                                    await _autoMoveOldCompletedTasksToTrash();
-                                  },
-                                  onLongPress: () {
-                                    _toggleTaskSelection(task);
-                                  },
-                                  onPressed: () async {
-                                    if (_selectedTasksForToolbar.isNotEmpty) {
-                                      _toggleTaskSelection(task);
-                                      return;
-                                    }
-                                    if (isExpanded) {
+                            tiles: _sortedTasks
+                                .where((t) => t.isCompleted)
+                                .take(_completedTasksLimit)
+                                .map((task) {
+                                  return TaskTile(
+                                    titleText: task.title,
+                                    descriptionText:
+                                        task.description?.isNotEmpty == true
+                                        ? task.description
+                                        : null,
+                                    labels: task.labels,
+                                    deadlineText: task.deadline != null
+                                        ? formatDeadline(task.deadline)
+                                        : null,
+                                    subTasks: task.subTasks.map((subTask) {
+                                      return TaskTile(
+                                        backgroundColor:
+                                            colorTheme.surfaceContainerHigh,
+                                        titleText: subTask.title,
+                                        descriptionText:
+                                            subTask.description?.isNotEmpty ==
+                                                true
+                                            ? subTask.description
+                                            : null,
+                                        checked: subTask.isCompleted,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            subTask.isCompleted =
+                                                value ?? false;
+                                            if (subTask.isCompleted) {
+                                              AudioService().playTickSound();
+                                            }
+                                            task.save();
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
+                                    isSelected: _selectedTasksForToolbar
+                                        .contains(task),
+                                    checked: task.isCompleted,
+                                    onChanged: (value) async {
+                                      final isCompleted = value ?? false;
                                       setState(() {
-                                        _editingTask = task;
-                                        _isEditingNewTask = false;
+                                        task.isCompleted = isCompleted;
                                       });
-                                    } else {
-                                      final updatedTask =
-                                          await Navigator.of(
-                                            context,
-                                          ).push<dynamic>(
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  TaskEditorScreen(task: task),
-                                            ),
-                                          );
-                                      if (updatedTask != null) {
+                                      await _setTaskCompleted(
+                                        task,
+                                        isCompleted,
+                                      );
+                                      await _autoMoveOldCompletedTasksToTrash();
+                                    },
+                                    onLongPress: () {
+                                      _toggleTaskSelection(task);
+                                    },
+                                    onPressed: () async {
+                                      if (_selectedTasksForToolbar.isNotEmpty) {
+                                        _toggleTaskSelection(task);
+                                        return;
+                                      }
+                                      if (isExpanded) {
                                         setState(() {
                                           _editingTask = task;
                                           _isEditingNewTask = false;
                                         });
-                                        _handleTaskResult(updatedTask);
+                                      } else {
+                                        final updatedTask =
+                                            await Navigator.of(
+                                              context,
+                                            ).push<dynamic>(
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    TaskEditorScreen(
+                                                      task: task,
+                                                    ),
+                                              ),
+                                            );
+                                        if (updatedTask != null) {
+                                          setState(() {
+                                            _editingTask = task;
+                                            _isEditingNewTask = false;
+                                          });
+                                          _handleTaskResult(updatedTask);
+                                        }
                                       }
-                                    }
-                                  },
-                                );
-                              },
-                            ).toList(),
+                                    },
+                                  );
+                                })
+                                .toList(),
+                          ),
+                        if (_isLoadingMoreCompletedTasks)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 24.0),
+                            child: Center(child: ExpressiveLoadingIndicator()),
                           ),
                         SizedBox(height: 125),
                       ],

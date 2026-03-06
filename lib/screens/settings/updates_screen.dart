@@ -292,7 +292,8 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
       actions.add(
         ButtonGroupM3EAction(
           icon: const Icon(Symbols.refresh),
-          label: const SizedBox.shrink(),
+          width: 100,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 6),
           style: ButtonM3EStyle.tonal,
           shape: ButtonM3EShape.round,
           onPressed: _checkForUpdates,
@@ -346,24 +347,12 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
             titleSpacing: 0,
             leadingWidth: 80,
             leading: Center(
-              child: Container(
-                width: 60,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: colorTheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(
-                    Symbols.arrow_back,
-                    color: colorTheme.onSurface,
-                    size: 25,
-                  ),
-                  tooltip: 'Back',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
+              child: IconButtonM3E(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Symbols.arrow_back),
+                tooltip: 'Back',
+                variant: IconButtonM3EVariant.tonal,
+                width: IconButtonM3EWidth.wide,
               ),
             ),
             backgroundColor: colorTheme.surfaceContainer,
@@ -373,7 +362,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
           SliverFillRemaining(
             hasScrollBody: false,
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 84),
               child: _isLoading
                   ? Center(
                       child: Column(
