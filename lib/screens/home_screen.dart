@@ -48,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isEditingNewTask = false;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  bool _isSessionAmbient = false;
 
   Future<void> _openCreateTaskEditor(bool isExpanded) async {
     if (isExpanded) {
@@ -355,6 +356,11 @@ class _HomeScreenState extends State<HomeScreen> {
         } else if (_navIndex == 2) {
           bodyContent = SessionScreen(
             onBack: () => setState(() => _navIndex = 0),
+            onAmbientModeChanged: (isAmbient) {
+              setState(() {
+                _isSessionAmbient = isAmbient;
+              });
+            },
           );
         } else if (_navIndex == 3) {
           bodyContent = SettingsScreen(
@@ -370,7 +376,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: colorTheme.surfaceContainer,
           body: Row(
             children: [
-              if (isExpanded)
+              if (isExpanded && !_isSessionAmbient)
                 _buildNavigationRail(context, colorTheme, isExpanded: true),
               Expanded(
                 child: Stack(
@@ -380,7 +386,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       AnimatedPositioned(
                         duration: const Duration(milliseconds: 250),
                         curve: Curves.easeOutCubic,
-                        bottom: _selectedTaskForToolbar != null ? -100 : 32,
+                        bottom: _isSessionAmbient
+                            ? -150
+                            : (_selectedTaskForToolbar != null ? -100 : 32),
                         left: 0,
                         right: 0,
                         child: Center(

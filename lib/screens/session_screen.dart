@@ -8,7 +8,8 @@ import '../utils/preferences_helper.dart';
 
 class SessionScreen extends StatefulWidget {
   final VoidCallback? onBack;
-  const SessionScreen({super.key, this.onBack});
+  final ValueChanged<bool>? onAmbientModeChanged;
+  const SessionScreen({super.key, this.onBack, this.onAmbientModeChanged});
 
   @override
   State<SessionScreen> createState() => _SessionScreenState();
@@ -97,6 +98,7 @@ class _SessionScreenState extends State<SessionScreen>
   void _enterAmbientMode() {
     if (!_isRunning || _isAmbient || !_ambientModeEnabled) return;
     setState(() => _isAmbient = true);
+    widget.onAmbientModeChanged?.call(true);
     _ambientFadeController.forward();
     // Go fullscreen immersive
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
@@ -107,6 +109,7 @@ class _SessionScreenState extends State<SessionScreen>
     _ambientFadeController.reverse().then((_) {
       if (mounted) {
         setState(() => _isAmbient = false);
+        widget.onAmbientModeChanged?.call(false);
       }
     });
     // Restore system UI
@@ -147,7 +150,7 @@ class _SessionScreenState extends State<SessionScreen>
           alignment: Alignment.center,
           children: [
             Text(entry.value, style: style),
-            if (!isLast) Positioned(right: -24, child: Text(':', style: style)),
+            if (!isLast) Positioned(right: -34, child: Text(':', style: style)),
           ],
         );
       }).toList(),
