@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:m3e_collection/m3e_collection.dart'
     hide ExpressiveLoadingIndicator;
+import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
+import 'package:button_m3e/button_m3e.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
@@ -161,7 +163,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
     }
   }
 
-  Widget _buildDownloadSection(ColorScheme colorTheme) {
+  Widget? _buildDownloadSection(ColorScheme colorTheme) {
     if (_isDownloading) {
       String speedText = '';
       if (_downloadSpeedKbps > 1024) {
@@ -224,33 +226,104 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
     if (_downloadError != null) {
       return Column(
         children: [
+          const SizedBox(height: 16),
           Text(
             _downloadError!,
             style: TextStyle(color: colorTheme.error, fontSize: 13),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
-          FilledButton.icon(
-            onPressed: _downloadAndInstall,
-            icon: Icon(Symbols.refresh),
-            label: Text('Retry Download'),
-          ),
         ],
       );
     }
 
-    if (_downloadedFilePath != null) {
-      return FilledButton.icon(
-        onPressed: () => OpenFilex.open(_downloadedFilePath!),
-        icon: Icon(Symbols.install_mobile),
-        label: Text('Install APK'),
+    return null;
+  }
+
+  Widget? _buildBottomButtonGroup() {
+    if (_isLoading) return null;
+
+    final actions = <ButtonGroupM3EAction>[];
+
+    if (_error != null) {
+      actions.add(
+        ButtonGroupM3EAction(
+          icon: const Icon(Symbols.refresh),
+          label: const Text('Retry'),
+          shape: ButtonM3EShape.round,
+          onPressed: _checkForUpdates,
+        ),
+      );
+    } else if (_downloadError != null) {
+      actions.add(
+        ButtonGroupM3EAction(
+          icon: const Icon(Symbols.refresh),
+          label: const Text('Retry Download'),
+          shape: ButtonM3EShape.round,
+          onPressed: _downloadAndInstall,
+        ),
+      );
+    } else if (_isDownloading) {
+      actions.add(
+        const ButtonGroupM3EAction(
+          icon: Icon(Symbols.download),
+          label: Text('Downloading...'),
+          shape: ButtonM3EShape.round,
+          enabled: false,
+        ),
+      );
+    } else if (_downloadedFilePath != null) {
+      actions.add(
+        ButtonGroupM3EAction(
+          icon: const Icon(Symbols.install_mobile),
+          label: const Text('Install'),
+          shape: ButtonM3EShape.round,
+          onPressed: () => OpenFilex.open(_downloadedFilePath!),
+        ),
+      );
+    } else if (_isUpdateAvailable) {
+      actions.add(
+        ButtonGroupM3EAction(
+          icon: const Icon(Symbols.download),
+          label: const Text('Download'),
+          shape: ButtonM3EShape.round,
+          onPressed: _downloadAndInstall,
+        ),
+      );
+      actions.add(
+        ButtonGroupM3EAction(
+          icon: const Icon(Symbols.refresh),
+          label: const SizedBox.shrink(),
+          style: ButtonM3EStyle.tonal,
+          shape: ButtonM3EShape.round,
+          onPressed: _checkForUpdates,
+        ),
+      );
+    } else {
+      actions.add(
+        ButtonGroupM3EAction(
+          icon: const Icon(Symbols.refresh),
+          label: const Text('Check again'),
+          shape: ButtonM3EShape.round,
+          onPressed: _checkForUpdates,
+        ),
       );
     }
 
-    return FilledButton.icon(
-      onPressed: _downloadAndInstall,
-      icon: Icon(Symbols.download),
-      label: Text('Download APK'),
+    if (actions.isEmpty) return null;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      child: SafeArea(
+        child: ButtonGroupM3E(
+          type: ButtonGroupM3EType.connected,
+          size: ButtonGroupM3ESize.lg,
+          style: ButtonM3EStyle.filled,
+          expanded: true,
+          linearMainAxisAlignment: MainAxisAlignment.center,
+          equalizeWidths: actions.length == 1,
+          actions: actions,
+        ),
+      ),
     );
   }
 
@@ -265,6 +338,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
 
     return Scaffold(
       backgroundColor: colorTheme.surfaceContainer,
+      bottomNavigationBar: _buildBottomButtonGroup(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
@@ -305,12 +379,11 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          SizedBox(
-                            width: 48,
-                            height: 48,
-                            child: CircularProgressIndicatorM3E(
-                              shape: ProgressM3EShape.wavy,
-                            ),
+                          const SizedBox(
+                            width:
+                                64, // Slightly larger for ExpressiveLoadingIndicator
+                            height: 64,
+                            child: ExpressiveLoadingIndicator(),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -342,11 +415,6 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 24),
-                          FilledButton.icon(
-                            onPressed: _checkForUpdates,
-                            icon: Icon(Symbols.refresh),
-                            label: Text('Retry'),
-                          ),
                         ],
                       ),
                     )
@@ -384,103 +452,203 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                         // Status card
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 32,
+                            horizontal: 24,
+                          ),
                           decoration: BoxDecoration(
                             color: _isUpdateAvailable
                                 ? colorTheme.primaryContainer
                                 : colorTheme.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(32),
                           ),
                           child: Column(
                             children: [
-                              Icon(
-                                _isUpdateAvailable
-                                    ? Symbols.system_update
-                                    : Symbols.check_circle,
-                                size: 56,
-                                fill: 1,
-                                color: _isUpdateAvailable
-                                    ? colorTheme.onPrimaryContainer
-                                    : colorTheme.primary,
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: _isUpdateAvailable
+                                      ? colorTheme.primary
+                                      : colorTheme.secondaryContainer,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  _isUpdateAvailable
+                                      ? Symbols.system_update
+                                      : Symbols.check_circle,
+                                  size: 48,
+                                  color: _isUpdateAvailable
+                                      ? colorTheme.onPrimary
+                                      : colorTheme.onSecondaryContainer,
+                                ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 24),
                               Text(
                                 _isUpdateAvailable
                                     ? 'Update Available!'
                                     : 'You\'re up to date',
                                 style: TextStyle(
-                                  fontSize: 20,
+                                  fontSize: 22,
                                   fontWeight: FontWeight.w700,
                                   fontFamily: 'RobotoFlex',
                                   color: _isUpdateAvailable
                                       ? colorTheme.onPrimaryContainer
-                                      : null,
+                                      : colorTheme.onSurface,
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Current: v$_currentVersion',
-                                style: TextStyle(
-                                  color: _isUpdateAvailable
-                                      ? colorTheme.onPrimaryContainer
-                                            .withOpacity(0.7)
-                                      : colorTheme.onSurfaceVariant,
-                                ),
-                              ),
-                              if (_isUpdateAvailable) ...[
-                                Text(
-                                  'Latest: v$_latestVersion',
-                                  style: TextStyle(
-                                    color: colorTheme.onPrimaryContainer
-                                        .withOpacity(0.7),
+                              const SizedBox(height: 24),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Column(
+                                    children: [
+                                      Text(
+                                        'Current',
+                                        style: TextStyle(
+                                          color:
+                                              (_isUpdateAvailable
+                                                      ? colorTheme
+                                                            .onPrimaryContainer
+                                                      : colorTheme
+                                                            .onSurfaceVariant)
+                                                  .withOpacity(0.7),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: _isUpdateAvailable
+                                              ? colorTheme.surface.withOpacity(
+                                                  0.5,
+                                                )
+                                              : colorTheme
+                                                    .surfaceContainerHighest,
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'v$_currentVersion',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: _isUpdateAvailable
+                                                ? colorTheme.onPrimaryContainer
+                                                : colorTheme.onSurface,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
+                                  if (_isUpdateAvailable) ...[
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                      ),
+                                      child: Icon(
+                                        Symbols.arrow_forward,
+                                        color: colorTheme.onPrimaryContainer
+                                            .withOpacity(0.5),
+                                      ),
+                                    ),
+                                    Column(
+                                      children: [
+                                        Text(
+                                          'Latest',
+                                          style: TextStyle(
+                                            color: colorTheme.onPrimaryContainer
+                                                .withOpacity(0.7),
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: colorTheme.primary,
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'v$_latestVersion',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              color: colorTheme.onPrimary,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              if (_isUpdateAvailable && _downloadUrl != null)
+                                Builder(
+                                  builder: (context) {
+                                    final section = _buildDownloadSection(
+                                      colorTheme,
+                                    );
+                                    if (section == null) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    return section;
+                                  },
                                 ),
-                                const SizedBox(height: 20),
-                                if (_downloadUrl != null)
-                                  _buildDownloadSection(colorTheme),
-                              ],
                             ],
                           ),
                         ),
                         // Release notes
                         if (_releaseNotes != null &&
                             _releaseNotes!.isNotEmpty) ...[
-                          const SizedBox(height: 24),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Release Notes',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                          const SizedBox(height: 32),
+                          Row(
+                            children: [
+                              Icon(
+                                Symbols.description,
+                                size: 20,
                                 color: colorTheme.primary,
                               ),
-                            ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Release Notes',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: colorTheme.primary,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: colorTheme.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(16),
+                              color: colorTheme.surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: colorTheme.outlineVariant.withOpacity(
+                                  0.4,
+                                ),
+                              ),
                             ),
-                            child: Text(
+                            child: SelectableText(
                               _releaseNotes!,
                               style: TextStyle(
                                 color: colorTheme.onSurface,
-                                height: 1.5,
+                                height: 1.6,
                               ),
                             ),
                           ),
                         ],
-                        const SizedBox(height: 24),
-                        // Check again button
-                        OutlinedButton.icon(
-                          onPressed: _checkForUpdates,
-                          icon: Icon(Symbols.refresh),
-                          label: Text('Check again'),
-                        ),
                       ],
                     ),
             ),

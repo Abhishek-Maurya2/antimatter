@@ -3,7 +3,7 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:orches/models/task.dart';
 
 class TaskFloatingToolbar extends StatelessWidget {
-  final Task task;
+  final List<Task> tasks;
   final VoidCallback onComplete;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -14,7 +14,7 @@ class TaskFloatingToolbar extends StatelessWidget {
 
   const TaskFloatingToolbar({
     super.key,
-    required this.task,
+    required this.tasks,
     required this.onComplete,
     required this.onEdit,
     required this.onDelete,
@@ -40,7 +40,11 @@ class TaskFloatingToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCompleted = task.isCompleted;
+    if (tasks.isEmpty) return const SizedBox.shrink();
+
+    final isCompleted = tasks.every((t) => t.isCompleted);
+    final isDeleted = tasks.every((t) => t.isDeleted);
+    final isArchived = tasks.every((t) => t.isArchived);
 
     return Material(
       elevation: 4,
@@ -54,7 +58,7 @@ class TaskFloatingToolbar extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           spacing: 4,
           children: [
-            if (task.isDeleted) ...[
+            if (isDeleted) ...[
               _buildActionIcon(
                 icon: Symbols.restore_from_trash,
                 tooltip: 'Restore Task',
@@ -69,22 +73,23 @@ class TaskFloatingToolbar extends StatelessWidget {
                 color: colorTheme.onPrimaryContainer,
                 weight: 900,
               ),
+              if (tasks.length == 1)
+                _buildActionIcon(
+                  icon: Symbols.edit,
+                  tooltip: 'Edit Task',
+                  onPressed: onEdit,
+                  color: colorTheme.onPrimaryContainer,
+                ),
               _buildActionIcon(
-                icon: Symbols.edit,
-                tooltip: 'Edit Task',
-                onPressed: onEdit,
-                color: colorTheme.onPrimaryContainer,
-              ),
-              _buildActionIcon(
-                icon: task.isArchived ? Symbols.unarchive : Symbols.archive,
-                tooltip: task.isArchived ? 'Unarchive Task' : 'Archive Task',
+                icon: isArchived ? Symbols.unarchive : Symbols.archive,
+                tooltip: isArchived ? 'Unarchive Task' : 'Archive Task',
                 onPressed: onArchive,
                 color: colorTheme.onPrimaryContainer,
               ),
             ],
             _buildActionIcon(
               icon: Symbols.delete_outline,
-              tooltip: task.isDeleted ? 'Delete Permanently' : 'Move to Trash',
+              tooltip: isDeleted ? 'Delete Permanently' : 'Move to Trash',
               onPressed: onDelete,
               color: colorTheme.error,
             ),

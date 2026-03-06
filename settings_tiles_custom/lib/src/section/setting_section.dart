@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:settings_tiles/src/tiles/setting_tile.dart';
+import 'package:settings_tiles/src/tiles/task_tile/task_tile.dart';
 
 /// Setting section.
 class SettingSection extends StatelessWidget {
@@ -34,32 +35,39 @@ class SettingSection extends StatelessWidget {
 
   Widget _wrapStyledTile(BuildContext context, Widget tile,
       {required bool isFirst, required bool isLast, required bool isOnly}) {
-    final borderRadius = PrimarySwitch
+    // If the tile is a selected TaskTile, use a pill-shaped border radius
+    final isTaskSelected = tile is TaskTile && tile.isSelected;
+
+    final borderRadius = isTaskSelected
         ? BorderRadius.circular(50)
-        : isOnly
-            ? BorderRadius.circular(36)
-            : isFirst
-                ? const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                    bottomLeft: Radius.circular(4),
-                    bottomRight: Radius.circular(4),
-                  )
-                : isLast
+        : PrimarySwitch
+            ? BorderRadius.circular(50)
+            : isOnly
+                ? BorderRadius.circular(36)
+                : isFirst
                     ? const BorderRadius.only(
-                        topLeft: Radius.circular(4),
-                        topRight: Radius.circular(4),
-                        bottomLeft: Radius.circular(16),
-                        bottomRight: Radius.circular(16),
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                        bottomLeft: Radius.circular(4),
+                        bottomRight: Radius.circular(4),
                       )
-                    : BorderRadius.circular(4);
+                    : isLast
+                        ? const BorderRadius.only(
+                            topLeft: Radius.circular(4),
+                            topRight: Radius.circular(4),
+                            bottomLeft: Radius.circular(16),
+                            bottomRight: Radius.circular(16),
+                          )
+                        : BorderRadius.circular(4);
 
     return Material(
-      color: PrimarySwitch
-          ? Theme.of(context).colorScheme.primaryContainer
-          : errorTile
-              ? Theme.of(context).colorScheme.errorContainer
-              : backgroundColor ?? Theme.of(context).colorScheme.surface,
+      color: isTaskSelected
+          ? Theme.of(context).colorScheme.tertiaryContainer
+          : PrimarySwitch
+              ? Theme.of(context).colorScheme.primaryContainer
+              : errorTile
+                  ? Theme.of(context).colorScheme.errorContainer
+                  : backgroundColor ?? Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: borderRadius),
       clipBehavior: Clip.hardEdge,
       child: tile,

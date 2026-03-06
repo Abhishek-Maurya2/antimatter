@@ -17,10 +17,10 @@ class TaskTile extends SettingTile {
     this.onPressed,
     this.onLongPress,
     super.key,
-    super.visible,
     super.enabled,
     required super.title,
     super.description,
+    this.isSelected = false,
   }) : super(
           icon: IconButton(
             onPressed: enabled ? () => onChanged?.call(!checked) : null,
@@ -57,6 +57,9 @@ class TaskTile extends SettingTile {
   /// Called when the tile is long-pressed.
   final VoidCallback? onLongPress;
 
+  /// Whether the tile is selected for batch operations.
+  final bool isSelected;
+
   @override
   Widget build(BuildContext context) {
     if (!visible) {
@@ -66,7 +69,13 @@ class TaskTile extends SettingTile {
     final colorScheme = Theme.of(context).colorScheme;
 
     final mainTile = ListTile(
-      tileColor: backgroundColor,
+      tileColor: isSelected ? colorScheme.tertiaryContainer : backgroundColor,
+      shape: isSelected ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(52)) : null,
+      selected: isSelected,
+      selectedTileColor: colorScheme.tertiaryContainer,
+      selectedColor: colorScheme.onTertiaryContainer,
+      iconColor: isSelected ? colorScheme.onTertiaryContainer : null,
+      textColor: isSelected ? colorScheme.onTertiaryContainer : null,
       contentPadding: const EdgeInsets.only(right: 16, left: 16),
       enabled: enabled,
       leading: icon,

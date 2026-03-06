@@ -1,7 +1,7 @@
 name: orches
 description: "AntiMatter - A Material 3 Expressive Task Manager App."
 publish_to: 'none'
-version: 2.10.0
+version: 2.11.0
 
 environment:
   sdk: ^3.11.0
@@ -85,3 +85,7 @@ dependency_overrides:
     path: ./material_3_expressive/packages/split_button_m3e
   loading_indicator_m3e:
     path: ./material_3_expressive/packages/loading_indicator_m3e
+  button_m3e:
+    path: ./material_3_expressive/packages/button_m3e
+  button_group_m3e:
+    path: ./material_3_expressive/packages/button_group_m3e
