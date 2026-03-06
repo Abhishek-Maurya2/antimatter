@@ -34,6 +34,8 @@ class ButtonGroupM3EAction {
     this.selected = false,
     this.onSelectedChange,
     this.shape, // optional override shape per action
+    this.backgroundColor,
+    this.foregroundColor,
   });
 
   final Widget label;
@@ -45,6 +47,8 @@ class ButtonGroupM3EAction {
   final bool selected;
   final ValueChanged<bool>? onSelectedChange;
   final ButtonM3EShape? shape; // if null group decides
+  final Color? backgroundColor;
+  final Color? foregroundColor;
 
   ButtonGroupM3EAction copyWith({
     Widget? label,
@@ -56,18 +60,21 @@ class ButtonGroupM3EAction {
     bool? selected,
     ValueChanged<bool>? onSelectedChange,
     ButtonM3EShape? shape,
-  }) =>
-      ButtonGroupM3EAction(
-        label: label ?? this.label,
-        icon: icon ?? this.icon,
-        onPressed: onPressed ?? this.onPressed,
-        enabled: enabled ?? this.enabled,
-        style: style ?? this.style,
-        toggleable: toggleable ?? this.toggleable,
-        selected: selected ?? this.selected,
-        onSelectedChange: onSelectedChange ?? this.onSelectedChange,
-        shape: shape ?? this.shape,
-      );
+    Color? backgroundColor,
+    Color? foregroundColor,
+  }) => ButtonGroupM3EAction(
+    label: label ?? this.label,
+    icon: icon ?? this.icon,
+    onPressed: onPressed ?? this.onPressed,
+    enabled: enabled ?? this.enabled,
+    style: style ?? this.style,
+    toggleable: toggleable ?? this.toggleable,
+    selected: selected ?? this.selected,
+    onSelectedChange: onSelectedChange ?? this.onSelectedChange,
+    shape: shape ?? this.shape,
+    backgroundColor: backgroundColor ?? this.backgroundColor,
+    foregroundColor: foregroundColor ?? this.foregroundColor,
+  );
 }
 
 class ButtonGroupM3E extends StatefulWidget {
@@ -197,8 +204,10 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
   }
 
   void _initKeys() {
-    _childKeys =
-        List<GlobalKey>.generate(_effectiveActions.length, (_) => GlobalKey());
+    _childKeys = List<GlobalKey>.generate(
+      _effectiveActions.length,
+      (_) => GlobalKey(),
+    );
   }
 
   @override
@@ -207,8 +216,8 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
     final cs = Theme.of(context).colorScheme;
     final dividerClr =
         widget.dividerColor ?? cs.outlineVariant.withValues(alpha: 0.6);
-    final dividerThk =
-        (widget.dividerThickness ?? tokens.dividerThickness).clamp(0.5, 2.0);
+    final dividerThk = (widget.dividerThickness ?? tokens.dividerThickness)
+        .clamp(0.5, 2.0);
 
     final group = ButtonGroupM3EScope(
       type: widget.type,
@@ -261,7 +270,11 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
         return _linearCore(context, spacing, dividerColor, dividerThickness);
       case ButtonGroupM3EOverflow.scroll:
         return _linearScrollable(
-            context, spacing, dividerColor, dividerThickness);
+          context,
+          spacing,
+          dividerColor,
+          dividerThickness,
+        );
       case ButtonGroupM3EOverflow.menu:
         return _linearWithOverflowMenu(
           context,
@@ -274,11 +287,19 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
   }
 
   // Original linear layout (no overflow management)
-  Widget _linearCore(BuildContext context, double spacing, Color dividerColor,
-      double dividerThickness) {
+  Widget _linearCore(
+    BuildContext context,
+    double spacing,
+    Color dividerColor,
+    double dividerThickness,
+  ) {
     final list = _buildItemList(
-        context, spacing, dividerColor, dividerThickness,
-        count: _effectiveActions.length);
+      context,
+      spacing,
+      dividerColor,
+      dividerThickness,
+      count: _effectiveActions.length,
+    );
 
     final mainAlign =
         widget.linearMainAxisAlignment ?? _mapWrapToMain(widget.alignment);
@@ -287,26 +308,36 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
     return widget.direction == Axis.horizontal
         ? Row(
             mainAxisSize: mainSize,
-            mainAxisAlignment:
-                widget.expanded ? mainAlign : MainAxisAlignment.start,
+            mainAxisAlignment: widget.expanded
+                ? mainAlign
+                : MainAxisAlignment.start,
             crossAxisAlignment: _mapCross(widget.crossAxisAlignment),
             children: list,
           )
         : Column(
             mainAxisSize: mainSize,
-            mainAxisAlignment:
-                widget.expanded ? mainAlign : MainAxisAlignment.start,
+            mainAxisAlignment: widget.expanded
+                ? mainAlign
+                : MainAxisAlignment.start,
             crossAxisAlignment: _mapCross(widget.crossAxisAlignment),
             children: list,
           );
   }
 
   // Scrollable variant used previously to prevent RenderFlex overflow.
-  Widget _linearScrollable(BuildContext context, double spacing,
-      Color dividerColor, double dividerThickness) {
+  Widget _linearScrollable(
+    BuildContext context,
+    double spacing,
+    Color dividerColor,
+    double dividerThickness,
+  ) {
     final list = _buildItemList(
-        context, spacing, dividerColor, dividerThickness,
-        count: _effectiveActions.length);
+      context,
+      spacing,
+      dividerColor,
+      dividerThickness,
+      count: _effectiveActions.length,
+    );
 
     final mainAlign =
         widget.linearMainAxisAlignment ?? _mapWrapToMain(widget.alignment);
@@ -319,18 +350,22 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
 
         final core = widget.direction == Axis.horizontal
             ? Row(
-                mainAxisSize:
-                    widget.expanded ? MainAxisSize.max : MainAxisSize.min,
-                mainAxisAlignment:
-                    widget.expanded ? mainAlign : MainAxisAlignment.start,
+                mainAxisSize: widget.expanded
+                    ? MainAxisSize.max
+                    : MainAxisSize.min,
+                mainAxisAlignment: widget.expanded
+                    ? mainAlign
+                    : MainAxisAlignment.start,
                 crossAxisAlignment: _mapCross(widget.crossAxisAlignment),
                 children: list,
               )
             : Column(
-                mainAxisSize:
-                    widget.expanded ? MainAxisSize.max : MainAxisSize.min,
-                mainAxisAlignment:
-                    widget.expanded ? mainAlign : MainAxisAlignment.start,
+                mainAxisSize: widget.expanded
+                    ? MainAxisSize.max
+                    : MainAxisSize.min,
+                mainAxisAlignment: widget.expanded
+                    ? mainAlign
+                    : MainAxisAlignment.start,
                 crossAxisAlignment: _mapCross(widget.crossAxisAlignment),
                 children: list,
               );
@@ -375,8 +410,9 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
           return _linearCore(context, spacing, dividerColor, dividerThickness);
         }
         // Schedule measurement pass
-        WidgetsBinding.instance
-            .addPostFrameCallback((_) => _measureChildrenMainExtents());
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _measureChildrenMainExtents(),
+        );
 
         final sizes = _measuredChildren;
         final fallbackChild = _defaultChildMainExtent();
@@ -462,13 +498,15 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
               visibleList.add(_spacer(gap));
             }
           }
-          visibleList.add(_buildOverflowTrigger(
-            context,
-            spacing,
-            dividerColor,
-            dividerThickness,
-            startIndex: visible,
-          ));
+          visibleList.add(
+            _buildOverflowTrigger(
+              context,
+              spacing,
+              dividerColor,
+              dividerThickness,
+              startIndex: visible,
+            ),
+          );
         }
 
         final coreChildren = visibleList;
@@ -477,20 +515,24 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
         final core = widget.direction == Axis.horizontal
             ? ClipRect(
                 child: Row(
-                  mainAxisSize:
-                      widget.expanded ? MainAxisSize.max : MainAxisSize.min,
-                  mainAxisAlignment:
-                      widget.expanded ? mainAlign : MainAxisAlignment.start,
+                  mainAxisSize: widget.expanded
+                      ? MainAxisSize.max
+                      : MainAxisSize.min,
+                  mainAxisAlignment: widget.expanded
+                      ? mainAlign
+                      : MainAxisAlignment.start,
                   crossAxisAlignment: _mapCross(widget.crossAxisAlignment),
                   children: coreChildren,
                 ),
               )
             : ClipRect(
                 child: Column(
-                  mainAxisSize:
-                      widget.expanded ? MainAxisSize.max : MainAxisSize.min,
-                  mainAxisAlignment:
-                      widget.expanded ? mainAlign : MainAxisAlignment.start,
+                  mainAxisSize: widget.expanded
+                      ? MainAxisSize.max
+                      : MainAxisSize.min,
+                  mainAxisAlignment: widget.expanded
+                      ? mainAlign
+                      : MainAxisAlignment.start,
                   crossAxisAlignment: _mapCross(widget.crossAxisAlignment),
                   children: coreChildren,
                 ),
@@ -499,7 +541,11 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
         final measurer = Offstage(
           offstage: true,
           child: _buildMeasurer(
-              spacing, runSpacing, dividerColor, dividerThickness),
+            spacing,
+            runSpacing,
+            dividerColor,
+            dividerThickness,
+          ),
         );
         return Stack(children: [core, measurer]);
       },
@@ -508,8 +554,12 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
 
   // Builds a hidden Wrap that lays out all children (with the same child wrappers),
   // so we can measure their main-axis extents safely without overflow.
-  Widget _buildMeasurer(double spacing, double runSpacing, Color dividerColor,
-      double dividerThickness) {
+  Widget _buildMeasurer(
+    double spacing,
+    double runSpacing,
+    Color dividerColor,
+    double dividerThickness,
+  ) {
     final wrapped = List<Widget>.generate(_effectiveActions.length, (i) {
       final isFirst = i == 0;
       final isLast = i == _effectiveActions.length - 1;
@@ -549,8 +599,9 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
       final render = ctx?.findRenderObject() as RenderBox?;
       if (render != null && render.hasSize) {
         final size = render.size;
-        final main =
-            widget.direction == Axis.horizontal ? size.width : size.height;
+        final main = widget.direction == Axis.horizontal
+            ? size.width
+            : size.height;
         newMeasures.add(_ButtonGroupM3MItemMeasure(main));
       } else {
         // fallback fill
@@ -565,11 +616,13 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
     double? overflowExtent;
     if (orender != null && orender.hasSize) {
       final sz = orender.size;
-      overflowExtent =
-          widget.direction == Axis.horizontal ? sz.width : sz.height;
+      overflowExtent = widget.direction == Axis.horizontal
+          ? sz.width
+          : sz.height;
     }
 
-    final changed = _measuredChildren == null ||
+    final changed =
+        _measuredChildren == null ||
         _measuredChildren!.length != newMeasures.length ||
         !_listAlmostEqual(_measuredChildren!, newMeasures);
 
@@ -583,7 +636,9 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
   }
 
   bool _listAlmostEqual(
-      List<_ButtonGroupM3MItemMeasure> a, List<_ButtonGroupM3MItemMeasure> b) {
+    List<_ButtonGroupM3MItemMeasure> a,
+    List<_ButtonGroupM3MItemMeasure> b,
+  ) {
     if (identical(a, b)) return true;
     if (a.length != b.length) return false;
     for (var i = 0; i < a.length; i++) {
@@ -646,8 +701,12 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
       final isLast = i == capped - 1;
       final action = _effectiveActions[i];
 
-      final button =
-          _buildButtonForAction(i, action, isFirst: isFirst, isLast: isLast);
+      final button = _buildButtonForAction(
+        i,
+        action,
+        isFirst: isFirst,
+        isLast: isLast,
+      );
 
       final child = _wrapItemScope(
         context,
@@ -676,8 +735,12 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
     return list;
   }
 
-  Widget _buildButtonForAction(int index, ButtonGroupM3EAction action,
-      {bool isFirst = false, bool isLast = false}) {
+  Widget _buildButtonForAction(
+    int index,
+    ButtonGroupM3EAction action, {
+    bool isFirst = false,
+    bool isLast = false,
+  }) {
     final selected = widget.selectedIndex != null
         ? widget.selectedIndex == index
         : action.selected;
@@ -694,12 +757,16 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
           // Connected + selection: interior corners should have square token radius; outer ends rounded.
           shapeOut = ButtonM3EShape.square;
           // Obtain square base radius from button tokens for inner corners.
-          final squareRadiusVal = ButtonTokensAdapter(context)
-              .squareRadius(_mapGroupSize(widget.size));
+          final squareRadiusVal = ButtonTokensAdapter(
+            context,
+          ).squareRadius(_mapGroupSize(widget.size));
           final innerRadius = Radius.circular(squareRadiusVal);
           // Obtain round radius set for outer corners.
-          final roundSet =
-              radiusFor(context, ButtonGroupM3EShape.round, widget.size);
+          final roundSet = radiusFor(
+            context,
+            ButtonGroupM3EShape.round,
+            widget.size,
+          );
           if (widget.direction == Axis.horizontal) {
             if (isFirst) {
               perCorner = BorderRadius.only(
@@ -746,8 +813,9 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
             perCorner = null; // round shape handles corners
           } else {
             shapeOut = ButtonM3EShape.square;
-            final squareRadiusVal = ButtonTokensAdapter(context)
-                .squareRadius(_mapGroupSize(widget.size));
+            final squareRadiusVal = ButtonTokensAdapter(
+              context,
+            ).squareRadius(_mapGroupSize(widget.size));
             perCorner = BorderRadius.all(Radius.circular(squareRadiusVal));
           }
         }
@@ -775,20 +843,22 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
       },
       enabled: action.enabled,
       cornerRadiusOverride: perCorner,
+      backgroundColor: action.backgroundColor,
+      foregroundColor: action.foregroundColor,
     );
   }
 
   ButtonM3ESize _mapGroupSize(ButtonGroupM3ESize s) => switch (s) {
-        ButtonGroupM3ESize.xs => ButtonM3ESize.xs,
-        ButtonGroupM3ESize.sm => ButtonM3ESize.sm,
-        ButtonGroupM3ESize.md => ButtonM3ESize.md,
-        ButtonGroupM3ESize.lg => ButtonM3ESize.lg,
-        ButtonGroupM3ESize.xl => ButtonM3ESize.xl,
-      };
+    ButtonGroupM3ESize.xs => ButtonM3ESize.xs,
+    ButtonGroupM3ESize.sm => ButtonM3ESize.sm,
+    ButtonGroupM3ESize.md => ButtonM3ESize.md,
+    ButtonGroupM3ESize.lg => ButtonM3ESize.lg,
+    ButtonGroupM3ESize.xl => ButtonM3ESize.xl,
+  };
   ButtonM3EShape _mapGroupShape(ButtonGroupM3EShape s) =>
       s == ButtonGroupM3EShape.round
-          ? ButtonM3EShape.round
-          : ButtonM3EShape.square;
+      ? ButtonM3EShape.round
+      : ButtonM3EShape.square;
 
   CrossAxisAlignment _mapCross(WrapCrossAlignment w) {
     switch (w) {
@@ -802,13 +872,13 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
   }
 
   MainAxisAlignment _mapWrapToMain(WrapAlignment w) => switch (w) {
-        WrapAlignment.start => MainAxisAlignment.start,
-        WrapAlignment.end => MainAxisAlignment.end,
-        WrapAlignment.center => MainAxisAlignment.center,
-        WrapAlignment.spaceBetween => MainAxisAlignment.spaceBetween,
-        WrapAlignment.spaceAround => MainAxisAlignment.spaceAround,
-        WrapAlignment.spaceEvenly => MainAxisAlignment.spaceEvenly,
-      };
+    WrapAlignment.start => MainAxisAlignment.start,
+    WrapAlignment.end => MainAxisAlignment.end,
+    WrapAlignment.center => MainAxisAlignment.center,
+    WrapAlignment.spaceBetween => MainAxisAlignment.spaceBetween,
+    WrapAlignment.spaceAround => MainAxisAlignment.spaceAround,
+    WrapAlignment.spaceEvenly => MainAxisAlignment.spaceEvenly,
+  };
 
   Widget _buildOverflowTrigger(
     BuildContext context,
@@ -859,15 +929,21 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
   }
 
   Future<void> _showOverflowDropdown(
-      BuildContext context, int startIndex) async {
+    BuildContext context,
+    int startIndex,
+  ) async {
     // Build actions that close the dropdown before invoking onPressed
     final actions = <ButtonGroupM3EAction>[];
     for (var i = startIndex; i < _effectiveActions.length; i++) {
       final a = _effectiveActions[i];
-      actions.add(a.copyWith(onPressed: () {
-        _removeOverflowEntry();
-        a.onPressed?.call();
-      }));
+      actions.add(
+        a.copyWith(
+          onPressed: () {
+            _removeOverflowEntry();
+            a.onPressed?.call();
+          },
+        ),
+      );
     }
     if (actions.isEmpty) return;
 
@@ -935,7 +1011,9 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
   }
 
   Future<void> _showOverflowBottomSheet(
-      BuildContext context, int startIndex) async {
+    BuildContext context,
+    int startIndex,
+  ) async {
     final overflowActions = <ButtonGroupM3EAction>[];
     for (var i = startIndex; i < _effectiveActions.length; i++) {
       overflowActions.add(_effectiveActions[i]);
@@ -1016,12 +1094,14 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
     );
   }
 
-  Widget _wrapItemScope(BuildContext context,
-      {required int index,
-      required int count,
-      required bool isFirst,
-      required bool isLast,
-      required Widget child}) {
+  Widget _wrapItemScope(
+    BuildContext context, {
+    required int index,
+    required int count,
+    required bool isFirst,
+    required bool isLast,
+    required Widget child,
+  }) {
     return ButtonGroupM3EItemScope(
       index: index,
       count: count,
@@ -1062,6 +1142,8 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
       ButtonGroupM3ESize.xl => 120.0,
     };
     return ConstrainedBox(
-        constraints: BoxConstraints(minWidth: minW), child: child);
+      constraints: BoxConstraints(minWidth: minW),
+      child: child,
+    );
   }
 }

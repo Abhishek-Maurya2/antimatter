@@ -20,6 +20,8 @@ class ButtonM3E extends StatefulWidget {
     this.enabled = true,
     this.statesController,
     this.cornerRadiusOverride, // new optional per-corner override for square shapes
+    this.backgroundColor,
+    this.foregroundColor,
   });
 
   final VoidCallback? onPressed;
@@ -35,6 +37,8 @@ class ButtonM3E extends StatefulWidget {
   final bool enabled;
   final WidgetStatesController? statesController;
   final BorderRadius? cornerRadiusOverride;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
 
   @override
   State<ButtonM3E> createState() => _ButtonM3EState();
@@ -64,8 +68,10 @@ class _ButtonM3EState extends State<ButtonM3E> {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = ButtonTokensAdapter(context,
-        smallPaddingDeprecated24: widget.smallPaddingDeprecated24);
+    final tokens = ButtonTokensAdapter(
+      context,
+      smallPaddingDeprecated24: widget.smallPaddingDeprecated24,
+    );
     final m = tokens.measurements(widget.size);
     final style = _resolveStyle(tokens, m);
 
@@ -113,9 +119,9 @@ class _ButtonM3EState extends State<ButtonM3E> {
             side: WidgetStateProperty.resolveWith((states) {
               final disabled = states.contains(WidgetState.disabled);
               return BorderSide(
-                  color:
-                      tokens.outline().withValues(alpha: disabled ? 0.12 : 1),
-                  width: 1);
+                color: tokens.outline().withValues(alpha: disabled ? 0.12 : 1),
+                width: 1,
+              );
             }),
           ),
           onPressed: onPressed,
@@ -163,13 +169,17 @@ class _ButtonM3EState extends State<ButtonM3E> {
   }
 
   OutlinedBorder _shapeFor(
-      Set<WidgetState> states, ButtonTokensAdapter tokens) {
+    Set<WidgetState> states,
+    ButtonTokensAdapter tokens,
+  ) {
     final selected = states.contains(WidgetState.selected) || widget.selected;
     final pressed = states.contains(WidgetState.pressed);
 
-    final BorderRadius squareBaseRadius = widget.cornerRadiusOverride ??
+    final BorderRadius squareBaseRadius =
+        widget.cornerRadiusOverride ??
         BorderRadius.circular(tokens.squareRadius(widget.size));
-    final BorderRadius pressedSquareRadius = widget.cornerRadiusOverride ??
+    final BorderRadius pressedSquareRadius =
+        widget.cornerRadiusOverride ??
         BorderRadius.circular(tokens.pressedRadius(widget.size));
 
     OutlinedBorder round = const StadiumBorder();
@@ -196,16 +206,16 @@ class _ButtonM3EState extends State<ButtonM3E> {
   ButtonStyle _resolveStyle(ButtonTokensAdapter tokens, ButtonMeasurements m) {
     final fg = WidgetStateProperty.resolveWith<Color?>((states) {
       final disabled = states.contains(WidgetState.disabled);
-      final color = tokens.foreground(widget.style);
+      final color = widget.foregroundColor ?? tokens.foreground(widget.style);
       return disabled ? color.withValues(alpha: 0.38) : color;
     });
 
     final bg = WidgetStateProperty.resolveWith<Color?>((states) {
       final disabled = states.contains(WidgetState.disabled);
-      final color = tokens.container(widget.style);
+      final color = widget.backgroundColor ?? tokens.container(widget.style);
       if (widget.style == ButtonM3EStyle.outlined ||
           widget.style == ButtonM3EStyle.text) {
-        return Colors.transparent;
+        return widget.backgroundColor ?? Colors.transparent;
       }
       return disabled ? color.withValues(alpha: .12) : color;
     });
@@ -220,8 +230,9 @@ class _ButtonM3EState extends State<ButtonM3E> {
 
     return ButtonStyle(
       minimumSize: WidgetStateProperty.all(Size(48, m.height)),
-      padding:
-          WidgetStateProperty.all(EdgeInsets.symmetric(horizontal: m.hPadding)),
+      padding: WidgetStateProperty.all(
+        EdgeInsets.symmetric(horizontal: m.hPadding),
+      ),
       foregroundColor: fg,
       backgroundColor: bg,
       shape: shape,

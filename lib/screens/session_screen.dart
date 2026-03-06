@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
-import 'package:orches/widgets/m3_button_group.dart';
+import 'package:button_m3e/button_m3e.dart';
+import 'package:button_group_m3e/button_group_m3e.dart';
 import '../utils/preferences_helper.dart';
 
 class SessionScreen extends StatefulWidget {
@@ -43,9 +44,10 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _loadAmbientSettings() {
-    _ambientModeEnabled = PreferencesHelper.getBool('ambientModeEnabled') ?? true;
-    final savedInterval = PreferencesHelper.getInt('ambientModeIntervalSeconds') ??
-        5;
+    _ambientModeEnabled =
+        PreferencesHelper.getBool('ambientModeEnabled') ?? true;
+    final savedInterval =
+        PreferencesHelper.getInt('ambientModeIntervalSeconds') ?? 5;
     _ambientIntervalSeconds = savedInterval.clamp(1, 60);
   }
 
@@ -220,24 +222,42 @@ class _SessionScreenState extends State<SessionScreen>
                         ),
                       ),
                       const SizedBox(height: 48),
-                      M3ButtonGroup(
-                        isActive: _isRunning,
-                        activeIndex: 0,
-                        items: [
-                          M3ButtonGroupItem(
-                            icon: _isRunning
-                                ? Icons.pause_rounded
-                                : Icons.play_arrow_rounded,
-                            label: _isRunning ? 'Pause' : 'Start',
-                            onPressed: _toggleTimer,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: ButtonGroupM3E(
+                            type: ButtonGroupM3EType.standard,
+                            size: ButtonGroupM3ESize.lg,
+                            style: ButtonM3EStyle.filled,
+                            selection: true,
+                            overflow: ButtonGroupM3EOverflow.none,
+                            selectedIndex: _isRunning ? 0 : null,
+                            actions: [
+                              ButtonGroupM3EAction(
+                                icon: Icon(
+                                  _isRunning
+                                      ? Icons.pause_rounded
+                                      : Icons.play_arrow_rounded,
+                                ),
+                                label: Text(_isRunning ? 'Pause' : 'Start'),
+                                onPressed: _toggleTimer,
+                              ),
+                              ButtonGroupM3EAction(
+                                icon: const Icon(Icons.stop_rounded),
+                                label: const Text('Stop'),
+                                onPressed: _resetTimer,
+                                enabled: _isRunning || _seconds > 0,
+                                backgroundColor: (_isRunning || _seconds > 0)
+                                    ? colorTheme.errorContainer
+                                    : null,
+                                foregroundColor: (_isRunning || _seconds > 0)
+                                    ? colorTheme.onErrorContainer
+                                    : null,
+                              ),
+                            ],
                           ),
-                          M3ButtonGroupItem(
-                            icon: Icons.stop_rounded,
-                            label: 'Stop',
-                            onPressed: _resetTimer,
-                            enabled: _isRunning || _seconds > 0,
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
