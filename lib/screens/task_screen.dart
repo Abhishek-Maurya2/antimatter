@@ -477,7 +477,10 @@ class TaskScreenState extends State<TaskScreen> {
                 child: SafeArea(
                   bottom: false,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(1, 8, 16, 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                     child: Row(
                       children: [
                         // Search bar
@@ -761,150 +764,96 @@ class TaskScreenState extends State<TaskScreen> {
                               ),
                             ),
                             styleTile: true,
-                            tiles: _sortedTasks.where((t) => !t.isCompleted).map((
-                              task,
-                            ) {
-                              return TaskTile(
-                                title: Text(task.title),
-                                description:
-                                    (task.description != null &&
-                                            task.description!.isNotEmpty) ||
-                                        task.labels.isNotEmpty
-                                    ? Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          if (task.description != null &&
-                                              task.description!.isNotEmpty)
-                                            Text(task.description!),
-                                          if (task.labels.isNotEmpty)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 4.0,
-                                              ),
-                                              child: Wrap(
-                                                spacing: 4,
-                                                runSpacing: 4,
-                                                children: task.labels
-                                                    .map(
-                                                      (label) => Container(
-                                                        padding:
-                                                            const EdgeInsets.symmetric(
-                                                              horizontal: 6,
-                                                              vertical: 2,
-                                                            ),
-                                                        decoration: BoxDecoration(
-                                                          color: colorTheme
-                                                              .surfaceContainerHigh,
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                4,
-                                                              ),
-                                                          border: Border.all(
-                                                            color: colorTheme
-                                                                .outlineVariant,
-                                                          ),
-                                                        ),
-                                                        child: Text(
-                                                          label,
-                                                          style: TextStyle(
-                                                            fontSize: 10,
-                                                            color: colorTheme
-                                                                .onSurfaceVariant,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    )
-                                                    .toList(),
-                                              ),
-                                            ),
-                                        ],
-                                      )
-                                    : null,
-                                isDeadlineMissed:
-                                    task.deadline != null &&
-                                    task.deadline!.isBefore(DateTime.now()),
-                                deadline: task.deadline != null
-                                    ? Text(formatDeadline(task.deadline)!)
-                                    : null,
-                                subTasks: task.subTasks.map((subTask) {
+                            tiles: _sortedTasks
+                                .where((t) => !t.isCompleted)
+                                .map((task) {
                                   return TaskTile(
-                                    backgroundColor:
-                                        colorTheme.surfaceContainerHigh,
-                                    title: Text(
-                                      subTask.title,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodyMedium,
-                                    ),
-                                    description:
-                                        subTask.description != null &&
-                                            subTask.description!.isNotEmpty
-                                        ? Text(
-                                            subTask.description!,
-                                            style: Theme.of(
-                                              context,
-                                            ).textTheme.bodySmall,
-                                          )
+                                    titleText: task.title,
+                                    descriptionText:
+                                        task.description?.isNotEmpty == true
+                                        ? task.description
                                         : null,
-                                    checked: subTask.isCompleted,
-                                    onChanged: (value) {
+                                    labels: task.labels,
+                                    isDeadlineMissed:
+                                        task.deadline != null &&
+                                        task.deadline!.isBefore(DateTime.now()),
+                                    deadlineText: task.deadline != null
+                                        ? formatDeadline(task.deadline)
+                                        : null,
+                                    subTasks: task.subTasks.map((subTask) {
+                                      return TaskTile(
+                                        backgroundColor:
+                                            colorTheme.surfaceContainerHigh,
+                                        titleText: subTask.title,
+                                        descriptionText:
+                                            subTask.description?.isNotEmpty ==
+                                                true
+                                            ? subTask.description
+                                            : null,
+                                        checked: subTask.isCompleted,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            subTask.isCompleted =
+                                                value ?? false;
+                                            if (subTask.isCompleted) {
+                                              AudioService().playTickSound();
+                                            }
+                                            task.save();
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
+                                    isSelected: _selectedTasksForToolbar
+                                        .contains(task),
+                                    checked: task.isCompleted,
+                                    onChanged: (value) async {
+                                      final isCompleted = value ?? false;
                                       setState(() {
-                                        subTask.isCompleted = value ?? false;
-                                        if (subTask.isCompleted) {
-                                          AudioService().playTickSound();
-                                        }
-                                        task.save();
+                                        task.isCompleted = isCompleted;
                                       });
+                                      await _setTaskCompleted(
+                                        task,
+                                        isCompleted,
+                                      );
+                                      await _autoMoveOldCompletedTasksToTrash();
+                                    },
+                                    onLongPress: () {
+                                      _toggleTaskSelection(task);
+                                    },
+                                    onPressed: () async {
+                                      if (_selectedTasksForToolbar.isNotEmpty) {
+                                        _toggleTaskSelection(task);
+                                        return;
+                                      }
+                                      if (isExpanded) {
+                                        setState(() {
+                                          _editingTask = task;
+                                          _isEditingNewTask = false;
+                                        });
+                                      } else {
+                                        final updatedTask =
+                                            await Navigator.of(
+                                              context,
+                                            ).push<dynamic>(
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    TaskEditorScreen(
+                                                      task: task,
+                                                    ),
+                                              ),
+                                            );
+                                        if (updatedTask != null) {
+                                          setState(() {
+                                            _editingTask = task;
+                                            _isEditingNewTask = false;
+                                          });
+                                          _handleTaskResult(updatedTask);
+                                        }
+                                      }
                                     },
                                   );
-                                }).toList(),
-                                isSelected: _selectedTasksForToolbar.contains(
-                                  task,
-                                ),
-                                checked: task.isCompleted,
-                                onChanged: (value) async {
-                                  final isCompleted = value ?? false;
-                                  setState(() {
-                                    task.isCompleted = isCompleted;
-                                  });
-                                  await _setTaskCompleted(task, isCompleted);
-                                  await _autoMoveOldCompletedTasksToTrash();
-                                },
-                                onLongPress: () {
-                                  _toggleTaskSelection(task);
-                                },
-                                onPressed: () async {
-                                  if (_selectedTasksForToolbar.isNotEmpty) {
-                                    _toggleTaskSelection(task);
-                                    return;
-                                  }
-                                  if (isExpanded) {
-                                    setState(() {
-                                      _editingTask = task;
-                                      _isEditingNewTask = false;
-                                    });
-                                  } else {
-                                    final updatedTask =
-                                        await Navigator.of(
-                                          context,
-                                        ).push<dynamic>(
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                TaskEditorScreen(task: task),
-                                          ),
-                                        );
-                                    if (updatedTask != null) {
-                                      setState(() {
-                                        _editingTask = task;
-                                        _isEditingNewTask = false;
-                                      });
-                                      _handleTaskResult(updatedTask);
-                                    }
-                                  }
-                                },
-                              );
-                            }).toList(),
+                                })
+                                .toList(),
                           ),
                           SizedBox(height: 16),
                         ],
@@ -924,186 +873,89 @@ class TaskScreenState extends State<TaskScreen> {
                               ),
                             ),
                             styleTile: true,
-                            tiles: _sortedTasks.where((t) => t.isCompleted).map((
-                              task,
-                            ) {
-                              return TaskTile(
-                                title: Text(
-                                  task.title,
-                                  style: TextStyle(
-                                    decoration: TextDecoration.lineThrough,
-                                    color: colorTheme.onSurfaceVariant,
+                            tiles: _sortedTasks.where((t) => t.isCompleted).map(
+                              (task) {
+                                return TaskTile(
+                                  titleText: task.title,
+                                  descriptionText:
+                                      task.description?.isNotEmpty == true
+                                      ? task.description
+                                      : null,
+                                  labels: task.labels,
+                                  deadlineText: task.deadline != null
+                                      ? formatDeadline(task.deadline)
+                                      : null,
+                                  subTasks: task.subTasks.map((subTask) {
+                                    return TaskTile(
+                                      backgroundColor:
+                                          colorTheme.surfaceContainerHigh,
+                                      titleText: subTask.title,
+                                      descriptionText:
+                                          subTask.description?.isNotEmpty ==
+                                              true
+                                          ? subTask.description
+                                          : null,
+                                      checked: subTask.isCompleted,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          subTask.isCompleted = value ?? false;
+                                          if (subTask.isCompleted) {
+                                            AudioService().playTickSound();
+                                          }
+                                          task.save();
+                                        });
+                                      },
+                                    );
+                                  }).toList(),
+                                  isSelected: _selectedTasksForToolbar.contains(
+                                    task,
                                   ),
-                                ),
-                                description:
-                                    (task.description != null &&
-                                            task.description!.isNotEmpty) ||
-                                        task.labels.isNotEmpty
-                                    ? Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          if (task.description != null &&
-                                              task.description!.isNotEmpty)
-                                            Text(
-                                              task.description!,
-                                              style: TextStyle(
-                                                decoration:
-                                                    TextDecoration.lineThrough,
-                                                color:
-                                                    colorTheme.onSurfaceVariant,
-                                              ),
-                                            ),
-                                          if (task.labels.isNotEmpty)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 4.0,
-                                              ),
-                                              child: Wrap(
-                                                spacing: 4,
-                                                runSpacing: 4,
-                                                children: task.labels
-                                                    .map(
-                                                      (label) => Container(
-                                                        padding:
-                                                            const EdgeInsets.symmetric(
-                                                              horizontal: 6,
-                                                              vertical: 2,
-                                                            ),
-                                                        decoration: BoxDecoration(
-                                                          color: colorTheme
-                                                              .surfaceContainerHigh,
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                4,
-                                                              ),
-                                                          border: Border.all(
-                                                            color: colorTheme
-                                                                .outlineVariant
-                                                                .withValues(
-                                                                  alpha: 0.5,
-                                                                ),
-                                                          ),
-                                                        ),
-                                                        child: Text(
-                                                          label,
-                                                          style: TextStyle(
-                                                            fontSize: 10,
-                                                            color: colorTheme
-                                                                .onSurfaceVariant
-                                                                .withValues(
-                                                                  alpha: 0.6,
-                                                                ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    )
-                                                    .toList(),
-                                              ),
-                                            ),
-                                        ],
-                                      )
-                                    : null,
-                                deadline: task.deadline != null
-                                    ? Text(
-                                        formatDeadline(task.deadline)!,
-                                        style: TextStyle(
-                                          decoration:
-                                              TextDecoration.lineThrough,
-                                        ),
-                                      )
-                                    : null,
-                                subTasks: task.subTasks.map((subTask) {
-                                  return TaskTile(
-                                    backgroundColor:
-                                        colorTheme.surfaceContainerHigh,
-                                    title: Text(
-                                      subTask.title,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            decoration:
-                                                TextDecoration.lineThrough,
-                                            color: colorTheme.onSurfaceVariant,
-                                          ),
-                                    ),
-                                    description:
-                                        subTask.description != null &&
-                                            subTask.description!.isNotEmpty
-                                        ? Text(
-                                            subTask.description!,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  decoration: TextDecoration
-                                                      .lineThrough,
-                                                  color: colorTheme
-                                                      .onSurfaceVariant,
-                                                ),
-                                          )
-                                        : null,
-                                    checked: subTask.isCompleted,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        subTask.isCompleted = value ?? false;
-                                        if (subTask.isCompleted) {
-                                          AudioService().playTickSound();
-                                        }
-                                        task.save();
-                                      });
-                                    },
-                                  );
-                                }).toList(),
-                                isSelected: _selectedTasksForToolbar.contains(
-                                  task,
-                                ),
-                                checked: task.isCompleted,
-                                onChanged: (value) async {
-                                  final isCompleted = value ?? false;
-                                  setState(() {
-                                    task.isCompleted = isCompleted;
-                                  });
-                                  await _setTaskCompleted(task, isCompleted);
-                                  await _autoMoveOldCompletedTasksToTrash();
-                                },
-                                onLongPress: () {
-                                  _toggleTaskSelection(task);
-                                },
-                                onPressed: () async {
-                                  if (_selectedTasksForToolbar.isNotEmpty) {
-                                    _toggleTaskSelection(task);
-                                    return;
-                                  }
-                                  if (isExpanded) {
+                                  checked: task.isCompleted,
+                                  onChanged: (value) async {
+                                    final isCompleted = value ?? false;
                                     setState(() {
-                                      _editingTask = task;
-                                      _isEditingNewTask = false;
+                                      task.isCompleted = isCompleted;
                                     });
-                                  } else {
-                                    final updatedTask =
-                                        await Navigator.of(
-                                          context,
-                                        ).push<dynamic>(
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                TaskEditorScreen(task: task),
-                                          ),
-                                        );
-                                    if (updatedTask != null) {
+                                    await _setTaskCompleted(task, isCompleted);
+                                    await _autoMoveOldCompletedTasksToTrash();
+                                  },
+                                  onLongPress: () {
+                                    _toggleTaskSelection(task);
+                                  },
+                                  onPressed: () async {
+                                    if (_selectedTasksForToolbar.isNotEmpty) {
+                                      _toggleTaskSelection(task);
+                                      return;
+                                    }
+                                    if (isExpanded) {
                                       setState(() {
                                         _editingTask = task;
                                         _isEditingNewTask = false;
                                       });
-                                      _handleTaskResult(updatedTask);
+                                    } else {
+                                      final updatedTask =
+                                          await Navigator.of(
+                                            context,
+                                          ).push<dynamic>(
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  TaskEditorScreen(task: task),
+                                            ),
+                                          );
+                                      if (updatedTask != null) {
+                                        setState(() {
+                                          _editingTask = task;
+                                          _isEditingNewTask = false;
+                                        });
+                                        _handleTaskResult(updatedTask);
+                                      }
                                     }
-                                  }
-                                },
-                              );
-                            }).toList(),
+                                  },
+                                );
+                              },
+                            ).toList(),
                           ),
-                        SizedBox(height: 25),
+                        SizedBox(height: 125),
                       ],
                     ),
                   ),

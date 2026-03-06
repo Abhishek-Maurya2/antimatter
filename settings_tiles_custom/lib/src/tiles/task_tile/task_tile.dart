@@ -10,7 +10,10 @@ class TaskTile extends SettingTile {
   TaskTile({
     required this.checked,
     required this.onChanged,
-    this.deadline,
+    required this.titleText,
+    this.descriptionText,
+    this.labels = const [],
+    this.deadlineText,
     this.isDeadlineMissed = false,
     this.subTasks,
     this.backgroundColor,
@@ -18,10 +21,10 @@ class TaskTile extends SettingTile {
     this.onLongPress,
     super.key,
     super.enabled,
-    required super.title,
-    super.description,
     this.isSelected = false,
   }) : super(
+          title: const SizedBox.shrink(), // We'll override the title and subtitle later
+          description: null,
           icon: IconButton(
             onPressed: enabled ? () => onChanged?.call(!checked) : null,
             icon: Icon(
@@ -39,8 +42,17 @@ class TaskTile extends SettingTile {
   /// Called when the status of the checkbox is changed.
   final void Function(bool? checked)? onChanged;
 
+  /// The text to display for the title
+  final String titleText;
+
+  /// Optional text to display for the description
+  final String? descriptionText;
+
+  /// Optional sub-labels displayed below the description
+  final List<String> labels;
+
   /// Optional deadline widget displayed below the description.
-  final Widget? deadline;
+  final String? deadlineText;
 
   /// Whether the deadline has been missed.
   final bool isDeadlineMissed;
@@ -79,13 +91,57 @@ class TaskTile extends SettingTile {
       contentPadding: const EdgeInsets.only(right: 16, left: 16),
       enabled: enabled,
       leading: icon,
-      title: title,
-      subtitle: (description != null || deadline != null)
+      title: Text(
+        titleText,
+        style: TextStyle(
+          decoration: checked ? TextDecoration.lineThrough : null,
+          color: checked ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
+        ),
+      ),
+      subtitle: (descriptionText != null || deadlineText != null || labels.isNotEmpty)
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (description != null) description!,
-                if (deadline != null)
+                if (descriptionText != null)
+                  Text(
+                    descriptionText!,
+                    style: TextStyle(
+                      decoration: checked ? TextDecoration.lineThrough : null,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                if (labels.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(top: descriptionText != null ? 4.0 : 0),
+                    child: Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: labels.map((label) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: checked
+                                  ? colorScheme.outlineVariant.withValues(alpha: 0.5)
+                                  : colorScheme.outlineVariant,
+                            ),
+                          ),
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: checked
+                                  ? colorScheme.onSurfaceVariant.withValues(alpha: 0.6)
+                                  : colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                if (deadlineText != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Container(
@@ -94,8 +150,11 @@ class TaskTile extends SettingTile {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: isDeadlineMissed ? colorScheme.errorContainer : colorScheme.tertiaryContainer,
+                        color: checked
+                            ? Colors.transparent
+                            : (isDeadlineMissed ? colorScheme.errorContainer : colorScheme.tertiaryContainer),
                         borderRadius: BorderRadius.circular(20),
+                        border: checked ? Border.all(color: colorScheme.outlineVariant) : null,
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -103,15 +162,21 @@ class TaskTile extends SettingTile {
                           Icon(
                             Icons.schedule,
                             size: 14,
-                            color: isDeadlineMissed ? colorScheme.onErrorContainer : colorScheme.onTertiaryContainer,
+                            color: checked
+                                ? colorScheme.onSurfaceVariant
+                                : (isDeadlineMissed ? colorScheme.onErrorContainer : colorScheme.onTertiaryContainer),
                           ),
                           const SizedBox(width: 4),
                           DefaultTextStyle(
                             style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                                  color:
-                                      isDeadlineMissed ? colorScheme.onErrorContainer : colorScheme.onTertiaryContainer,
+                                  decoration: checked ? TextDecoration.lineThrough : null,
+                                  color: checked
+                                      ? colorScheme.onSurfaceVariant
+                                      : (isDeadlineMissed
+                                          ? colorScheme.onErrorContainer
+                                          : colorScheme.onTertiaryContainer),
                                 ),
-                            child: deadline!,
+                            child: Text(deadlineText!),
                           ),
                         ],
                       ),

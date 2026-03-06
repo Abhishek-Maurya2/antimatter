@@ -170,6 +170,7 @@ class _SessionScreenState extends State<SessionScreen>
   @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
+    final bool isExpanded = MediaQuery.sizeOf(context).width >= 840;
 
     return Scaffold(
       backgroundColor: colorTheme.surfaceContainer,
@@ -178,41 +179,53 @@ class _SessionScreenState extends State<SessionScreen>
           // === Normal Session UI ===
           CustomScrollView(
             slivers: [
-              SliverAppBar.large(
-                title: Text('Session'),
-                titleSpacing: 0,
-                leadingWidth: 80,
-                leading: Center(
-                  child: Container(
-                    width: 60,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colorTheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: IconButton(
-                      onPressed: () {
-                        if (widget.onBack != null) {
-                          widget.onBack!();
-                        } else {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      icon: Icon(
-                        Symbols.arrow_back,
-                        color: colorTheme.onSurface,
-                        size: 25,
+              if (isExpanded)
+                SliverAppBar.large(
+                  title: const Text('Session'),
+                  titleSpacing: 0,
+                  automaticallyImplyLeading: false,
+                  leadingWidth: 80,
+                  leading: Center(
+                    child: Container(
+                      width: 60,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: colorTheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(50),
                       ),
-                      tooltip: 'Back',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      child: IconButton(
+                        onPressed: () {
+                          if (widget.onBack != null) {
+                            widget.onBack!();
+                          } else {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        icon: Icon(
+                          Symbols.arrow_back,
+                          color: colorTheme.onSurface,
+                          size: 25,
+                        ),
+                        tooltip: 'Back',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
                     ),
                   ),
+                  backgroundColor: colorTheme.surfaceContainer,
+                  scrolledUnderElevation: 1,
+                  expandedHeight: 120,
+                )
+              else
+                SliverAppBar(
+                  title: const Text('Session'),
+                  titleSpacing: 16,
+                  automaticallyImplyLeading: false,
+                  leadingWidth: 0,
+                  leading: null,
+                  backgroundColor: colorTheme.surfaceContainer,
+                  scrolledUnderElevation: 1,
                 ),
-                backgroundColor: colorTheme.surfaceContainer,
-                scrolledUnderElevation: 1,
-                expandedHeight: 120,
-              ),
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Center(

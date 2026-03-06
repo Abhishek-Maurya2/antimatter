@@ -24,6 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final isLight = Theme.of(context).brightness == Brightness.light;
     final colorTheme = Theme.of(context).colorScheme;
+    final bool isExpanded = MediaQuery.sizeOf(context).width >= 840;
 
     return Scaffold(
       backgroundColor: colorTheme.surfaceContainer,
@@ -31,35 +32,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
         slivers: [
           SliverAppBar.large(
             title: Text('Settings'),
-            titleSpacing: 0,
-            leadingWidth: 80,
-            leading: Center(
-              child: Container(
-                width: 60,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: colorTheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    if (widget.onBack != null) {
-                      widget.onBack!();
-                    } else {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  icon: Icon(
-                    Symbols.arrow_back,
-                    color: colorTheme.onSurface,
-                    size: 25,
-                  ),
-                  tooltip: 'Back',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ),
-            ),
+            titleSpacing: isExpanded ? 0 : 16,
+            automaticallyImplyLeading: false,
+            leadingWidth: isExpanded ? 80 : 0,
+            leading: isExpanded
+                ? Center(
+                    child: Container(
+                      width: 60,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: colorTheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: IconButton(
+                        onPressed: () {
+                          if (widget.onBack != null) {
+                            widget.onBack!();
+                          } else {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        icon: Icon(
+                          Symbols.arrow_back,
+                          color: colorTheme.onSurface,
+                          size: 25,
+                        ),
+                        tooltip: 'Back',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ),
+                  )
+                : null,
             backgroundColor: colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,
@@ -69,6 +73,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 // Appearance section
                 SettingSection(
+                  title: Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text(
+                      'Display',
+                      style: TextStyle(
+                        color: colorTheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   styleTile: true,
                   tiles: [
                     SettingActionTile(
@@ -93,6 +107,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 SizedBox(height: 16),
                 // Task settings section
                 SettingSection(
+                  title: Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text(
+                      'Task Managment',
+                      style: TextStyle(
+                        color: colorTheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   styleTile: true,
                   tiles: [
                     SettingActionTile(
@@ -150,6 +174,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 SizedBox(height: 16),
                 SettingSection(
+                  title: Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text(
+                      'Productivity',
+                      style: TextStyle(
+                        color: colorTheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   styleTile: true,
                   tiles: [
                     SettingActionTile(
@@ -174,6 +208,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 SizedBox(height: 16),
                 // Updates & About section
                 SettingSection(
+                  title: Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text(
+                      'About',
+                      style: TextStyle(
+                        color: colorTheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   styleTile: true,
                   tiles: [
                     SettingActionTile(
@@ -215,6 +259,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 SizedBox(height: 16),
                 // Demos section
                 SettingSection(
+                  title: Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text(
+                      'Developer Options',
+                      style: TextStyle(
+                        color: colorTheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   styleTile: true,
                   tiles: [
                     SettingActionTile(
