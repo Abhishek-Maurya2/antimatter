@@ -347,7 +347,7 @@ class _SpringButtonState extends State<SpringButton>
                   .clamp(0.88, 1.02);
 
               final defaultRadius = widget.shape == SpringButtonShape.round
-                  ? (baseHeight / 2)
+                  ? (baseHeight)
                   : _getPressedRadius();
               final pressedRadius = widget.shape == SpringButtonShape.round
                   ? _getPressedRadius()
@@ -853,7 +853,7 @@ class _SpringIconButtonState extends State<SpringIconButton>
 
               final bool restsAsRound = _restsAsRound();
               final defaultRadius = restsAsRound
-                  ? (baseHeight / 2)
+                  ? (baseHeight)
                   : _getPressedRadius();
               final pressedRadius = restsAsRound
                   ? _getPressedRadius()
