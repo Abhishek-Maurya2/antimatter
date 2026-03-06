@@ -262,12 +262,16 @@ class _SessionScreenState extends State<SessionScreen>
                               onPressed: _resetTimer,
                               shape: ButtonM3EShape.round,
                               enabled: _isRunning || _seconds > 0,
+                              width: 134, // Custom width
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
                               backgroundColor: (_isRunning || _seconds > 0)
                                   ? colorTheme.errorContainer
                                   : null,
                               foregroundColor: (_isRunning || _seconds > 0)
                                   ? colorTheme.onErrorContainer
-                                  : null,
+                                  : colorTheme.onPrimaryContainer,
                             ),
                           ],
                         ),

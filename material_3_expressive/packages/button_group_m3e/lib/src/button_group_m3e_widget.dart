@@ -25,7 +25,7 @@ enum ButtonGroupM3EOverflowMenuStyle { dropdown, bottomSheet }
 /// Declarative action description used by [ButtonGroupM3E] when building its buttons.
 class ButtonGroupM3EAction {
   const ButtonGroupM3EAction({
-    required this.label,
+    this.label,
     this.icon,
     this.onPressed,
     this.enabled = true,
@@ -36,9 +36,12 @@ class ButtonGroupM3EAction {
     this.shape, // optional override shape per action
     this.backgroundColor,
     this.foregroundColor,
+    this.width,
+    this.height,
+    this.contentPadding,
   });
 
-  final Widget label;
+  final Widget? label;
   final Widget? icon;
   final VoidCallback? onPressed;
   final bool enabled;
@@ -49,6 +52,9 @@ class ButtonGroupM3EAction {
   final ButtonM3EShape? shape; // if null group decides
   final Color? backgroundColor;
   final Color? foregroundColor;
+  final double? width;
+  final double? height;
+  final EdgeInsetsGeometry? contentPadding;
 
   ButtonGroupM3EAction copyWith({
     Widget? label,
@@ -62,19 +68,26 @@ class ButtonGroupM3EAction {
     ButtonM3EShape? shape,
     Color? backgroundColor,
     Color? foregroundColor,
-  }) => ButtonGroupM3EAction(
-    label: label ?? this.label,
-    icon: icon ?? this.icon,
-    onPressed: onPressed ?? this.onPressed,
-    enabled: enabled ?? this.enabled,
-    style: style ?? this.style,
-    toggleable: toggleable ?? this.toggleable,
-    selected: selected ?? this.selected,
-    onSelectedChange: onSelectedChange ?? this.onSelectedChange,
-    shape: shape ?? this.shape,
-    backgroundColor: backgroundColor ?? this.backgroundColor,
-    foregroundColor: foregroundColor ?? this.foregroundColor,
-  );
+    double? width,
+    double? height,
+    EdgeInsetsGeometry? contentPadding,
+  }) =>
+      ButtonGroupM3EAction(
+        label: label ?? this.label,
+        icon: icon ?? this.icon,
+        onPressed: onPressed ?? this.onPressed,
+        enabled: enabled ?? this.enabled,
+        style: style ?? this.style,
+        toggleable: toggleable ?? this.toggleable,
+        selected: selected ?? this.selected,
+        onSelectedChange: onSelectedChange ?? this.onSelectedChange,
+        shape: shape ?? this.shape,
+        backgroundColor: backgroundColor ?? this.backgroundColor,
+        foregroundColor: foregroundColor ?? this.foregroundColor,
+        width: width ?? this.width,
+        height: height ?? this.height,
+        contentPadding: contentPadding ?? this.contentPadding,
+      );
 }
 
 class ButtonGroupM3E extends StatefulWidget {
@@ -216,8 +229,8 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
     final cs = Theme.of(context).colorScheme;
     final dividerClr =
         widget.dividerColor ?? cs.outlineVariant.withValues(alpha: 0.6);
-    final dividerThk = (widget.dividerThickness ?? tokens.dividerThickness)
-        .clamp(0.5, 2.0);
+    final dividerThk =
+        (widget.dividerThickness ?? tokens.dividerThickness).clamp(0.5, 2.0);
 
     final group = ButtonGroupM3EScope(
       type: widget.type,
@@ -308,17 +321,15 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
     return widget.direction == Axis.horizontal
         ? Row(
             mainAxisSize: mainSize,
-            mainAxisAlignment: widget.expanded
-                ? mainAlign
-                : MainAxisAlignment.start,
+            mainAxisAlignment:
+                widget.expanded ? mainAlign : MainAxisAlignment.start,
             crossAxisAlignment: _mapCross(widget.crossAxisAlignment),
             children: list,
           )
         : Column(
             mainAxisSize: mainSize,
-            mainAxisAlignment: widget.expanded
-                ? mainAlign
-                : MainAxisAlignment.start,
+            mainAxisAlignment:
+                widget.expanded ? mainAlign : MainAxisAlignment.start,
             crossAxisAlignment: _mapCross(widget.crossAxisAlignment),
             children: list,
           );
@@ -350,22 +361,18 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
 
         final core = widget.direction == Axis.horizontal
             ? Row(
-                mainAxisSize: widget.expanded
-                    ? MainAxisSize.max
-                    : MainAxisSize.min,
-                mainAxisAlignment: widget.expanded
-                    ? mainAlign
-                    : MainAxisAlignment.start,
+                mainAxisSize:
+                    widget.expanded ? MainAxisSize.max : MainAxisSize.min,
+                mainAxisAlignment:
+                    widget.expanded ? mainAlign : MainAxisAlignment.start,
                 crossAxisAlignment: _mapCross(widget.crossAxisAlignment),
                 children: list,
               )
             : Column(
-                mainAxisSize: widget.expanded
-                    ? MainAxisSize.max
-                    : MainAxisSize.min,
-                mainAxisAlignment: widget.expanded
-                    ? mainAlign
-                    : MainAxisAlignment.start,
+                mainAxisSize:
+                    widget.expanded ? MainAxisSize.max : MainAxisSize.min,
+                mainAxisAlignment:
+                    widget.expanded ? mainAlign : MainAxisAlignment.start,
                 crossAxisAlignment: _mapCross(widget.crossAxisAlignment),
                 children: list,
               );
@@ -515,24 +522,20 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
         final core = widget.direction == Axis.horizontal
             ? ClipRect(
                 child: Row(
-                  mainAxisSize: widget.expanded
-                      ? MainAxisSize.max
-                      : MainAxisSize.min,
-                  mainAxisAlignment: widget.expanded
-                      ? mainAlign
-                      : MainAxisAlignment.start,
+                  mainAxisSize:
+                      widget.expanded ? MainAxisSize.max : MainAxisSize.min,
+                  mainAxisAlignment:
+                      widget.expanded ? mainAlign : MainAxisAlignment.start,
                   crossAxisAlignment: _mapCross(widget.crossAxisAlignment),
                   children: coreChildren,
                 ),
               )
             : ClipRect(
                 child: Column(
-                  mainAxisSize: widget.expanded
-                      ? MainAxisSize.max
-                      : MainAxisSize.min,
-                  mainAxisAlignment: widget.expanded
-                      ? mainAlign
-                      : MainAxisAlignment.start,
+                  mainAxisSize:
+                      widget.expanded ? MainAxisSize.max : MainAxisSize.min,
+                  mainAxisAlignment:
+                      widget.expanded ? mainAlign : MainAxisAlignment.start,
                   crossAxisAlignment: _mapCross(widget.crossAxisAlignment),
                   children: coreChildren,
                 ),
@@ -599,9 +602,8 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
       final render = ctx?.findRenderObject() as RenderBox?;
       if (render != null && render.hasSize) {
         final size = render.size;
-        final main = widget.direction == Axis.horizontal
-            ? size.width
-            : size.height;
+        final main =
+            widget.direction == Axis.horizontal ? size.width : size.height;
         newMeasures.add(_ButtonGroupM3MItemMeasure(main));
       } else {
         // fallback fill
@@ -616,13 +618,11 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
     double? overflowExtent;
     if (orender != null && orender.hasSize) {
       final sz = orender.size;
-      overflowExtent = widget.direction == Axis.horizontal
-          ? sz.width
-          : sz.height;
+      overflowExtent =
+          widget.direction == Axis.horizontal ? sz.width : sz.height;
     }
 
-    final changed =
-        _measuredChildren == null ||
+    final changed = _measuredChildren == null ||
         _measuredChildren!.length != newMeasures.length ||
         !_listAlmostEqual(_measuredChildren!, newMeasures);
 
@@ -822,7 +822,7 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
       }
     }
 
-    return ButtonM3E(
+    final button = ButtonM3E(
       onPressed: action.onPressed,
       label: action.label,
       icon: action.icon,
@@ -845,20 +845,30 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
       cornerRadiusOverride: perCorner,
       backgroundColor: action.backgroundColor,
       foregroundColor: action.foregroundColor,
+      contentPadding: action.contentPadding,
     );
+
+    if (action.width != null || action.height != null) {
+      return SizedBox(
+        width: action.width,
+        height: action.height,
+        child: button,
+      );
+    }
+    return button;
   }
 
   ButtonM3ESize _mapGroupSize(ButtonGroupM3ESize s) => switch (s) {
-    ButtonGroupM3ESize.xs => ButtonM3ESize.xs,
-    ButtonGroupM3ESize.sm => ButtonM3ESize.sm,
-    ButtonGroupM3ESize.md => ButtonM3ESize.md,
-    ButtonGroupM3ESize.lg => ButtonM3ESize.lg,
-    ButtonGroupM3ESize.xl => ButtonM3ESize.xl,
-  };
+        ButtonGroupM3ESize.xs => ButtonM3ESize.xs,
+        ButtonGroupM3ESize.sm => ButtonM3ESize.sm,
+        ButtonGroupM3ESize.md => ButtonM3ESize.md,
+        ButtonGroupM3ESize.lg => ButtonM3ESize.lg,
+        ButtonGroupM3ESize.xl => ButtonM3ESize.xl,
+      };
   ButtonM3EShape _mapGroupShape(ButtonGroupM3EShape s) =>
       s == ButtonGroupM3EShape.round
-      ? ButtonM3EShape.round
-      : ButtonM3EShape.square;
+          ? ButtonM3EShape.round
+          : ButtonM3EShape.square;
 
   CrossAxisAlignment _mapCross(WrapCrossAlignment w) {
     switch (w) {
@@ -872,13 +882,13 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
   }
 
   MainAxisAlignment _mapWrapToMain(WrapAlignment w) => switch (w) {
-    WrapAlignment.start => MainAxisAlignment.start,
-    WrapAlignment.end => MainAxisAlignment.end,
-    WrapAlignment.center => MainAxisAlignment.center,
-    WrapAlignment.spaceBetween => MainAxisAlignment.spaceBetween,
-    WrapAlignment.spaceAround => MainAxisAlignment.spaceAround,
-    WrapAlignment.spaceEvenly => MainAxisAlignment.spaceEvenly,
-  };
+        WrapAlignment.start => MainAxisAlignment.start,
+        WrapAlignment.end => MainAxisAlignment.end,
+        WrapAlignment.center => MainAxisAlignment.center,
+        WrapAlignment.spaceBetween => MainAxisAlignment.spaceBetween,
+        WrapAlignment.spaceAround => MainAxisAlignment.spaceAround,
+        WrapAlignment.spaceEvenly => MainAxisAlignment.spaceEvenly,
+      };
 
   Widget _buildOverflowTrigger(
     BuildContext context,

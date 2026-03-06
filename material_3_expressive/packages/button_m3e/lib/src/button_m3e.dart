@@ -8,7 +8,7 @@ class ButtonM3E extends StatefulWidget {
   const ButtonM3E({
     super.key,
     required this.onPressed,
-    required this.label,
+    this.label,
     this.icon,
     this.style = ButtonM3EStyle.filled,
     this.size = ButtonM3ESize.sm,
@@ -22,10 +22,11 @@ class ButtonM3E extends StatefulWidget {
     this.cornerRadiusOverride, // new optional per-corner override for square shapes
     this.backgroundColor,
     this.foregroundColor,
+    this.contentPadding,
   });
 
   final VoidCallback? onPressed;
-  final Widget label;
+  final Widget? label;
   final Widget? icon;
   final ButtonM3EStyle style;
   final ButtonM3ESize size;
@@ -39,6 +40,7 @@ class ButtonM3E extends StatefulWidget {
   final BorderRadius? cornerRadiusOverride;
   final Color? backgroundColor;
   final Color? foregroundColor;
+  final EdgeInsetsGeometry? contentPadding;
 
   @override
   State<ButtonM3E> createState() => _ButtonM3EState();
@@ -149,21 +151,31 @@ class _ButtonM3EState extends State<ButtonM3E> {
       ButtonM3ESize.xl => bfs.xl,
     };
 
-    final text = DefaultTextStyle.merge(
-      style: fontSize == null ? null : TextStyle(fontSize: fontSize),
-      child: widget.label,
+    Widget? text;
+    if (widget.label != null) {
+      text = DefaultTextStyle.merge(
+        style: fontSize == null ? null : TextStyle(fontSize: fontSize),
+        child: widget.label!,
+      );
+    }
+
+    if (widget.icon == null) return text ?? const SizedBox.shrink();
+
+    final iconWidget = IconTheme.merge(
+      data: IconThemeData(size: m.iconSize),
+      child: widget.icon!,
     );
 
-    if (widget.icon == null) return text;
+    if (text == null) {
+      return iconWidget;
+    }
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconTheme.merge(
-          data: IconThemeData(size: m.iconSize),
-          child: widget.icon!,
-        ),
+        iconWidget,
         SizedBox(width: m.iconGap),
-        text,
+        Flexible(child: text),
       ],
     );
   }
@@ -175,11 +187,9 @@ class _ButtonM3EState extends State<ButtonM3E> {
     final selected = states.contains(WidgetState.selected) || widget.selected;
     final pressed = states.contains(WidgetState.pressed);
 
-    final BorderRadius squareBaseRadius =
-        widget.cornerRadiusOverride ??
+    final BorderRadius squareBaseRadius = widget.cornerRadiusOverride ??
         BorderRadius.circular(tokens.squareRadius(widget.size));
-    final BorderRadius pressedSquareRadius =
-        widget.cornerRadiusOverride ??
+    final BorderRadius pressedSquareRadius = widget.cornerRadiusOverride ??
         BorderRadius.circular(tokens.pressedRadius(widget.size));
 
     OutlinedBorder round = const StadiumBorder();
@@ -231,7 +241,7 @@ class _ButtonM3EState extends State<ButtonM3E> {
     return ButtonStyle(
       minimumSize: WidgetStateProperty.all(Size(48, m.height)),
       padding: WidgetStateProperty.all(
-        EdgeInsets.symmetric(horizontal: m.hPadding),
+        widget.contentPadding ?? EdgeInsets.symmetric(horizontal: m.hPadding),
       ),
       foregroundColor: fg,
       backgroundColor: bg,
