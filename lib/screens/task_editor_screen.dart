@@ -3,6 +3,7 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:orches/models/task.dart';
 import 'package:orches/services/audio_service.dart';
+import 'package:m3e_collection/m3e_collection.dart';
 
 class TaskEditorScreen extends StatelessWidget {
   final Task? task;
@@ -162,71 +163,41 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
             : null,
         backgroundColor: colorTheme.surfaceContainer,
         leadingWidth: 80,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            width: 64,
-            height: 48,
-            decoration: BoxDecoration(
-              color: colorTheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(50),
+        leading: Center(
+          child: IconButtonM3E(
+            onPressed: widget.onClose,
+            icon: Icon(
+              widget.isStandaloneScreen ? Symbols.arrow_back : Symbols.close,
             ),
-            child: IconButton(
-              onPressed: widget.onClose,
-              icon: Icon(
-                widget.isStandaloneScreen ? Symbols.arrow_back : Symbols.close,
-                color: colorTheme.onSurface,
-              ),
-              tooltip: widget.isStandaloneScreen ? 'Back' : 'Close',
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
+            tooltip: widget.isStandaloneScreen ? 'Back' : 'Close',
+            variant: IconButtonM3EVariant.tonal,
+            width: IconButtonM3EWidth.wide,
           ),
         ),
         actions: [
           if (widget.task != null) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: Container(
-                width: 32,
-                height: 50,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: colorTheme.errorContainer,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    widget.onResult('DELETE');
-                  },
-                  icon: Icon(
-                    Symbols.delete,
-                    color: colorTheme.onErrorContainer,
-                  ),
-                  tooltip: 'Delete',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ),
+            IconButtonM3E(
+              onPressed: () {
+                widget.onResult('DELETE');
+              },
+              icon: const Icon(Symbols.delete),
+              tooltip: 'Delete',
+              variant: IconButtonM3EVariant.tonal,
+              width: IconButtonM3EWidth.narrow,
+              backgroundColor: colorTheme.errorContainer,
+              foregroundColor: colorTheme.onErrorContainer,
             ),
+
             const SizedBox(width: 8),
           ],
-          Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Container(
-              width: 64,
-              height: 50,
-              decoration: BoxDecoration(
-                color: colorTheme.primary,
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: IconButton(
-                onPressed: _saveTask,
-                icon: Icon(Symbols.check, color: colorTheme.onPrimary),
-                tooltip: 'Save',
-              ),
-            ),
+          IconButtonM3E(
+            onPressed: _saveTask,
+            icon: const Icon(Symbols.check),
+            tooltip: 'Save',
+            variant: IconButtonM3EVariant.filled,
+            width: IconButtonM3EWidth.wide,
           ),
+
           const SizedBox(width: 8),
         ],
       ),
@@ -296,10 +267,12 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                     ),
                     if (_deadline != null) ...[
                       const Spacer(),
-                      IconButton(
+                      IconButtonM3E(
                         onPressed: () => setState(() => _deadline = null),
-                        icon: Icon(Symbols.close, size: 20),
+                        icon: Icon(Symbols.close, weight: 500),
                         tooltip: 'Clear deadline',
+                        variant: IconButtonM3EVariant.tonal,
+                        width: IconButtonM3EWidth.narrow,
                       ),
                     ],
                   ],
@@ -332,8 +305,12 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                     },
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Symbols.add, color: colorTheme.primary),
+                IconButtonM3E(
+                  icon: Icon(
+                    Symbols.add,
+                    color: colorTheme.primary,
+                    weight: 500,
+                  ),
                   onPressed: () {
                     final value = _labelController.text;
                     if (value.trim().isNotEmpty &&
@@ -344,6 +321,9 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                       });
                     }
                   },
+                  tooltip: 'Clear deadline',
+                  variant: IconButtonM3EVariant.tonal,
+                  width: IconButtonM3EWidth.narrow,
                 ),
               ],
             ),
@@ -384,23 +364,12 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(2.0),
-                  child: Container(
-                    width: 50,
-                    height: 35,
-                    decoration: BoxDecoration(
-                      color: colorTheme.primary,
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: IconButton(
-                      onPressed: _addSubTask,
-                      icon: Icon(
-                        Symbols.add_circle,
-                        color: colorTheme.onPrimary,
-                      ),
-                      tooltip: 'add subtask',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
+                  child: IconButtonM3E(
+                    onPressed: _addSubTask,
+                    icon: const Icon(Symbols.add_circle),
+                    tooltip: 'add subtask',
+                    variant: IconButtonM3EVariant.filled,
+                    width: IconButtonM3EWidth.wide,
                   ),
                 ),
               ],
@@ -438,8 +407,10 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                         },
                       ),
                     ),
-                    IconButton(
-                      icon: Icon(Symbols.close, size: 20),
+                    IconButtonM3E(
+                      icon: const Icon(Symbols.close, size: 18, weight: 600),
+                      variant: IconButtonM3EVariant.tonal,
+                      width: IconButtonM3EWidth.narrow,
                       onPressed: () {
                         setState(() {
                           _subTasks.removeAt(index);

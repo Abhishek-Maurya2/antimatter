@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:m3e_collection/m3e_collection.dart';
 import 'package:settings_tiles/settings_tiles.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'settings/appearance_screen.dart';
@@ -36,33 +37,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             automaticallyImplyLeading: false,
             leadingWidth: isExpanded ? 80 : 0,
             leading: isExpanded
-                ? Center(
-                    child: Container(
-                      width: 60,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: colorTheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: IconButton(
-                        onPressed: () {
-                          if (widget.onBack != null) {
-                            widget.onBack!();
-                          } else {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        icon: Icon(
-                          Symbols.arrow_back,
-                          color: colorTheme.onSurface,
-                          size: 25,
-                        ),
-                        tooltip: 'Back',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ),
-                  )
+                ? IconButtonM3E(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Symbols.arrow_back),
+                tooltip: 'Back',
+                variant: IconButtonM3EVariant.tonal,
+                width: IconButtonM3EWidth.wide,
+              )
                 : null,
             backgroundColor: colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,

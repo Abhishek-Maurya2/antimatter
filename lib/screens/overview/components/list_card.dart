@@ -160,30 +160,26 @@ class _UpcomingTaskItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Title + due date row
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  task.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: colorTheme.onSurface,
-                  ),
-                ),
-              ),
-              if (task.deadline != null)
-                Text(
-                  _formatRelativeTime(task.deadline!),
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: _isOverdue()
-                        ? colorTheme.error
-                        : colorTheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-            ],
+          Text(
+            task.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: colorTheme.onSurface),
           ),
+          if (task.deadline != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              _formatRelativeTime(task.deadline!),
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: _isOverdue()
+                    ? colorTheme.error
+                    : colorTheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
           // Labels row
           if (task.labels.isNotEmpty)
             Padding(
