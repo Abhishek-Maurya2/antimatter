@@ -82,4 +82,4 @@ flutter_launcher_icons:
 
 dependency_overrides:
   split_button_m3e:
-    path: ../material_3_expressive/packages/split_button_m3e
+    path: ./material_3_expressive/packages/split_button_m3e

@@ -1235,7 +1235,7 @@ packages:
   split_button_m3e:
     dependency: "direct overridden"
     description:
-      path: "../material_3_expressive/packages/split_button_m3e"
+      path: "material_3_expressive/packages/split_button_m3e"
       relative: true
     source: path
     version: "0.2.1"
