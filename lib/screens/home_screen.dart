@@ -9,7 +9,8 @@ import 'package:settings_tiles/settings_tiles.dart';
 import 'package:orches/utils/date_utils.dart';
 import 'package:orches/models/task.dart';
 import 'package:orches/screens/task_editor_screen.dart';
-import 'package:orches/widgets/sort_split_button.dart';
+import 'package:m3e_collection/m3e_collection.dart'
+    hide ExpressiveLoadingIndicator;
 import 'package:orches/widgets/task_floating_toolbar.dart';
 import 'package:orches/screens/session_screen.dart';
 import 'package:orches/screens/overview/overview_page.dart';
@@ -647,18 +648,105 @@ class _HomeScreenState extends State<HomeScreen> {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                           ),
-                        SortSplitButton(
-                          currentSort: _currentSort,
-                          onSortChanged: (option) {
-                            setState(() {
-                              _currentSort = option;
-                            });
-                            PreferencesHelper.setString(
-                              'task_sort_preference',
-                              option.name,
-                            );
-                          },
-                          colorTheme: colorTheme,
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              right: 16.0,
+                              top: 4.0,
+                              bottom: 8.0,
+                            ),
+                            child: SplitButtonM3E<TaskSortOption>(
+                              onPressed: () {
+                                final nextIndex =
+                                    (TaskSortOption.values.indexOf(
+                                          _currentSort,
+                                        ) +
+                                        1) %
+                                    TaskSortOption.values.length;
+                                final nextSort =
+                                    TaskSortOption.values[nextIndex];
+                                setState(() {
+                                  _currentSort = nextSort;
+                                });
+                                PreferencesHelper.setString(
+                                  'task_sort_preference',
+                                  nextSort.name,
+                                );
+                              },
+                              label: _currentSort == TaskSortOption.newest
+                                  ? 'Newest first'
+                                  : _currentSort == TaskSortOption.oldest
+                                  ? 'Oldest first'
+                                  : 'Due Date',
+                              leadingIcon: Symbols.sort,
+                              items: [
+                                SplitButtonM3EItem(
+                                  value: TaskSortOption.newest,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text('Newest first'),
+                                      if (_currentSort ==
+                                          TaskSortOption.newest) ...[
+                                        const SizedBox(width: 12),
+                                        Icon(
+                                          Symbols.check,
+                                          size: 18,
+                                          color: colorTheme.primary,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                SplitButtonM3EItem(
+                                  value: TaskSortOption.oldest,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text('Oldest first'),
+                                      if (_currentSort ==
+                                          TaskSortOption.oldest) ...[
+                                        const SizedBox(width: 12),
+                                        Icon(
+                                          Symbols.check,
+                                          size: 18,
+                                          color: colorTheme.primary,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                SplitButtonM3EItem(
+                                  value: TaskSortOption.dueDate,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text('Due Date'),
+                                      if (_currentSort ==
+                                          TaskSortOption.dueDate) ...[
+                                        const SizedBox(width: 12),
+                                        Icon(
+                                          Symbols.check,
+                                          size: 18,
+                                          color: colorTheme.primary,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              onSelected: (option) {
+                                setState(() {
+                                  _currentSort = option;
+                                });
+                                PreferencesHelper.setString(
+                                  'task_sort_preference',
+                                  option.name,
+                                );
+                              },
+                            ),
+                          ),
                         ),
                         if (_taskSubFilter == 4)
                           Padding(

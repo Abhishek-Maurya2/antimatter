@@ -16,6 +16,7 @@ dependencies:
   animations: ^2.0.11
   material_symbols_icons: ^4.2815.1
   dynamic_color: ^1.7.0
+  m3e_collection: ^0.3.6
 
   settings_tiles:
     path: ./settings_tiles_custom
@@ -78,3 +79,7 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/icon/app_icon.png"
   min_sdk_android: 21
+
+dependency_overrides:
+  split_button_m3e:
+    path: ../material_3_expressive/packages/split_button_m3e
