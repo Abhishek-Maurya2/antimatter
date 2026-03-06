@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:settings_tiles/settings_tiles.dart';
-import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
+import 'package:m3e_collection/m3e_collection.dart'
+    hide ExpressiveLoadingIndicator;
 
 import '../../utils/preferences_helper.dart';
 import '../settings_screen.dart';
@@ -236,11 +237,9 @@ class SettingInlineSliderTile extends SettingTile {
                             borderRadius: BorderRadius.circular(4),
                             child: SizedBox(
                               height: 16,
-                              child: WavyLinearProgressIndicator(
+                              child: LinearProgressIndicatorM3E(
                                 value: (sliderValue - min) / (max - min),
-                                minHeight: 6.0,
-                                waveAmplitude: 4,
-                                waveLength: 25,
+                                shape: ProgressM3EShape.wavy,
                               ),
                             ),
                           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
+import 'package:m3e_collection/m3e_collection.dart'
+    hide ExpressiveLoadingIndicator;
 
 class ProgressCard extends StatelessWidget {
   final String title;
@@ -100,16 +101,9 @@ class ProgressCard extends StatelessWidget {
                       return SizedBox(
                         width: 100,
                         height: 100,
-                        child: WavyCircularProgressIndicator(
+                        child: CircularProgressIndicatorM3E(
                           value: animatedProgress,
-                          color: colorTheme.primary,
-                          backgroundColor: colorTheme.primary.withValues(
-                            alpha: 0.15,
-                          ),
-                          strokeWidth: 5.0,
-                          waveAmplitude: 4.0,
-                          waveLength: 20.0,
-                          showTrack: false,
+                          shape: ProgressM3EShape.wavy,
                         ),
                       );
                     },
