@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'settings_screen.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
-import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:settings_tiles/settings_tiles.dart';
 import 'package:orches/utils/date_utils.dart';
@@ -490,27 +489,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Transform.scale(
                           scale: scale,
                           child: Center(
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: colorTheme.secondaryContainer,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: SizedBox(
-                                width: 32,
-                                height: 32,
-                                child: ExpressiveLoadingIndicator(
-                                  activeSize: 52,
-                                  color: colorTheme.primary,
-                                ),
-                              ),
+                            child: LoadingIndicatorM3E(
+                              variant: LoadingIndicatorM3EVariant.contained,
                             ),
                           ),
                         ),

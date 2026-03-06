@@ -749,12 +749,11 @@ packages:
     source: hosted
     version: "6.1.0"
   loading_indicator_m3e:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: loading_indicator_m3e
-      sha256: "3fe97385b4f84382c25b901abf88fcee4200e6e78fcd5ed7e037a34d7db53038"
-      url: "https://pub.dev"
-    source: hosted
+      path: "material_3_expressive/packages/loading_indicator_m3e"
+      relative: true
+    source: path
     version: "0.1.1"
   logging:
     dependency: transitive
