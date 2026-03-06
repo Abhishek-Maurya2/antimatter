@@ -40,13 +40,14 @@ class OverviewPage extends StatelessWidget {
 
         final todayCompleted = todayTasks.where((t) => t.isCompleted).length;
 
-        final weekFromToday = todayStart.add(const Duration(days: 8));
         final upcomingTasks =
             allTasks.where((t) {
-              if (t.deadline == null || t.isCompleted) return false;
-              return t.deadline!.isAfter(todayStart) &&
-                  t.deadline!.isBefore(weekFromToday);
+              return !t.isCompleted;
             }).toList()..sort((a, b) {
+              if (a.deadline == null && b.deadline == null)
+                return a.title.compareTo(b.title);
+              if (a.deadline == null) return 1;
+              if (b.deadline == null) return -1;
               final cmp = a.deadline!.compareTo(b.deadline!);
               if (cmp != 0) return cmp;
               return a.title.compareTo(b.title);

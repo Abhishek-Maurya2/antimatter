@@ -659,12 +659,11 @@ packages:
     source: hosted
     version: "4.1.2"
   icon_button_m3e:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: icon_button_m3e
-      sha256: c4524d6141a468679821bbb635b833ac6831925d8a6ae4a4511430b0e4ab9c67
-      url: "https://pub.dev"
-    source: hosted
+      path: "material_3_expressive/packages/icon_button_m3e"
+      relative: true
+    source: path
     version: "0.2.1"
   image:
     dependency: transitive

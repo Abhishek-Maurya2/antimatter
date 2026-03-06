@@ -27,6 +27,8 @@ class IconButtonM3E extends StatelessWidget {
     this.selectedIcon,
     this.enableFeedback,
     this.badgeValue,
+    this.backgroundColor,
+    this.foregroundColor,
   });
 
   final Widget icon;
@@ -41,6 +43,8 @@ class IconButtonM3E extends StatelessWidget {
   final Widget? selectedIcon;
   final bool? enableFeedback;
   final Object? badgeValue;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +85,9 @@ class IconButtonM3E extends StatelessWidget {
         side = BorderSide(color: scheme.outline, width: 1);
         break;
     }
+
+    if (backgroundColor != null) bg = backgroundColor!;
+    if (foregroundColor != null) fg = foregroundColor!;
 
     // Resolve shape radius based on states (pressed) and toggle/selection.
     OutlinedBorder shapeFor(Set<WidgetState> states) {

@@ -268,11 +268,12 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
           'This action cannot be undone.',
         ),
         actions: [
-          TextButton(
+          ButtonM3E(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Cancel'),
+            style: ButtonM3EStyle.text,
+            label: const Text('Cancel'),
           ),
-          FilledButton(
+          ButtonM3E(
             onPressed: () async {
               final tasksBox = Hive.box<Task>('tasksBox');
               await tasksBox.clear();
@@ -281,11 +282,10 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
                 _showSnackBar(context, 'All local data cleared');
               }
             },
-            style: FilledButton.styleFrom(
-              backgroundColor: colorTheme.error,
-              foregroundColor: colorTheme.onError,
-            ),
-            child: Text('Delete All'),
+            style: ButtonM3EStyle.filled,
+            backgroundColor: colorTheme.error,
+            foregroundColor: colorTheme.onError,
+            label: const Text('Delete All'),
           ),
         ],
       ),

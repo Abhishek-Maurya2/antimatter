@@ -54,15 +54,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     await NotificationService().cancelAllNotifications();
     final tasksBox = Hive.box<Task>('tasksBox');
-    
+
     // Reschedule deadline reminders
     if (_deadlineReminders) {
-      final tasks = tasksBox.values.where((t) => !t.isCompleted && !t.isDeleted).toList();
-      final key = _reminderOptions.entries.firstWhere((e) => e.value == _reminderTime).key;
+      final tasks = tasksBox.values
+          .where((t) => !t.isCompleted && !t.isDeleted)
+          .toList();
+      final key = _reminderOptions.entries
+          .firstWhere((e) => e.value == _reminderTime)
+          .key;
       int minutes = 30;
-      if (key == '15min') minutes = 15;
-      else if (key == '1hr') minutes = 60;
-      else if (key == '1day') minutes = 1440;
+      if (key == '15min')
+        minutes = 15;
+      else if (key == '1hr')
+        minutes = 60;
+      else if (key == '1day')
+        minutes = 1440;
 
       for (var task in tasks) {
         await NotificationService().scheduleDeadlineReminder(task, minutes);
@@ -71,7 +78,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     // Reschedule daily summary
     if (_dailySummary) {
-      final tasks = tasksBox.values.where((t) => !t.isCompleted && !t.isDeleted).toList();
+      final tasks = tasksBox.values
+          .where((t) => !t.isCompleted && !t.isDeleted)
+          .toList();
       await NotificationService().scheduleDailySummary(tasks.length);
     }
   }
@@ -132,16 +141,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           'Please enable it from your device Settings to use this feature.',
         ),
         actions: [
-          TextButton(
+          ButtonM3E(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Cancel'),
+            style: ButtonM3EStyle.text,
+            label: const Text('Cancel'),
           ),
-          FilledButton(
+          ButtonM3E(
             onPressed: () {
               Navigator.of(ctx).pop();
               openAppSettings();
             },
-            child: Text('Open Settings'),
+            style: ButtonM3EStyle.text,
+            label: const Text('Open Settings'),
           ),
         ],
       ),
