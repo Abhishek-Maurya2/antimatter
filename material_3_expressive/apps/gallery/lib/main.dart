@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:m3e_collection/m3e_collection.dart';
-import 'package:m3e_gallery/sections/button_group_section.dart';
-import 'package:m3e_gallery/sections/button_section.dart';
-import 'package:m3e_gallery/sections/fab_section.dart';
-import 'package:m3e_gallery/sections/icon_button_section.dart';
-import 'package:m3e_gallery/sections/loading_indicator_section.dart';
-import 'package:m3e_gallery/sections/navigation_section.dart';
-import 'package:m3e_gallery/sections/progress_section.dart';
-import 'package:m3e_gallery/sections/section_card.dart';
-import 'package:m3e_gallery/sections/slider_section.dart';
-import 'package:m3e_gallery/sections/split_button_section.dart';
-import 'package:m3e_gallery/sections/toolbar_section.dart';
+import 'sections/button_group_section.dart';
+import 'sections/button_section.dart';
+import 'sections/fab_section.dart';
+import 'sections/icon_button_section.dart';
+import 'sections/loading_indicator_section.dart';
+import 'sections/navigation_section.dart';
+import 'sections/progress_section.dart';
+import 'sections/section_card.dart';
+import 'sections/slider_section.dart';
+import 'sections/split_button_section.dart';
+import 'sections/toolbar_section.dart';
 
 void main() => runApp(const GalleryApp());
 
@@ -33,9 +33,13 @@ class _GalleryAppState extends State<GalleryApp> {
   @override
   Widget build(BuildContext context) {
     final light = ColorScheme.fromSeed(
-        seedColor: Colors.purple, brightness: Brightness.light);
+      seedColor: Colors.purple,
+      brightness: Brightness.light,
+    );
     final dark = ColorScheme.fromSeed(
-        seedColor: Colors.purple, brightness: Brightness.dark);
+      seedColor: Colors.purple,
+      brightness: Brightness.dark,
+    );
     return MaterialApp(
       title: 'M3E Gallery',
       theme: light.toM3EThemeData(),
@@ -51,8 +55,11 @@ class _GalleryAppState extends State<GalleryApp> {
 }
 
 class GalleryHome extends StatefulWidget {
-  const GalleryHome(
-      {super.key, required this.isDark, required this.onToggleBrightness});
+  const GalleryHome({
+    super.key,
+    required this.isDark,
+    required this.onToggleBrightness,
+  });
 
   final bool isDark;
   final VoidCallback onToggleBrightness;
@@ -73,8 +80,9 @@ class _GalleryHomeState extends State<GalleryHome> {
         titleText: 'M3E Gallery',
         actions: [
           IconButton(
-            tooltip:
-                widget.isDark ? 'Switch to light mode' : 'Switch to dark mode',
+            tooltip: widget.isDark
+                ? 'Switch to light mode'
+                : 'Switch to dark mode',
             onPressed: widget.onToggleBrightness,
             icon: Icon(widget.isDark ? Icons.dark_mode : Icons.light_mode),
           ),
@@ -105,9 +113,7 @@ class _SliverAppBarDemoPage extends StatelessWidget {
           ),
           SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, index) => ListTile(
-                title: Text('Item #$index'),
-              ),
+              (context, index) => ListTile(title: Text('Item #$index')),
               childCount: 30,
             ),
           ),
@@ -143,7 +149,8 @@ class SectionedGallery extends StatelessWidget {
               label: Text('Open SliverAppBarM3E Demo'),
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(
-                    builder: (_) => const _SliverAppBarDemoPage()),
+                  builder: (_) => const _SliverAppBarDemoPage(),
+                ),
               ),
             ),
           ),

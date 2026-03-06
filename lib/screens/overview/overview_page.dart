@@ -155,6 +155,7 @@ class OverviewPage extends StatelessWidget {
                                   count: completedTasks,
                                   containerColor: colorTheme.secondaryContainer,
                                   contentColor: colorTheme.onSecondaryContainer,
+                                  onTap: onNavigateToTasks,
                                 ),
                               ),
                             ],
@@ -178,6 +179,7 @@ class OverviewPage extends StatelessWidget {
                                             colorTheme.errorContainer,
                                         contentColor:
                                             colorTheme.onErrorContainer,
+                                        onTap: onNavigateToTasks,
                                       ),
                                     ),
                                     const SizedBox(height: spacing),
@@ -187,6 +189,7 @@ class OverviewPage extends StatelessWidget {
                                       child: ListCard(
                                         title: 'Upcoming',
                                         tasks: upcomingTasks,
+                                        onTap: onNavigateToTasks,
                                       ),
                                     ),
                                   ],
@@ -200,6 +203,7 @@ class OverviewPage extends StatelessWidget {
                                   title: "Today's Tasks",
                                   total: todayTasks.length,
                                   completed: todayCompleted,
+                                  onTap: onNavigateToTasks,
                                 ),
                               ),
                             ],

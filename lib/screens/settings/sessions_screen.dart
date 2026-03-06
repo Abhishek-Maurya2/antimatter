@@ -47,24 +47,12 @@ class _SessionsScreenState extends State<SessionsScreen> {
             titleSpacing: 0,
             leadingWidth: 80,
             leading: Center(
-              child: Container(
-                width: 60,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: colorTheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(
-                    Symbols.arrow_back,
-                    color: colorTheme.onSurface,
-                    size: 25,
-                  ),
-                  tooltip: 'Back',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
+              child: IconButtonM3E(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Symbols.arrow_back),
+                tooltip: 'Back',
+                variant: IconButtonM3EVariant.tonal,
+                width: IconButtonM3EWidth.wide,
               ),
             ),
             backgroundColor: colorTheme.surfaceContainer,

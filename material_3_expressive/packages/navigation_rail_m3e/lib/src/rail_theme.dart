@@ -80,8 +80,8 @@ class NavigationRailM3ETheme extends ThemeExtension<NavigationRailM3ETheme> {
       collapsedWidth: collapsedWidth ?? this.collapsedWidth,
       expandedMinWidth: expandedMinWidth ?? this.expandedMinWidth,
       expandedMaxWidth: expandedMaxWidth ?? this.expandedMaxWidth,
-      itemExpandedHeight: itemHeight ?? this.itemExpandedHeight,
-      itemCollapsedHeight: itemShortHeight ?? this.itemCollapsedHeight,
+      itemExpandedHeight: itemHeight ?? itemExpandedHeight,
+      itemCollapsedHeight: itemShortHeight ?? itemCollapsedHeight,
       iconSize: iconSize ?? this.iconSize,
       indicatorLeading: indicatorLeading ?? this.indicatorLeading,
       indicatorTrailing: indicatorTrailing ?? this.indicatorTrailing,
@@ -97,30 +97,56 @@ class NavigationRailM3ETheme extends ThemeExtension<NavigationRailM3ETheme> {
 
   @override
   ThemeExtension<NavigationRailM3ETheme> lerp(
-      ThemeExtension<NavigationRailM3ETheme>? other, double t) {
+    ThemeExtension<NavigationRailM3ETheme>? other,
+    double t,
+  ) {
     if (other is! NavigationRailM3ETheme) return this;
     return NavigationRailM3ETheme(
       collapsedWidth: lerpDouble(collapsedWidth, other.collapsedWidth, t)!,
-      expandedMinWidth:
-          lerpDouble(expandedMinWidth, other.expandedMinWidth, t)!,
-      expandedMaxWidth:
-          lerpDouble(expandedMaxWidth, other.expandedMaxWidth, t)!,
-      itemExpandedHeight:
-          lerpDouble(itemExpandedHeight, other.itemExpandedHeight, t)!,
-      itemCollapsedHeight:
-          lerpDouble(itemCollapsedHeight, other.itemCollapsedHeight, t)!,
+      expandedMinWidth: lerpDouble(
+        expandedMinWidth,
+        other.expandedMinWidth,
+        t,
+      )!,
+      expandedMaxWidth: lerpDouble(
+        expandedMaxWidth,
+        other.expandedMaxWidth,
+        t,
+      )!,
+      itemExpandedHeight: lerpDouble(
+        itemExpandedHeight,
+        other.itemExpandedHeight,
+        t,
+      )!,
+      itemCollapsedHeight: lerpDouble(
+        itemCollapsedHeight,
+        other.itemCollapsedHeight,
+        t,
+      )!,
       iconSize: lerpDouble(iconSize, other.iconSize, t)!,
-      indicatorLeading:
-          lerpDouble(indicatorLeading, other.indicatorLeading, t)!,
-      indicatorTrailing:
-          lerpDouble(indicatorTrailing, other.indicatorTrailing, t)!,
+      indicatorLeading: lerpDouble(
+        indicatorLeading,
+        other.indicatorLeading,
+        t,
+      )!,
+      indicatorTrailing: lerpDouble(
+        indicatorTrailing,
+        other.indicatorTrailing,
+        t,
+      )!,
       iconLabelGap: lerpDouble(iconLabelGap, other.iconLabelGap, t)!,
       itemVerticalGap: lerpDouble(itemVerticalGap, other.itemVerticalGap, t)!,
       headerMinSpace: lerpDouble(headerMinSpace, other.headerMinSpace, t)!,
       sectionHeaderSpacingTop: lerpDouble(
-          sectionHeaderSpacingTop, other.sectionHeaderSpacingTop, t)!,
+        sectionHeaderSpacingTop,
+        other.sectionHeaderSpacingTop,
+        t,
+      )!,
       sectionHeaderSpacingBottom: lerpDouble(
-          sectionHeaderSpacingBottom, other.sectionHeaderSpacingBottom, t)!,
+        sectionHeaderSpacingBottom,
+        other.sectionHeaderSpacingBottom,
+        t,
+      )!,
     );
   }
 }

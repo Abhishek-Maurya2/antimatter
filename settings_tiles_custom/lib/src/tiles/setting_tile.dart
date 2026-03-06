@@ -57,7 +57,7 @@ abstract class SettingTile extends StatelessWidget {
     }
 
     return ListTile(
-      contentPadding: fullempty ? const EdgeInsets.all(0) : const EdgeInsets.only(right: 16, left: 16),
+      contentPadding: fullempty ? EdgeInsets.zero : const EdgeInsets.only(right: 16, left: 16),
       enabled: enabled,
       leading: icon,
       title: _buildStyledTitle(context),
@@ -76,10 +76,12 @@ abstract class SettingTile extends StatelessWidget {
   }
 
   Widget? _buildStyledTitle(BuildContext context) {
-    if (title == null) return null;
+    if (title == null) {
+      return null;
+    }
 
     if (title is Text) {
-      final textWidget = title as Text;
+      final textWidget = title! as Text;
       return Text(
         textWidget.data ?? '',
         style: textWidget.style ?? const TextStyle(),
@@ -94,7 +96,7 @@ abstract class SettingTile extends StatelessWidget {
 
   Widget _buildStyledDescription(BuildContext context) {
     if (description is Text) {
-      final textWidget = description as Text;
+      final textWidget = description! as Text;
       return Text(
         textWidget.data ?? '',
         style: textWidget.style ?? const TextStyle(),

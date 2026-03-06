@@ -8,6 +8,7 @@ class ProgressCard extends StatelessWidget {
   final int total;
   final int completed;
   final Color? containerColor;
+  final VoidCallback? onTap;
 
   const ProgressCard({
     super.key,
@@ -15,6 +16,7 @@ class ProgressCard extends StatelessWidget {
     required this.total,
     required this.completed,
     this.containerColor,
+    this.onTap,
   });
 
   @override
@@ -23,155 +25,158 @@ class ProgressCard extends StatelessWidget {
     final bgColor = containerColor ?? colorTheme.surface;
     final progress = total == 0 ? 0.0 : completed / total;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: 'GoogleSansFlex',
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: colorTheme.onSurface,
-              fontVariations: const [
-                FontVariation('wght', 800),
-                FontVariation('wdth', 100),
-                FontVariation('ROND', 80),
-                FontVariation('GRAD', 0),
-                FontVariation('opsz', 22),
-                FontVariation('slnt', 0),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          if (total == 0)
-            // Empty state
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Center(
-                child: Column(
-                  children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: colorTheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(
-                        Symbols.event_available,
-                        fill: 1,
-                        weight: 300,
-                        size: 28,
-                        color: colorTheme.onSecondaryContainer,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'No tasks for today',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorTheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            // Circular wavy progress indicator + count
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 8),
-                  TweenAnimationBuilder<double>(
-                    tween: Tween<double>(begin: 0, end: progress),
-                    duration: const Duration(milliseconds: 800),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, animatedProgress, _) {
-                      return SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: CircularProgressIndicatorM3E(
-                          value: animatedProgress,
-                          shape: ProgressM3EShape.wavy,
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorTheme.primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '$completed / $total',
-                      style: TextStyle(
-                        fontFamily: 'GoogleSansFlex',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: colorTheme.primary,
-                        fontVariations: const [
-                          FontVariation('wght', 700),
-                          FontVariation('wdth', 100),
-                          FontVariation('ROND', 100),
-                          FontVariation('GRAD', 0),
-                          FontVariation('opsz', 14),
-                          FontVariation('slnt', 0),
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (progress == 1.0) ...[
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Symbols.celebration,
-                          fill: 1,
-                          size: 16,
-                          color: colorTheme.primary,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'All done!',
-                          style: TextStyle(
-                            fontFamily: 'GoogleSansFlex',
-                            fontSize: 12,
-                            color: colorTheme.primary,
-                            fontWeight: FontWeight.w600,
-                            fontVariations: const [
-                              FontVariation('wght', 600),
-                              FontVariation('wdth', 100),
-                              FontVariation('ROND', 100),
-                              FontVariation('GRAD', 0),
-                              FontVariation('opsz', 12),
-                              FontVariation('slnt', 0),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Text(
+              title,
+              style: TextStyle(
+                fontFamily: 'GoogleSansFlex',
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: colorTheme.onSurface,
+                fontVariations: const [
+                  FontVariation('wght', 800),
+                  FontVariation('wdth', 100),
+                  FontVariation('ROND', 80),
+                  FontVariation('GRAD', 0),
+                  FontVariation('opsz', 22),
+                  FontVariation('slnt', 0),
                 ],
               ),
             ),
-        ],
+            const SizedBox(height: 10),
+
+            if (total == 0)
+              // Empty state
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: colorTheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Icon(
+                          Symbols.event_available,
+                          fill: 1,
+                          weight: 300,
+                          size: 28,
+                          color: colorTheme.onSecondaryContainer,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No tasks for today',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colorTheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              // Circular wavy progress indicator + count
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 8),
+                    TweenAnimationBuilder<double>(
+                      tween: Tween<double>(begin: 0, end: progress),
+                      duration: const Duration(milliseconds: 800),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, animatedProgress, _) {
+                        return SizedBox(
+                          width: 100,
+                          height: 100,
+                          child: CircularProgressIndicatorM3E(
+                            value: animatedProgress,
+                            shape: ProgressM3EShape.wavy,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorTheme.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '$completed / $total',
+                        style: TextStyle(
+                          fontFamily: 'GoogleSansFlex',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: colorTheme.primary,
+                          fontVariations: const [
+                            FontVariation('wght', 700),
+                            FontVariation('wdth', 100),
+                            FontVariation('ROND', 100),
+                            FontVariation('GRAD', 0),
+                            FontVariation('opsz', 14),
+                            FontVariation('slnt', 0),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (progress == 1.0) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Symbols.celebration,
+                            fill: 1,
+                            size: 16,
+                            color: colorTheme.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'All done!',
+                            style: TextStyle(
+                              fontFamily: 'GoogleSansFlex',
+                              fontSize: 12,
+                              color: colorTheme.primary,
+                              fontWeight: FontWeight.w600,
+                              fontVariations: const [
+                                FontVariation('wght', 600),
+                                FontVariation('wdth', 100),
+                                FontVariation('ROND', 100),
+                                FontVariation('GRAD', 0),
+                                FontVariation('opsz', 12),
+                                FontVariation('slnt', 0),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

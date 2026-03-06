@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:navigation_rail_m3e/navigation_rail_m3e.dart';
+import '../navigation_rail_m3e.dart';
 
 /// Single rail item (private to package). One class per file.
 class RailItem extends StatelessWidget {
@@ -34,10 +34,12 @@ class RailItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).extension<NavigationRailM3ETheme>() ??
+    final theme =
+        Theme.of(context).extension<NavigationRailM3ETheme>() ??
         const NavigationRailM3ETheme();
-    final height =
-        expanded ? theme.itemExpandedHeight : theme.itemCollapsedHeight;
+    final height = expanded
+        ? theme.itemExpandedHeight
+        : theme.itemCollapsedHeight;
 
     final Widget button = RailItemButtonM3E(
       icon: destination.icon,
@@ -62,18 +64,10 @@ class RailItem extends StatelessWidget {
     } else {
       core = ConstrainedBox(
         constraints: BoxConstraints(minHeight: height),
-        child: Row(
-          children: [
-            Expanded(child: button),
-          ],
-        ),
+        child: Row(children: [Expanded(child: button)]),
       );
     }
 
-    return Semantics(
-      selected: selected,
-      button: true,
-      child: core,
-    );
+    return Semantics(selected: selected, button: true, child: core);
   }
 }
