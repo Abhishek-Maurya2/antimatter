@@ -40,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
   _previousTaskForToolbar; // Used to keep the toolbar rendered while it animates out
   // Top-level nav: 0=Overview, 1=Tasks, 2=Session, 3=Settings
   int _navIndex = 0;
+  NavigationRailM3EType _railType = NavigationRailM3EType.expanded;
   // Tasks sub-filter: 0=All, 1=Today, 2=Upcoming, 3=Completed, 4=Labels, 5=Archive, 6=Trash
   int _taskSubFilter = 0;
   String? _selectedLabelFilter;
@@ -367,10 +368,10 @@ class _HomeScreenState extends State<HomeScreen> {
         return Scaffold(
           key: _scaffoldKey,
           backgroundColor: colorTheme.surfaceContainer,
-          drawer: isExpanded ? null : _buildDrawer(context, colorTheme),
           body: Row(
             children: [
-              if (isExpanded) _buildDrawer(context, colorTheme),
+              if (isExpanded)
+                _buildNavigationRail(context, colorTheme, isExpanded: true),
               Expanded(
                 child: Stack(
                   children: [
@@ -511,20 +512,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.fromLTRB(1, 8, 16, 8),
                     child: Row(
                       children: [
-                        if (!isExpanded) ...[
-                          // Hamburger menu
-                          IconButton(
-                            onPressed: () {
-                              _scaffoldKey.currentState?.openDrawer();
-                            },
-                            icon: Icon(
-                              Symbols.menu,
-                              fill: 0,
-                              weight: 400,
-                              color: colorTheme.onSurface,
-                            ),
-                          ),
-                        ],
                         // Search bar
                         Expanded(
                           child: Container(
@@ -1290,22 +1277,30 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDrawer(BuildContext context, ColorScheme colorTheme) {
-    // Map _navIndex and _taskSubFilter to a flat index for the drawer selection highlight
-    int drawerSelectedIndex;
+  Widget _buildNavigationRail(
+    BuildContext context,
+    ColorScheme colorTheme, {
+    required bool isExpanded,
+  }) {
+    // Map _navIndex and _taskSubFilter to a flat index for the rail selection
+    int railSelectedIndex;
     if (_navIndex == 0) {
-      drawerSelectedIndex = 0; // Overview
+      railSelectedIndex = 0; // Overview
     } else if (_navIndex == 1) {
-      // Maps to taskSubFilters 0-6 (All Tasks through Trash) -> Drawer 1-7
-      drawerSelectedIndex = _taskSubFilter + 1;
+      // Maps to taskSubFilters 0-6 (All Tasks through Trash) -> Rail 1-7
+      railSelectedIndex = _taskSubFilter + 1;
     } else if (_navIndex == 2) {
-      drawerSelectedIndex = 8; // Session
+      railSelectedIndex = 8; // Session
+    } else if (_navIndex == 3) {
+      railSelectedIndex = 9; // Settings
     } else {
-      drawerSelectedIndex = -1; // Settings not in drawer
+      railSelectedIndex = 0;
     }
 
-    return NavigationDrawer(
-      selectedIndex: drawerSelectedIndex,
+    return NavigationRailM3E(
+      type: _railType,
+      modality: NavigationRailM3EModality.standard,
+      selectedIndex: railSelectedIndex,
       onDestinationSelected: (index) {
         setState(() {
           if (index == 0) {
@@ -1315,77 +1310,84 @@ class _HomeScreenState extends State<HomeScreen> {
             _taskSubFilter = index - 1;
           } else if (index == 8) {
             _navIndex = 2;
+          } else if (index == 9) {
+            _navIndex = 3;
           }
         });
-        // Close modal drawer if applicable (i.e. not in expanded view)
-        final scaffoldState = _scaffoldKey.currentState;
-        if (scaffoldState != null &&
-            scaffoldState.hasDrawer &&
-            scaffoldState.isDrawerOpen) {
-          Navigator.pop(context);
-        }
       },
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(28, 16, 16, 16),
-          child: Text(
-            'AntiMatter',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: colorTheme.primary,
+      onTypeChanged: (type) {
+        setState(() {
+          _railType = type;
+        });
+      },
+      fab: _navIndex == 1
+          ? NavigationRailM3EFabSlot(
+              icon: Icon(Symbols.add, fill: 1, weight: 600),
+              label: 'Add Task',
+              onPressed: () => _openCreateTaskEditor(isExpanded),
+            )
+          : null,
+      background: colorTheme.surfaceContainer,
+      sections: [
+        NavigationRailM3ESection(
+          header: const Text('Main'),
+          destinations: [
+            NavigationRailM3EDestination(
+              icon: Icon(Symbols.dashboard, fill: 0, weight: 400),
+              selectedIcon: Icon(Symbols.dashboard, fill: 1, weight: 400),
+              label: 'Overview',
             ),
-          ),
+            NavigationRailM3EDestination(
+              icon: Icon(Symbols.task_alt, fill: 0, weight: 400),
+              selectedIcon: Icon(Symbols.task_alt, fill: 1, weight: 400),
+              label: 'All Tasks',
+            ),
+            NavigationRailM3EDestination(
+              icon: Icon(Symbols.today, fill: 0, weight: 400),
+              selectedIcon: Icon(Symbols.today, fill: 1, weight: 400),
+              label: 'Today',
+            ),
+            NavigationRailM3EDestination(
+              icon: Icon(Symbols.calendar_month, fill: 0, weight: 400),
+              selectedIcon: Icon(Symbols.calendar_month, fill: 1, weight: 400),
+              label: 'Upcoming',
+            ),
+            NavigationRailM3EDestination(
+              icon: Icon(Symbols.check_circle, fill: 0, weight: 400),
+              selectedIcon: Icon(Symbols.check_circle, fill: 1, weight: 400),
+              label: 'Completed',
+            ),
+          ],
         ),
-        Divider(indent: 28, endIndent: 28),
-        NavigationDrawerDestination(
-          icon: Icon(Symbols.dashboard, fill: 0, weight: 400),
-          selectedIcon: Icon(Symbols.dashboard, fill: 1, weight: 400),
-          label: Text('Overview'),
-        ),
-        NavigationDrawerDestination(
-          icon: Icon(Symbols.task_alt, fill: 0, weight: 400),
-          selectedIcon: Icon(Symbols.task_alt, fill: 1, weight: 400),
-          label: Text('All Tasks'),
-        ),
-        NavigationDrawerDestination(
-          icon: Icon(Symbols.today, fill: 0, weight: 400),
-          selectedIcon: Icon(Symbols.today, fill: 1, weight: 400),
-          label: Text('Today'),
-        ),
-        NavigationDrawerDestination(
-          icon: Icon(Symbols.calendar_month, fill: 0, weight: 400),
-          selectedIcon: Icon(Symbols.calendar_month, fill: 1, weight: 400),
-          label: Text('Upcoming'),
-        ),
-        NavigationDrawerDestination(
-          icon: Icon(Symbols.check_circle, fill: 0, weight: 400),
-          selectedIcon: Icon(Symbols.check_circle, fill: 1, weight: 400),
-          label: Text('Completed'),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
-          child: Divider(),
-        ),
-        NavigationDrawerDestination(
-          icon: Icon(Symbols.label, fill: 0, weight: 400),
-          selectedIcon: Icon(Symbols.label, fill: 1, weight: 400),
-          label: Text('Labels'),
-        ),
-        NavigationDrawerDestination(
-          icon: Icon(Symbols.archive, fill: 0, weight: 400),
-          selectedIcon: Icon(Symbols.archive, fill: 1, weight: 400),
-          label: Text('Archive'),
-        ),
-        NavigationDrawerDestination(
-          icon: Icon(Symbols.delete, fill: 0, weight: 400),
-          selectedIcon: Icon(Symbols.delete, fill: 1, weight: 400),
-          label: Text('Trash'),
-        ),
-        NavigationDrawerDestination(
-          icon: Icon(Symbols.timer, fill: 0, weight: 400),
-          selectedIcon: Icon(Symbols.timer, fill: 1, weight: 400),
-          label: Text('Session'),
+        NavigationRailM3ESection(
+          header: const Text('More'),
+          destinations: [
+            NavigationRailM3EDestination(
+              icon: Icon(Symbols.label, fill: 0, weight: 400),
+              selectedIcon: Icon(Symbols.label, fill: 1, weight: 400),
+              label: 'Labels',
+            ),
+            NavigationRailM3EDestination(
+              icon: Icon(Symbols.archive, fill: 0, weight: 400),
+              selectedIcon: Icon(Symbols.archive, fill: 1, weight: 400),
+              label: 'Archive',
+            ),
+            NavigationRailM3EDestination(
+              icon: Icon(Symbols.delete, fill: 0, weight: 400),
+              selectedIcon: Icon(Symbols.delete, fill: 1, weight: 400),
+              label: 'Trash',
+            ),
+            NavigationRailM3EDestination(
+              icon: Icon(Symbols.timer, fill: 0, weight: 400),
+              selectedIcon: Icon(Symbols.timer, fill: 1, weight: 400),
+              label: 'Session',
+            ),
+            NavigationRailM3EDestination(
+              icon: Icon(Symbols.settings, fill: 0, weight: 400),
+              selectedIcon: Icon(Symbols.settings, fill: 1, weight: 400),
+              label: 'Settings',
+            ),
+          ],
         ),
       ],
     );
