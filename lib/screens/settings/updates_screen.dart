@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
+import 'package:m3e_collection/m3e_collection.dart'
+    hide ExpressiveLoadingIndicator;
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
@@ -182,12 +183,9 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                 alignment: Alignment.center,
                 children: [
                   Positioned.fill(
-                    child: WavyCircularProgressIndicator(
+                    child: CircularProgressIndicatorM3E(
                       value: _downloadProgress,
-                      strokeWidth: 5.0,
-                      waveAmplitude: 3.0,
-                      waveLength: 20.0,
-                      color: colorTheme.primary,
+                      shape: ProgressM3EShape.wavy,
                     ),
                   ),
                   Text(
@@ -310,9 +308,8 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                           SizedBox(
                             width: 48,
                             height: 48,
-                            child: WavyCircularProgressIndicator(
-                              strokeWidth: 4.0,
-                              waveAmplitude: 2.0,
+                            child: CircularProgressIndicatorM3E(
+                              shape: ProgressM3EShape.wavy,
                             ),
                           ),
                           const SizedBox(height: 16),
