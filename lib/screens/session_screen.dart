@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:button_m3e/button_m3e.dart';
 import 'package:button_group_m3e/button_group_m3e.dart';
 import '../utils/preferences_helper.dart';
@@ -118,15 +117,41 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
-  String _formatTime() {
+  List<String> _getTimeParts() {
     final int hours = _seconds ~/ 3600;
     final int minutes = (_seconds % 3600) ~/ 60;
     final int seconds = _seconds % 60;
 
     if (hours > 0) {
-      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+      return [
+        hours.toString().padLeft(2, '0'),
+        minutes.toString().padLeft(2, '0'),
+        seconds.toString().padLeft(2, '0'),
+      ];
     }
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    return [
+      minutes.toString().padLeft(2, '0'),
+      seconds.toString().padLeft(2, '0'),
+    ];
+  }
+
+  Widget _buildTimerDisplay(TextStyle style) {
+    final parts = _getTimeParts();
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: parts.asMap().entries.map((entry) {
+        final isLast = entry.key == parts.length - 1;
+        return Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Text(entry.value, style: style),
+            if (!isLast) Positioned(right: -24, child: Text(':', style: style)),
+          ],
+        );
+      }).toList(),
+    );
   }
 
   @override
@@ -192,71 +217,56 @@ class _SessionScreenState extends State<SessionScreen>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       SizedBox(
-                        width: 220,
-                        height: 220,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            SizedBox(
-                              width: 220,
-                              height: 220,
-                              child: WavyCircularProgressIndicator(
-                                value: _isRunning ? 0.3 : 0.0,
-                                strokeWidth: 8.0,
-                                waveAmplitude: 6,
-                                waveLength: 22.0,
-                              ),
-                            ),
-                            Text(
-                              _formatTime(),
-                              style: TextStyle(
-                                fontSize: 52,
-                                fontWeight: FontWeight.bold,
-                                color: colorTheme.primary,
-                                fontFeatures: const [
-                                  FontFeature.tabularFigures(),
-                                ],
-                              ),
-                            ),
-                          ],
+                        width: 270,
+                        height: 270,
+                        child: _buildTimerDisplay(
+                          TextStyle(
+                            fontFamily: 'GoogleSansFlex',
+                            fontSize: 84,
+                            height: 0.9,
+                            fontWeight: FontWeight.bold,
+                            color: colorTheme.primary,
+                            fontVariations: const [
+                              FontVariation('wdth', 150),
+                              FontVariation('ROND', 100),
+                            ],
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
                         ),
                       ),
                       const SizedBox(height: 48),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: ButtonGroupM3E(
-                            type: ButtonGroupM3EType.standard,
-                            size: ButtonGroupM3ESize.lg,
-                            style: ButtonM3EStyle.filled,
-                            selection: true,
-                            overflow: ButtonGroupM3EOverflow.none,
-                            selectedIndex: _isRunning ? 0 : null,
-                            actions: [
-                              ButtonGroupM3EAction(
-                                icon: Icon(
-                                  _isRunning
-                                      ? Icons.pause_rounded
-                                      : Icons.play_arrow_rounded,
-                                ),
-                                label: Text(_isRunning ? 'Pause' : 'Start'),
-                                onPressed: _toggleTimer,
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: ButtonGroupM3E(
+                          size: ButtonGroupM3ESize.lg,
+                          style: ButtonM3EStyle.filled,
+                          overflow: ButtonGroupM3EOverflow.none,
+                          actions: [
+                            ButtonGroupM3EAction(
+                              icon: Icon(
+                                _isRunning
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded,
                               ),
-                              ButtonGroupM3EAction(
-                                icon: const Icon(Icons.stop_rounded),
-                                label: const Text('Stop'),
-                                onPressed: _resetTimer,
-                                enabled: _isRunning || _seconds > 0,
-                                backgroundColor: (_isRunning || _seconds > 0)
-                                    ? colorTheme.errorContainer
-                                    : null,
-                                foregroundColor: (_isRunning || _seconds > 0)
-                                    ? colorTheme.onErrorContainer
-                                    : null,
-                              ),
-                            ],
-                          ),
+                              label: Text(_isRunning ? 'Pause' : 'Start'),
+                              shape: ButtonM3EShape.round,
+                              selected: _isRunning || _seconds > 0,
+                              onPressed: _toggleTimer,
+                            ),
+                            ButtonGroupM3EAction(
+                              icon: const Icon(Icons.stop_rounded),
+                              label: const Text('Stop'),
+                              onPressed: _resetTimer,
+                              shape: ButtonM3EShape.round,
+                              enabled: _isRunning || _seconds > 0,
+                              backgroundColor: (_isRunning || _seconds > 0)
+                                  ? colorTheme.errorContainer
+                                  : null,
+                              foregroundColor: (_isRunning || _seconds > 0)
+                                  ? colorTheme.onErrorContainer
+                                  : null,
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -287,33 +297,19 @@ class _SessionScreenState extends State<SessionScreen>
                     child: SizedBox(
                       width: 220,
                       height: 220,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          SizedBox(
-                            width: 220,
-                            height: 220,
-                            child: WavyCircularProgressIndicator(
-                              value: 0.3,
-                              strokeWidth: 6.0,
-                              waveAmplitude: 5,
-                              waveLength: 22.0,
-                              color: Colors.white.withValues(alpha: 0.25),
-                              backgroundColor: Colors.black,
-                            ),
-                          ),
-                          Text(
-                            _formatTime(),
-                            style: TextStyle(
-                              fontSize: 52,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white.withValues(alpha: 0.5),
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
-                            ),
-                          ),
-                        ],
+                      child: _buildTimerDisplay(
+                        TextStyle(
+                          fontFamily: 'GoogleSansFlex',
+                          fontSize: 84,
+                          height: 0.9,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontVariations: const [
+                            FontVariation('wdth', 150),
+                            FontVariation('ROND', 100),
+                          ],
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
                   ),
