@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:m3e_collection/m3e_collection.dart'
     hide ExpressiveLoadingIndicator;
+import 'package:material_new_shapes/material_new_shapes.dart';
+import 'package:orches/utils/ui_utils.dart';
 
 class ProgressCard extends StatelessWidget {
   final String title;
@@ -64,19 +66,23 @@ class ProgressCard extends StatelessWidget {
                 child: Center(
                   child: Column(
                     children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: colorTheme.secondaryContainer,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Icon(
-                          Symbols.event_available,
-                          fill: 1,
-                          weight: 300,
-                          size: 28,
-                          color: colorTheme.onSecondaryContainer,
+                      SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: ClipPath(
+                          clipper: PolygonClipper(MaterialShapes.pill),
+                          child: ColoredBox(
+                            color: colorTheme.secondaryContainer,
+                            child: Center(
+                              child: Icon(
+                                Symbols.event_available,
+                                fill: 1,
+                                weight: 300,
+                                size: 35,
+                                color: colorTheme.onSecondaryContainer,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),

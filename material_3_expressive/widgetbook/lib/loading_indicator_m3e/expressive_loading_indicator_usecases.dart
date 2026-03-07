@@ -33,15 +33,7 @@ List<RoundedPolygon> _polygonSet(String id) {
         MaterialShapes.pentagon
       ];
     default:
-      return [
-        MaterialShapes.softBurst,
-        MaterialShapes.cookie9Sided,
-        MaterialShapes.pentagon,
-        MaterialShapes.pill,
-        MaterialShapes.sunny,
-        MaterialShapes.cookie4Sided,
-        MaterialShapes.oval,
-      ];
+      return ExpressiveLoadingIndicator.defaultPolygons;
   }
 }
 
