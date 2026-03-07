@@ -11,7 +11,9 @@ class PolygonClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     final normalizedPath = polygon.toPath();
-    final matrix = Matrix4.diagonal3Values(size.width, size.height, 1);
+    // Use uniform scale to prevent stretching — always 1:1
+    final side = size.width < size.height ? size.width : size.height;
+    final matrix = Matrix4.diagonal3Values(side, side, 1);
     final scaled = normalizedPath.transform(matrix.storage);
     // Center the scaled path inside the clip bounds
     final bounds = scaled.getBounds();

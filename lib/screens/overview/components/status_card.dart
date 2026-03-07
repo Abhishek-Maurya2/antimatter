@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:material_new_shapes/material_new_shapes.dart';
+import 'package:orches/utils/ui_utils.dart';
 
 class StatusCard extends StatefulWidget {
   final IconData icon;
@@ -7,6 +9,7 @@ class StatusCard extends StatefulWidget {
   final Color? containerColor;
   final Color? contentColor;
   final VoidCallback? onTap;
+  final RoundedPolygon? shape;
 
   const StatusCard({
     super.key,
@@ -16,6 +19,7 @@ class StatusCard extends StatefulWidget {
     this.containerColor,
     this.contentColor,
     this.onTap,
+    this.shape,
   });
 
   @override
@@ -72,68 +76,79 @@ class _StatusCardState extends State<StatusCard>
         builder: (context, child) {
           return Transform.scale(scale: _scaleAnimation.value, child: child);
         },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(_isPressed ? 28 : 20),
-          ),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Icon
-              Icon(widget.icon, fill: 1, weight: 400, size: 28, color: fgColor),
-              const Spacer(),
-              // Title
-              Text(
-                widget.title,
-                style: TextStyle(
-                  fontFamily: 'GoogleSansFlex',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: fgColor.withValues(alpha: 0.8),
-                  fontVariations: const [
-                    FontVariation('wght', 800),
-                    FontVariation('wdth', 100),
-                    FontVariation('ROND', 80),
-                    FontVariation('GRAD', 0),
-                    FontVariation('opsz', 20),
-                    FontVariation('slnt', 0),
-                  ],
+        child: ClipPath(
+          clipper: widget.shape != null ? PolygonClipper(widget.shape!) : null,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: widget.shape == null
+                  ? BorderRadius.circular(_isPressed ? 28 : 20)
+                  : null,
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Icon
+                Icon(
+                  widget.icon,
+                  fill: 1,
+                  weight: 400,
+                  size: 28,
+                  color: fgColor,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              // Count
-              TweenAnimationBuilder<int>(
-                tween: IntTween(begin: 0, end: widget.count),
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeOutCubic,
-                builder: (context, value, _) {
-                  return Text(
-                    value.toString(),
-                    style: TextStyle(
-                      fontFamily: 'GoogleSansFlex',
-                      fontSize: 36,
-                      fontWeight: FontWeight.w800,
-                      color: fgColor,
-                      fontVariations: const [
-                        FontVariation('wght', 800),
-                        FontVariation('wdth', 100),
-                        FontVariation('ROND', 100),
-                        FontVariation('GRAD', 0),
-                        FontVariation('opsz', 36),
-                        FontVariation('slnt', 0),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
+                const Spacer(),
+                // Title
+                Text(
+                  widget.title,
+                  style: TextStyle(
+                    fontFamily: 'GoogleSansFlex',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: fgColor.withValues(alpha: 0.8),
+                    fontVariations: const [
+                      FontVariation('wght', 800),
+                      FontVariation('wdth', 100),
+                      FontVariation('ROND', 80),
+                      FontVariation('GRAD', 0),
+                      FontVariation('opsz', 20),
+                      FontVariation('slnt', 0),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                // Count
+                TweenAnimationBuilder<int>(
+                  tween: IntTween(begin: 0, end: widget.count),
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, _) {
+                    return Text(
+                      value.toString(),
+                      style: TextStyle(
+                        fontFamily: 'GoogleSansFlex',
+                        fontSize: 36,
+                        fontWeight: FontWeight.w800,
+                        color: fgColor,
+                        fontVariations: const [
+                          FontVariation('wght', 800),
+                          FontVariation('wdth', 100),
+                          FontVariation('ROND', 100),
+                          FontVariation('GRAD', 0),
+                          FontVariation('opsz', 36),
+                          FontVariation('slnt', 0),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

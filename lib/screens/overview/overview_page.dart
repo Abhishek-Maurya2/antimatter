@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:orches/models/task.dart';
-import 'package:orches/screens/overview/components/status_card.dart';
+import 'package:orches/screens/overview/components/stats_card.dart';
 import 'package:orches/screens/overview/components/progress_card.dart';
 import 'package:orches/screens/overview/components/list_card.dart';
 import 'package:orches/screens/overview/components/activity_heat_map.dart';
@@ -113,93 +112,38 @@ class OverviewPage extends StatelessWidget {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       const spacing = 12.0;
-                      final isWide = constraints.maxWidth >= 760;
                       final availableWidth = constraints.maxWidth;
                       final halfWidth = (availableWidth - spacing) / 2;
 
-                      final allCardWidth = halfWidth;
-                      final completedCardWidth = halfWidth;
-                      final pendingCardWidth = halfWidth;
-                      final upcomingCardWidth = halfWidth;
-                      final progressCardWidth = halfWidth;
-                      final topCardHeight = isWide ? 180.0 : 160.0;
-                      final pendingHeight = isWide ? 180.0 : 160.0;
-                      final upcomingHeight = isWide ? 300.0 : 260.0;
-                      final allCardHeight = topCardHeight;
-                      final completedCardHeight = topCardHeight;
-                      final pendingCardHeight = pendingHeight;
-                      final progressCardHeight =
-                          pendingCardHeight + spacing + upcomingHeight;
+                      final upcomingHeight = 265.0;
 
                       return Column(
                         children: [
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: allCardWidth,
-                                height: allCardHeight,
-                                child: StatusCard(
-                                  icon: Symbols.task_alt,
-                                  title: 'All Tasks',
-                                  count: totalTasks,
-                                  containerColor: colorTheme.surface,
-                                  onTap: onNavigateToTasks,
-                                ),
-                              ),
-                              const SizedBox(width: spacing),
-                              SizedBox(
-                                width: completedCardWidth,
-                                height: completedCardHeight,
-                                child: StatusCard(
-                                  icon: Symbols.check_circle,
-                                  title: 'Completed',
-                                  count: completedTasks,
-                                  containerColor: colorTheme.secondaryContainer,
-                                  contentColor: colorTheme.onSecondaryContainer,
-                                  onTap: onNavigateToTasks,
-                                ),
-                              ),
-                            ],
+                          // Combined Stats Card (full width)
+                          StatsCard(
+                            totalTasks: totalTasks,
+                            completedTasks: completedTasks,
+                            pendingTasks: pendingTasks,
+                            onTap: onNavigateToTasks,
                           ),
                           const SizedBox(height: spacing),
+                          // Bottom row: Upcoming + Progress
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SizedBox(
-                                width: pendingCardWidth,
-                                child: Column(
-                                  children: [
-                                    SizedBox(
-                                      width: pendingCardWidth,
-                                      height: pendingCardHeight,
-                                      child: StatusCard(
-                                        icon: Symbols.pending,
-                                        title: 'Pending',
-                                        count: pendingTasks,
-                                        containerColor:
-                                            colorTheme.errorContainer,
-                                        contentColor:
-                                            colorTheme.onErrorContainer,
-                                        onTap: onNavigateToTasks,
-                                      ),
-                                    ),
-                                    const SizedBox(height: spacing),
-                                    SizedBox(
-                                      width: upcomingCardWidth,
-                                      height: upcomingHeight,
-                                      child: ListCard(
-                                        title: 'Upcoming',
-                                        tasks: upcomingTasks,
-                                        onTap: onNavigateToTasks,
-                                      ),
-                                    ),
-                                  ],
+                                width: halfWidth,
+                                height: upcomingHeight,
+                                child: ListCard(
+                                  title: 'Upcoming',
+                                  tasks: upcomingTasks,
+                                  onTap: onNavigateToTasks,
                                 ),
                               ),
                               const SizedBox(width: spacing),
                               SizedBox(
-                                width: progressCardWidth,
-                                height: 280,
+                                width: halfWidth,
+                                height: upcomingHeight,
                                 child: ProgressCard(
                                   title: "Today's Tasks",
                                   total: todayTasks.length,

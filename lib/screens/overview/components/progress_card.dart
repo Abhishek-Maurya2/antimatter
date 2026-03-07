@@ -35,7 +35,7 @@ class ProgressCard extends StatelessWidget {
           color: bgColor,
           borderRadius: BorderRadius.circular(24),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -102,15 +102,15 @@ class ProgressCard extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     TweenAnimationBuilder<double>(
                       tween: Tween<double>(begin: 0, end: progress),
                       duration: const Duration(milliseconds: 800),
                       curve: Curves.easeOutCubic,
                       builder: (context, animatedProgress, _) {
                         return SizedBox(
-                          width: 100,
-                          height: 100,
+                          width: 85,
+                          height: 85,
                           child: CircularProgressIndicatorM3E(
                             value: animatedProgress,
                             shape: ProgressM3EShape.wavy,
@@ -118,11 +118,11 @@ class ProgressCard extends StatelessWidget {
                         );
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
-                        vertical: 6,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
                         color: colorTheme.primary.withValues(alpha: 0.12),
@@ -147,7 +147,7 @@ class ProgressCard extends StatelessWidget {
                       ),
                     ),
                     if (progress == 1.0) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
