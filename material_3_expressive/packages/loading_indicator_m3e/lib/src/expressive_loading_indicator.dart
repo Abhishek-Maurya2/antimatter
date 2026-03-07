@@ -16,6 +16,16 @@ import 'package:material_new_shapes/material_new_shapes.dart';
 /// This version of the loading indicator morphs between its [polygons] shapes.
 /// ![Loading indicator image](https://developer.android.com/images/reference/androidx/compose/material3/loading-indicator.png)
 class ExpressiveLoadingIndicator extends ProgressIndicator {
+  static final List<RoundedPolygon> defaultPolygons = [
+    MaterialShapes.softBurst,
+    MaterialShapes.cookie9Sided,
+    MaterialShapes.pentagon,
+    MaterialShapes.pill,
+    MaterialShapes.sunny,
+    MaterialShapes.cookie4Sided,
+    MaterialShapes.oval,
+  ];
+
   /// A list of [RoundedPolygon]s for the sequence of shapes this loading indicator
   /// will morph between. The loading indicator expects at least two items in that list.
   final List<RoundedPolygon>? polygons;
@@ -40,16 +50,6 @@ class ExpressiveLoadingIndicator extends ProgressIndicator {
 
 class _ExpressiveLoadingIndicatorState extends State<ExpressiveLoadingIndicator>
     with TickerProviderStateMixin {
-  static final List<RoundedPolygon> _defaultPolygons = [
-    MaterialShapes.softBurst,
-    MaterialShapes.cookie9Sided,
-    MaterialShapes.pentagon,
-    MaterialShapes.pill,
-    MaterialShapes.sunny,
-    MaterialShapes.cookie4Sided,
-    MaterialShapes.oval,
-  ];
-
   static final BoxConstraints _defaultConstraints = BoxConstraints(
     minWidth: 48.0,
     minHeight: 48.0,
@@ -89,8 +89,7 @@ class _ExpressiveLoadingIndicatorState extends State<ExpressiveLoadingIndicator>
   @override
   Widget build(BuildContext context) {
     final indicatorTheme = ProgressIndicatorTheme.of(context);
-    _color =
-        widget.color ??
+    _color = widget.color ??
         indicatorTheme.color ??
         Theme.of(context).colorScheme.primary;
     _constraints =
@@ -123,8 +122,7 @@ class _ExpressiveLoadingIndicatorState extends State<ExpressiveLoadingIndicator>
                     _globalRotationController.value * _fullRotation;
 
                 // calculate total rotation (clockwise, matching Kotlin implementation)
-                final totalRotationDegrees =
-                    morphProgress * _quarterRotation +
+                final totalRotationDegrees = morphProgress * _quarterRotation +
                     _morphRotationTargetAngle +
                     globalRotationDegrees;
 
@@ -167,7 +165,7 @@ class _ExpressiveLoadingIndicatorState extends State<ExpressiveLoadingIndicator>
   void initState() {
     super.initState();
 
-    _polygons = widget.polygons ?? _defaultPolygons;
+    _polygons = widget.polygons ?? ExpressiveLoadingIndicator.defaultPolygons;
 
     _morphSequence = _createMorphSequence(_polygons, circularSequence: true);
 

@@ -1,7 +1,7 @@
 name: orches
 description: "AntiMatter - A Material 3 Expressive Task Manager App."
 publish_to: 'none'
-version: 2.13.0
+version: 2.14.0
 
 environment:
   sdk: ^3.11.0
@@ -23,6 +23,7 @@ dependencies:
 
   expressive_loading_indicator:
     path: ./expressive_loading_indicator_modified
+  material_new_shapes: ^1.0.0
   custom_refresh_indicator: ^4.0.1
   intl: ^0.20.2
   hive: ^2.2.3

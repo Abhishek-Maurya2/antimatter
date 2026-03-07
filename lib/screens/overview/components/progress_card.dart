@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:m3e_collection/m3e_collection.dart'
     hide ExpressiveLoadingIndicator;
+import 'package:material_new_shapes/material_new_shapes.dart';
+import 'package:orches/utils/ui_utils.dart';
 
 class ProgressCard extends StatelessWidget {
   final String title;
@@ -33,7 +35,7 @@ class ProgressCard extends StatelessWidget {
           color: bgColor,
           borderRadius: BorderRadius.circular(24),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -64,19 +66,23 @@ class ProgressCard extends StatelessWidget {
                 child: Center(
                   child: Column(
                     children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: colorTheme.secondaryContainer,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Icon(
-                          Symbols.event_available,
-                          fill: 1,
-                          weight: 300,
-                          size: 28,
-                          color: colorTheme.onSecondaryContainer,
+                      SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: ClipPath(
+                          clipper: PolygonClipper(MaterialShapes.pill),
+                          child: ColoredBox(
+                            color: colorTheme.secondaryContainer,
+                            child: Center(
+                              child: Icon(
+                                Symbols.event_available,
+                                fill: 1,
+                                weight: 300,
+                                size: 35,
+                                color: colorTheme.onSecondaryContainer,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -96,15 +102,15 @@ class ProgressCard extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     TweenAnimationBuilder<double>(
                       tween: Tween<double>(begin: 0, end: progress),
                       duration: const Duration(milliseconds: 800),
                       curve: Curves.easeOutCubic,
                       builder: (context, animatedProgress, _) {
                         return SizedBox(
-                          width: 100,
-                          height: 100,
+                          width: 85,
+                          height: 85,
                           child: CircularProgressIndicatorM3E(
                             value: animatedProgress,
                             shape: ProgressM3EShape.wavy,
@@ -112,11 +118,11 @@ class ProgressCard extends StatelessWidget {
                         );
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
-                        vertical: 6,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
                         color: colorTheme.primary.withValues(alpha: 0.12),
@@ -141,7 +147,7 @@ class ProgressCard extends StatelessWidget {
                       ),
                     ),
                     if (progress == 1.0) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
