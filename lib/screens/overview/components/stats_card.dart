@@ -24,64 +24,66 @@ class StatsCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorTheme.surface,
-          borderRadius: BorderRadius.circular(28),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          children: [
-            // All Tasks
-            Expanded(
-              child: _StatItem(
-                icon: Symbols.task_alt,
-                label: 'All',
-                count: totalTasks,
-                color: colorTheme.primary,
-                textColor: colorTheme.onSurface,
-                shape: MaterialShapes.softBurst,
-                shapeColor: colorTheme.primaryContainer.withValues(alpha: 0.5),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Determine item width. If there's plenty of space, let them be wide.
+          // Otherwise, constrain them so they can wrap.
+          final isWide = constraints.maxWidth >= 500;
+          final double itemWidth = isWide
+              ? (constraints.maxWidth - 32) /
+                    3 // 3 items, 16px gap * 2
+              : (constraints.maxWidth - 16) / 2; // 2 items, 16px gap
+
+          final double minWidth = 140.0;
+          final double finalWidth = itemWidth < minWidth ? minWidth : itemWidth;
+
+          return Wrap(
+            spacing: 16.0,
+            runSpacing: 16.0,
+            alignment: WrapAlignment.start,
+            children: [
+              // All Tasks
+              SizedBox(
+                width: finalWidth,
+                child: _StatItem(
+                  icon: Symbols.task_alt,
+                  label: 'All Tasks',
+                  count: totalTasks,
+                  color: colorTheme.primary,
+                  textColor: colorTheme.onPrimaryContainer,
+                  shape: MaterialShapes.softBurst,
+                  shapeColor: colorTheme.primaryContainer,
+                ),
               ),
-            ),
-            // Divider
-            Container(
-              width: 1,
-              height: 60,
-              color: colorTheme.outlineVariant.withValues(alpha: 0.4),
-            ),
-            // Completed
-            Expanded(
-              child: _StatItem(
-                icon: Symbols.check_circle,
-                label: 'Done',
-                count: completedTasks,
-                color: colorTheme.tertiary,
-                textColor: colorTheme.onSurface,
-                shape: MaterialShapes.sunny,
-                shapeColor: colorTheme.tertiaryContainer.withValues(alpha: 0.5),
+              // Completed
+              SizedBox(
+                width: finalWidth,
+                child: _StatItem(
+                  icon: Symbols.check_circle,
+                  label: 'Completed',
+                  count: completedTasks,
+                  color: colorTheme.tertiary,
+                  textColor: colorTheme.onTertiaryContainer,
+                  shape: MaterialShapes.sunny,
+                  shapeColor: colorTheme.tertiaryContainer,
+                ),
               ),
-            ),
-            // Divider
-            Container(
-              width: 1,
-              height: 60,
-              color: colorTheme.outlineVariant.withValues(alpha: 0.4),
-            ),
-            // Pending
-            Expanded(
-              child: _StatItem(
-                icon: Symbols.pending,
-                label: 'Pending',
-                count: pendingTasks,
-                color: colorTheme.error,
-                textColor: colorTheme.onSurface,
-                shape: MaterialShapes.cookie4Sided,
-                shapeColor: colorTheme.errorContainer.withValues(alpha: 0.5),
+              // Pending
+              SizedBox(
+                width: finalWidth,
+                child: _StatItem(
+                  icon: Symbols.pending,
+                  label: 'Pending',
+                  count: pendingTasks,
+                  color: colorTheme.error,
+                  textColor: colorTheme.onErrorContainer,
+                  shape: MaterialShapes.cookie4Sided,
+                  shapeColor: colorTheme.errorContainer,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -108,68 +110,74 @@ class _StatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Icon with shape background
-        SizedBox(
-          width: 48,
-          height: 48,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              CustomPaint(
-                size: const Size(48, 48),
-                painter: _ShapePainter(polygon: shape, color: shapeColor),
-              ),
-              Icon(icon, fill: 1, weight: 400, size: 24, color: color),
-            ],
+    return Container(
+      constraints: const BoxConstraints(minHeight: 140),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Full background shape painted behind the content
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _ShapePainter(polygon: shape, color: shapeColor),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        TweenAnimationBuilder<int>(
-          tween: IntTween(begin: 0, end: count),
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeOutCubic,
-          builder: (context, value, _) {
-            return Text(
-              value.toString(),
-              style: TextStyle(
-                fontFamily: 'GoogleSansFlex',
-                fontSize: 32,
-                fontWeight: FontWeight.w800,
-                color: textColor,
-                fontVariations: const [
-                  FontVariation('wght', 800),
-                  FontVariation('wdth', 100),
-                  FontVariation('ROND', 100),
-                  FontVariation('GRAD', 0),
-                  FontVariation('opsz', 32),
-                  FontVariation('slnt', 0),
-                ],
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'GoogleSansFlex',
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: textColor.withValues(alpha: 0.6),
-            fontVariations: const [
-              FontVariation('wght', 600),
-              FontVariation('wdth', 100),
-              FontVariation('ROND', 80),
-              FontVariation('GRAD', 0),
-              FontVariation('opsz', 13),
-              FontVariation('slnt', 0),
-            ],
+          // Content
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(icon, fill: 1, weight: 400, size: 28, color: color),
+                const SizedBox(height: 12),
+                TweenAnimationBuilder<int>(
+                  tween: IntTween(begin: 0, end: count),
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, _) {
+                    return Text(
+                      value.toString(),
+                      style: TextStyle(
+                        fontFamily: 'GoogleSansFlex',
+                        fontSize: 36,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
+                        fontVariations: const [
+                          FontVariation('wght', 800),
+                          FontVariation('wdth', 100),
+                          FontVariation('ROND', 100),
+                          FontVariation('GRAD', 0),
+                          FontVariation('opsz', 36),
+                          FontVariation('slnt', 0),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'GoogleSansFlex',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: textColor.withValues(alpha: 0.8),
+                    fontVariations: const [
+                      FontVariation('wght', 1000),
+                      FontVariation('wdth', 100),
+                      FontVariation('ROND', 900),
+                      FontVariation('GRAD', 0),
+                      FontVariation('opsz', 119),
+                      FontVariation('slnt', 0),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
