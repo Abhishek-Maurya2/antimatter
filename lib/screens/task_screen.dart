@@ -649,9 +649,9 @@ class TaskScreenState extends State<TaskScreen> {
                               label: _currentSort == TaskSortOption.newest
                                   ? 'Newest first'
                                   : _currentSort == TaskSortOption.oldest
-                                  ? 'Oldest first'
+                                  ? 'Oldest First'
                                   : 'Due Date',
-                              leadingIcon: Symbols.sort,
+                              // leadingIcon: Symbols.sort,
                               items: [
                                 SplitButtonM3EItem(
                                   value: TaskSortOption.newest,

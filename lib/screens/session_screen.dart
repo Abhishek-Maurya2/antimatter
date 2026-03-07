@@ -187,14 +187,14 @@ class _SessionScreenState extends State<SessionScreen>
                   automaticallyImplyLeading: false,
                   leadingWidth: 80,
                   leading: Center(
-              child: IconButtonM3E(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Symbols.arrow_back),
-                tooltip: 'Back',
-                variant: IconButtonM3EVariant.tonal,
-                width: IconButtonM3EWidth.wide,
-              ),
-            ),
+                    child: IconButtonM3E(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Symbols.arrow_back),
+                      tooltip: 'Back',
+                      variant: IconButtonM3EVariant.tonal,
+                      width: IconButtonM3EWidth.wide,
+                    ),
+                  ),
                   backgroundColor: colorTheme.surfaceContainer,
                   scrolledUnderElevation: 1,
                   expandedHeight: 120,
@@ -215,21 +215,33 @@ class _SessionScreenState extends State<SessionScreen>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      const SizedBox(height: 98),
                       SizedBox(
                         width: 270,
                         height: 270,
-                        child: _buildTimerDisplay(
-                          TextStyle(
-                            fontFamily: 'GoogleSansFlex',
-                            fontSize: 84,
-                            height: 0.9,
-                            fontWeight: FontWeight.bold,
-                            color: colorTheme.primary,
-                            fontVariations: const [
-                              FontVariation('wdth', 150),
-                              FontVariation('ROND', 100),
-                            ],
-                            fontFeatures: const [FontFeature.tabularFigures()],
+                        child: Transform.scale(
+                          scaleY: 1.8,
+                          child: _buildTimerDisplay(
+                            TextStyle(
+                              fontFamily: 'GoogleSansFlex',
+                              fontSize: 84,
+                              height: 0.9,
+                              fontWeight: FontWeight.w500,
+                              color: colorTheme.primary,
+                              fontVariations: const [
+                                FontVariation('wdth', 150),
+                                FontVariation('wght', 920),
+                                FontVariation('opsz', 98),
+                                FontVariation('ROND', -10),
+                                FontVariation('CNTR', 70),
+                                FontVariation('YOPQ', 36),
+                                FontVariation('YTPQ', 105),
+                                FontVariation('XTRA', 520),
+                              ],
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -298,20 +310,29 @@ class _SessionScreenState extends State<SessionScreen>
                   color: Colors.black,
                   child: Center(
                     child: SizedBox(
-                      width: 220,
-                      height: 220,
-                      child: _buildTimerDisplay(
-                        TextStyle(
-                          fontFamily: 'GoogleSansFlex',
-                          fontSize: 84,
-                          height: 0.9,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontVariations: const [
-                            FontVariation('wdth', 150),
-                            FontVariation('ROND', 100),
-                          ],
-                          fontFeatures: const [FontFeature.tabularFigures()],
+                      width: 270,
+                      height: 270,
+                      child: Transform.scale(
+                        scaleY: 1.8,
+                        child: _buildTimerDisplay(
+                          TextStyle(
+                            fontFamily: 'GoogleSansFlex',
+                            fontSize: 94,
+                            height: 0.9,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontVariations: const [
+                              FontVariation('wdth', 150),
+                              FontVariation('wght', 920),
+                              FontVariation('opsz', 98),
+                              FontVariation('ROND', -10),
+                              FontVariation('CNTR', 70),
+                              FontVariation('YOPQ', 36),
+                              FontVariation('YTPQ', 105),
+                              FontVariation('XTRA', 520),
+                            ],
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
                         ),
                       ),
                     ),

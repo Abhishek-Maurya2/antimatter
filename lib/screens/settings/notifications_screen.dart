@@ -19,6 +19,7 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _notificationsEnabled = false;
+  bool _taskCompletionSound = true;
   bool _deadlineReminders = true;
   bool _dailySummary = false;
   String _reminderTime = '30 min before';
@@ -39,6 +40,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void _loadSettings() {
     _notificationsEnabled =
         PreferencesHelper.getBool('notificationsEnabled') ?? false;
+    _taskCompletionSound =
+        PreferencesHelper.getBool('taskCompletionSound') ?? true;
     _deadlineReminders = PreferencesHelper.getBool('deadlineReminders') ?? true;
     _dailySummary = PreferencesHelper.getBool('dailySummary') ?? false;
     final savedKey = PreferencesHelper.getString('reminderTime') ?? '30min';
@@ -216,6 +219,41 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       description: Text('Master toggle for all notifications'),
                       toggled: _notificationsEnabled,
                       onChanged: (value) => _handleNotificationToggle(value),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SettingSection(
+                  styleTile: true,
+                  title: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      bottom: 8,
+                      top: 16,
+                    ),
+                    child: Text(
+                      'Tasks',
+                      style: TextStyle(
+                        color: colorTheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  tiles: [
+                    SettingSwitchTile(
+                      icon: iconContainer(
+                        Symbols.check_circle,
+                        isLight ? Color(0xffc2ebd3) : Color(0xff2d4d3a),
+                        isLight ? Color(0xff2d4d3a) : Color(0xffc2ebd3),
+                      ),
+                      title: Text('Task Completion Sound'),
+                      description: Text('Play sound when completing task'),
+                      toggled: _taskCompletionSound,
+                      onChanged: (value) {
+                        setState(() => _taskCompletionSound = value);
+                        PreferencesHelper.setBool('taskCompletionSound', value);
+                      },
                     ),
                   ],
                 ),
