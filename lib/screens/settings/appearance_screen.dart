@@ -10,7 +10,8 @@ import '../../models/theme_preset.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 
 class AppearanceScreen extends StatelessWidget {
-  const AppearanceScreen({super.key});
+  final bool isEmbedded;
+  const AppearanceScreen({super.key, this.isEmbedded = false});
 
   @override
   Widget build(BuildContext context) {
@@ -26,23 +27,30 @@ class AppearanceScreen extends StatelessWidget {
     final currentMode = themeController.themeMode;
 
     return Scaffold(
-      backgroundColor: colorTheme.surfaceContainer,
+      backgroundColor: isEmbedded
+          ? Colors.transparent
+          : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
             title: Text('Appearance'),
-            titleSpacing: 0,
-            leadingWidth: 80,
-            leading: Center(
-              child: IconButtonM3E(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Symbols.arrow_back),
-                tooltip: 'Back',
-                variant: IconButtonM3EVariant.tonal,
-                width: IconButtonM3EWidth.wide,
-              ),
-            ),
-            backgroundColor: colorTheme.surfaceContainer,
+            titleSpacing: isEmbedded ? 16 : 0,
+            leadingWidth: isEmbedded ? 0 : 80,
+            automaticallyImplyLeading: !isEmbedded,
+            leading: isEmbedded
+                ? null
+                : Center(
+                    child: IconButtonM3E(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Symbols.arrow_back),
+                      tooltip: 'Back',
+                      variant: IconButtonM3EVariant.tonal,
+                      width: IconButtonM3EWidth.wide,
+                    ),
+                  ),
+            backgroundColor: isEmbedded
+                ? Colors.transparent
+                : colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,
           ),

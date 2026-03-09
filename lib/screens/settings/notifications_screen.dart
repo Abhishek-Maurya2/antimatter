@@ -11,7 +11,8 @@ import '../../main.dart';
 import '../settings_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({super.key});
+  final bool isEmbedded;
+  const NotificationsScreen({super.key, this.isEmbedded = false});
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -168,23 +169,30 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Scaffold(
-      backgroundColor: colorTheme.surfaceContainer,
+      backgroundColor: widget.isEmbedded
+          ? Colors.transparent
+          : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
             title: Text('Notifications'),
-            titleSpacing: 0,
-            leadingWidth: 80,
-            leading: Center(
-              child: IconButtonM3E(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Symbols.arrow_back),
-                tooltip: 'Back',
-                variant: IconButtonM3EVariant.tonal,
-                width: IconButtonM3EWidth.wide,
-              ),
-            ),
-            backgroundColor: colorTheme.surfaceContainer,
+            titleSpacing: widget.isEmbedded ? 16 : 0,
+            leadingWidth: widget.isEmbedded ? 0 : 80,
+            automaticallyImplyLeading: !widget.isEmbedded,
+            leading: widget.isEmbedded
+                ? null
+                : Center(
+                    child: IconButtonM3E(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Symbols.arrow_back),
+                      tooltip: 'Back',
+                      variant: IconButtonM3EVariant.tonal,
+                      width: IconButtonM3EWidth.wide,
+                    ),
+                  ),
+            backgroundColor: widget.isEmbedded
+                ? Colors.transparent
+                : colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,
           ),

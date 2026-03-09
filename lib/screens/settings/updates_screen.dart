@@ -15,7 +15,8 @@ const String _githubOwner = 'Abhishek-Maurya2';
 const String _githubRepo = 'antimatter';
 
 class UpdatesScreen extends StatefulWidget {
-  const UpdatesScreen({super.key});
+  final bool isEmbedded;
+  const UpdatesScreen({super.key, this.isEmbedded = false});
 
   @override
   State<UpdatesScreen> createState() => _UpdatesScreenState();
@@ -338,24 +339,31 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
     final colorTheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorTheme.surfaceContainer,
+      backgroundColor: widget.isEmbedded
+          ? Colors.transparent
+          : colorTheme.surfaceContainer,
       bottomNavigationBar: _buildBottomButtonGroup(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
             title: Text('Updates'),
-            titleSpacing: 0,
-            leadingWidth: 80,
-            leading: Center(
-              child: IconButtonM3E(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Symbols.arrow_back),
-                tooltip: 'Back',
-                variant: IconButtonM3EVariant.tonal,
-                width: IconButtonM3EWidth.wide,
-              ),
-            ),
-            backgroundColor: colorTheme.surfaceContainer,
+            titleSpacing: widget.isEmbedded ? 16 : 0,
+            leadingWidth: widget.isEmbedded ? 0 : 80,
+            automaticallyImplyLeading: !widget.isEmbedded,
+            leading: widget.isEmbedded
+                ? null
+                : Center(
+                    child: IconButtonM3E(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Symbols.arrow_back),
+                      tooltip: 'Back',
+                      variant: IconButtonM3EVariant.tonal,
+                      width: IconButtonM3EWidth.wide,
+                    ),
+                  ),
+            backgroundColor: widget.isEmbedded
+                ? Colors.transparent
+                : colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,
           ),

@@ -10,7 +10,8 @@ import '../../models/task.dart';
 import '../settings_screen.dart';
 
 class BackupRestoreScreen extends StatefulWidget {
-  const BackupRestoreScreen({super.key});
+  final bool isEmbedded;
+  const BackupRestoreScreen({super.key, this.isEmbedded = false});
 
   @override
   State<BackupRestoreScreen> createState() => _BackupRestoreScreenState();
@@ -54,23 +55,30 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
     final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Scaffold(
-      backgroundColor: colorTheme.surfaceContainer,
+      backgroundColor: widget.isEmbedded
+          ? Colors.transparent
+          : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
             title: Text('Backup & Restore'),
-            titleSpacing: 0,
-            leadingWidth: 80,
-            leading: Center(
-              child: IconButtonM3E(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Symbols.arrow_back),
-                tooltip: 'Back',
-                variant: IconButtonM3EVariant.tonal,
-                width: IconButtonM3EWidth.wide,
-              ),
-            ),
-            backgroundColor: colorTheme.surfaceContainer,
+            titleSpacing: widget.isEmbedded ? 16 : 0,
+            leadingWidth: widget.isEmbedded ? 0 : 80,
+            automaticallyImplyLeading: !widget.isEmbedded,
+            leading: widget.isEmbedded
+                ? null
+                : Center(
+                    child: IconButtonM3E(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Symbols.arrow_back),
+                      tooltip: 'Back',
+                      variant: IconButtonM3EVariant.tonal,
+                      width: IconButtonM3EWidth.wide,
+                    ),
+                  ),
+            backgroundColor: widget.isEmbedded
+                ? Colors.transparent
+                : colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,
           ),

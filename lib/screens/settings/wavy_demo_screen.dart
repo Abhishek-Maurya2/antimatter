@@ -4,7 +4,8 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 
 class WavyDemoScreen extends StatefulWidget {
-  const WavyDemoScreen({super.key});
+  final bool isEmbedded;
+  const WavyDemoScreen({super.key, this.isEmbedded = false});
 
   @override
   State<WavyDemoScreen> createState() => _WavyDemoScreenState();
@@ -21,23 +22,30 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: colorTheme.surfaceContainer,
+        backgroundColor: widget.isEmbedded
+            ? Colors.transparent
+            : colorTheme.surfaceContainer,
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             SliverAppBar.large(
               title: const Text('Wavy Indicators'),
-              titleSpacing: 0,
-              leadingWidth: 80,
-              leading: Center(
-              child: IconButtonM3E(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Symbols.arrow_back),
-                tooltip: 'Back',
-                variant: IconButtonM3EVariant.tonal,
-                width: IconButtonM3EWidth.wide,
-              ),
-            ),
-              backgroundColor: colorTheme.surfaceContainer,
+              titleSpacing: widget.isEmbedded ? 16 : 0,
+              leadingWidth: widget.isEmbedded ? 0 : 80,
+              automaticallyImplyLeading: !widget.isEmbedded,
+              leading: widget.isEmbedded
+                  ? null
+                  : Center(
+                      child: IconButtonM3E(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Symbols.arrow_back),
+                        tooltip: 'Back',
+                        variant: IconButtonM3EVariant.tonal,
+                        width: IconButtonM3EWidth.wide,
+                      ),
+                    ),
+              backgroundColor: widget.isEmbedded
+                  ? Colors.transparent
+                  : colorTheme.surfaceContainer,
               scrolledUnderElevation: 1,
               expandedHeight: 160, // slightly taller for tabs
               pinned: true,

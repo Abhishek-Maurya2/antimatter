@@ -146,7 +146,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return NavigationRailM3E(
-      type: _railType,
+      type: MediaQuery.sizeOf(context).width < 1000
+          ? NavigationRailM3EType.alwaysCollapse
+          : _railType,
       modality: NavigationRailM3EModality.standard,
       selectedIndex: railSelectedIndex,
       onDestinationSelected: (index) {

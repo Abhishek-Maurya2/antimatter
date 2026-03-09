@@ -412,7 +412,7 @@ class TaskScreenState extends State<TaskScreen> {
         children: [
           Expanded(child: taskListContent),
           Container(
-            width: 350,
+            width: 400,
             decoration: BoxDecoration(
               color: colorTheme.surfaceContainerHigh,
               border: Border(

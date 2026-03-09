@@ -8,7 +8,8 @@ import '../../utils/preferences_helper.dart';
 import '../settings_screen.dart';
 
 class SessionsScreen extends StatefulWidget {
-  const SessionsScreen({super.key});
+  final bool isEmbedded;
+  const SessionsScreen({super.key, this.isEmbedded = false});
 
   @override
   State<SessionsScreen> createState() => _SessionsScreenState();
@@ -39,23 +40,30 @@ class _SessionsScreenState extends State<SessionsScreen> {
     final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Scaffold(
-      backgroundColor: colorTheme.surfaceContainer,
+      backgroundColor: widget.isEmbedded
+          ? Colors.transparent
+          : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
             title: Text('Sessions'),
-            titleSpacing: 0,
-            leadingWidth: 80,
-            leading: Center(
-              child: IconButtonM3E(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Symbols.arrow_back),
-                tooltip: 'Back',
-                variant: IconButtonM3EVariant.tonal,
-                width: IconButtonM3EWidth.wide,
-              ),
-            ),
-            backgroundColor: colorTheme.surfaceContainer,
+            titleSpacing: widget.isEmbedded ? 16 : 0,
+            leadingWidth: widget.isEmbedded ? 0 : 80,
+            automaticallyImplyLeading: !widget.isEmbedded,
+            leading: widget.isEmbedded
+                ? null
+                : Center(
+                    child: IconButtonM3E(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Symbols.arrow_back),
+                      tooltip: 'Back',
+                      variant: IconButtonM3EVariant.tonal,
+                      width: IconButtonM3EWidth.wide,
+                    ),
+                  ),
+            backgroundColor: widget.isEmbedded
+                ? Colors.transparent
+                : colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,
           ),
