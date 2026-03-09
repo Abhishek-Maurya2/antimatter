@@ -8,6 +8,7 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetPlugin
+import es.antonborri.home_widget.HomeWidgetBackgroundIntent
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -59,6 +60,13 @@ class TasksWidgetReceiver : AppWidgetProvider() {
         
         views.setOnClickPendingIntent(R.id.widget_title, pendingIntent)
         views.setOnClickPendingIntent(R.id.widget_empty_view, pendingIntent)
+
+        // Set pending intent template for list items
+        val backgroundIntentTemplate = HomeWidgetBackgroundIntent.getBroadcast(
+            context,
+            Uri.parse("orches://task")
+        )
+        views.setPendingIntentTemplate(R.id.widget_task_list, backgroundIntentTemplate)
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views)

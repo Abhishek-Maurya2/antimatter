@@ -12,6 +12,7 @@ import 'screens/loading_screen.dart';
 import 'screens/home_screen.dart';
 import 'models/task.dart';
 import 'services/home_widget_service.dart';
+import 'package:home_widget/home_widget.dart';
 import 'services/supabase_sync_service.dart';
 import 'services/notification_service.dart';
 
@@ -56,6 +57,9 @@ void main() async {
 
   // Initial update
   HomeWidgetService.updateTasksWidget(tasksBox.values.toList());
+
+  // Register the background callback for the widget checkbox
+  HomeWidget.registerInteractivityCallback(interactiveCallback);
 
   final themeController = ThemeController();
   await themeController.initialize();

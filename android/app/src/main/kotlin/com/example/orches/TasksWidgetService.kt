@@ -2,6 +2,7 @@ package com.example.orches
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import es.antonborri.home_widget.HomeWidgetPlugin
@@ -51,12 +52,19 @@ class TasksRemoteViewsFactory(private val context: Context) : RemoteViewsService
         
         try {
             val taskObj = tasksArray.getJSONObject(position)
+            val id = taskObj.optString("id", "")
             val title = taskObj.optString("title", "")
             views.setTextViewText(R.id.task_title, title)
             
             // Allow launching app from list item click
             val fillInIntent = Intent()
+            fillInIntent.data = Uri.parse("orches://task?id=$id")
             views.setOnClickFillInIntent(R.id.widget_task_item_root, fillInIntent)
+            
+            // Action for the checkbox
+            val checkIntent = Intent()
+            checkIntent.data = Uri.parse("orches://check?id=$id")
+            views.setOnClickFillInIntent(R.id.task_checkbox_img, checkIntent)
             
         } catch (e: JSONException) {
             e.printStackTrace()
