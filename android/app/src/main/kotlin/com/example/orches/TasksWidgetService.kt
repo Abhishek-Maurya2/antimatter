@@ -2,13 +2,11 @@ package com.example.orches
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import es.antonborri.home_widget.HomeWidgetPlugin
 import org.json.JSONArray
 import org.json.JSONException
-import org.json.JSONObject
 
 class TasksWidgetService : RemoteViewsService() {
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
@@ -56,15 +54,12 @@ class TasksRemoteViewsFactory(private val context: Context) : RemoteViewsService
             val title = taskObj.optString("title", "")
             views.setTextViewText(R.id.task_title, title)
             
-            // Allow launching app from list item click
-            val fillInIntent = Intent()
-            fillInIntent.data = Uri.parse("orches://task?id=$id")
-            views.setOnClickFillInIntent(R.id.widget_task_item_root, fillInIntent)
-            
-            // Action for the checkbox
-            val checkIntent = Intent()
-            checkIntent.data = Uri.parse("orches://check?id=$id")
-            views.setOnClickFillInIntent(R.id.task_checkbox_img, checkIntent)
+            // Fill-in intent for checkbox container
+            // This merges with the PendingIntentTemplate set in the receiver
+            val fillInIntent = Intent().apply {
+                putExtra(TasksWidgetReceiver.EXTRA_TASK_ID, id)
+            }
+            views.setOnClickFillInIntent(R.id.task_checkbox_container, fillInIntent)
             
         } catch (e: JSONException) {
             e.printStackTrace()
