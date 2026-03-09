@@ -91,14 +91,61 @@ class TaskTile extends SettingTile {
       contentPadding: const EdgeInsets.only(right: 16, left: 16),
       enabled: enabled,
       leading: icon,
-      title: Text(
-        titleText,
-        style: TextStyle(
-          decoration: checked ? TextDecoration.lineThrough : null,
-          color: checked ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
-        ),
+      title: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              titleText,
+              style: TextStyle(
+                decoration: checked ? TextDecoration.lineThrough : null,
+                color: checked ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
+              ),
+            ),
+          ),
+          if (deadlineText != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: checked
+                      ? Colors.transparent
+                      : (isDeadlineMissed ? colorScheme.errorContainer : colorScheme.tertiaryContainer),
+                  borderRadius: BorderRadius.circular(20),
+                  border: checked ? Border.all(color: colorScheme.outlineVariant) : null,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.schedule,
+                      size: 14,
+                      color: checked
+                          ? colorScheme.onSurfaceVariant
+                          : (isDeadlineMissed ? colorScheme.onErrorContainer : colorScheme.onTertiaryContainer),
+                    ),
+                    const SizedBox(width: 4),
+                    DefaultTextStyle(
+                      style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                            decoration: checked ? TextDecoration.lineThrough : null,
+                            color: checked
+                                ? colorScheme.onSurfaceVariant
+                                : (isDeadlineMissed ? colorScheme.onErrorContainer : colorScheme.onTertiaryContainer),
+                          ),
+                      child: Text(deadlineText!),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
-      subtitle: (descriptionText != null || deadlineText != null || labels.isNotEmpty)
+      subtitle: (descriptionText != null || labels.isNotEmpty)
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -139,47 +186,6 @@ class TaskTile extends SettingTile {
                           ),
                         );
                       }).toList(),
-                    ),
-                  ),
-                if (deadlineText != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: checked
-                            ? Colors.transparent
-                            : (isDeadlineMissed ? colorScheme.errorContainer : colorScheme.tertiaryContainer),
-                        borderRadius: BorderRadius.circular(20),
-                        border: checked ? Border.all(color: colorScheme.outlineVariant) : null,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.schedule,
-                            size: 14,
-                            color: checked
-                                ? colorScheme.onSurfaceVariant
-                                : (isDeadlineMissed ? colorScheme.onErrorContainer : colorScheme.onTertiaryContainer),
-                          ),
-                          const SizedBox(width: 4),
-                          DefaultTextStyle(
-                            style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                                  decoration: checked ? TextDecoration.lineThrough : null,
-                                  color: checked
-                                      ? colorScheme.onSurfaceVariant
-                                      : (isDeadlineMissed
-                                          ? colorScheme.onErrorContainer
-                                          : colorScheme.onTertiaryContainer),
-                                ),
-                            child: Text(deadlineText!),
-                          ),
-                        ],
-                      ),
                     ),
                   ),
               ],
