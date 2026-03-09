@@ -151,7 +151,7 @@ class _SessionScreenState extends State<SessionScreen>
           alignment: Alignment.center,
           children: [
             Text(entry.value, style: style),
-            if (!isLast) Positioned(right: -34, child: Text(':', style: style)),
+            if (!isLast) Positioned(right: -40, child: Text(':', style: style)),
           ],
         );
       }).toList(),
