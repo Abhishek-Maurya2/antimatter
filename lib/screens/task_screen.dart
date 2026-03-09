@@ -13,6 +13,8 @@ import 'package:orches/utils/preferences_helper.dart';
 import 'package:orches/main.dart';
 import 'package:orches/services/notification_service.dart';
 import 'package:orches/services/audio_service.dart';
+import 'package:provider/provider.dart';
+import 'package:orches/notifiers/settings_notifier.dart';
 
 enum TaskSortOption { newest, oldest, dueDate }
 
@@ -442,6 +444,21 @@ class TaskScreenState extends State<TaskScreen> {
     ColorScheme colorTheme,
     bool isExpanded,
   ) {
+    final sortCompletedNewest = context
+        .watch<SettingsNotifier>()
+        .sortCompletedNewest;
+
+    List<Task> completedTasks = _sortedTasks
+        .where((t) => t.isCompleted)
+        .toList();
+    if (sortCompletedNewest) {
+      completedTasks.sort((a, b) {
+        final aTime = a.completedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bTime = b.completedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bTime.compareTo(aTime);
+      });
+    }
+
     return Stack(
       children: [
         CustomRefreshIndicator(
@@ -891,7 +908,7 @@ class TaskScreenState extends State<TaskScreen> {
                           ),
                           SizedBox(height: 16),
                         ],
-                        if (_sortedTasks.where((t) => t.isCompleted).isNotEmpty)
+                        if (completedTasks.isNotEmpty)
                           SettingSection(
                             title: Padding(
                               padding: const EdgeInsets.only(
@@ -907,8 +924,7 @@ class TaskScreenState extends State<TaskScreen> {
                               ),
                             ),
                             styleTile: true,
-                            tiles: _sortedTasks
-                                .where((t) => t.isCompleted)
+                            tiles: completedTasks
                                 .take(_completedTasksLimit)
                                 .map((task) {
                                   return TaskTile(
