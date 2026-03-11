@@ -54,7 +54,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
     return Scaffold(
       backgroundColor: widget.isEmbedded
-          ? Colors.transparent
+          ? colorTheme.surfaceContainerLow
           : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
@@ -75,7 +75,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     ),
                   ),
             backgroundColor: widget.isEmbedded
-                ? Colors.transparent
+                ? colorTheme.surfaceContainerLow
                 : colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,

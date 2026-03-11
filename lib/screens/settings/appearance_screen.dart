@@ -28,7 +28,7 @@ class AppearanceScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: isEmbedded
-          ? Colors.transparent
+          ? colorTheme.surfaceContainerLow
           : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
@@ -49,7 +49,7 @@ class AppearanceScreen extends StatelessWidget {
                     ),
                   ),
             backgroundColor: isEmbedded
-                ? Colors.transparent
+                ? colorTheme.surfaceContainerLow
                 : colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,

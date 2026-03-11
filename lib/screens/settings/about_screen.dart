@@ -38,7 +38,7 @@ class _AboutScreenState extends State<AboutScreen> {
 
     return Scaffold(
       backgroundColor: widget.isEmbedded
-          ? Colors.transparent
+          ? colorTheme.surfaceContainerLow
           : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
@@ -59,7 +59,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     ),
                   ),
             backgroundColor: widget.isEmbedded
-                ? Colors.transparent
+                ? colorTheme.surfaceContainerLow
                 : colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,

@@ -41,7 +41,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
 
     return Scaffold(
       backgroundColor: widget.isEmbedded
-          ? Colors.transparent
+          ? colorTheme.surfaceContainerLow
           : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
@@ -62,7 +62,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                     ),
                   ),
             backgroundColor: widget.isEmbedded
-                ? Colors.transparent
+                ? colorTheme.surfaceContainerLow
                 : colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,

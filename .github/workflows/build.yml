@@ -1,12 +1,34 @@
-name: Build & Release APK
+name: Build And Release
 
 on:
   push:
     branches: [master]
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  meta:
+    name: Resolve Release Metadata
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release_tag: v${{ steps.version.outputs.version }}-build.${{ github.run_number }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+  build_android:
     name: Build Release APK
+    needs: meta
     runs-on: ubuntu-latest
 
     steps:
@@ -37,22 +59,81 @@ jobs:
       - name: Build Release APK
         run: flutter build apk --release
 
-      - name: Extract version from pubspec.yaml
-        id: version
-        run: |
-          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+  build_windows:
+    name: Build Windows Installer
+    needs: meta
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Enable Windows desktop support
+        run: flutter config --enable-windows-desktop
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build Windows release
+        run: flutter build windows --release
+
+      - name: Compile Windows installer
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.5
+        with:
+          path: packaging/windows/antimatter_installer.iss
+          options: |
+            /DMyAppVersion=${{ needs.meta.outputs.version }}
+
+      - name: Upload Windows installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: build/windows/installer/*.exe
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: [meta, build_android, build_windows]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Android artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: release-assets/android
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: release-assets/windows
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}-build.${{ github.run_number }}
-          name: AntiMatter v${{ steps.version.outputs.version }} (Build ${{ github.run_number }})
+          tag_name: ${{ needs.meta.outputs.release_tag }}
+          name: AntiMatter v${{ needs.meta.outputs.version }} (Build ${{ github.run_number }})
           body: |
             Automated release from commit ${{ github.sha }}
 
             **Changes:** ${{ github.event.head_commit.message }}
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: |
+            release-assets/android/app-release.apk
+            release-assets/windows/*.exe
           draft: false
           prerelease: false
         env:

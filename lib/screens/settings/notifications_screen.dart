@@ -170,7 +170,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     return Scaffold(
       backgroundColor: widget.isEmbedded
-          ? Colors.transparent
+          ? colorTheme.surfaceContainerLow
           : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
@@ -191,7 +191,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ),
                   ),
             backgroundColor: widget.isEmbedded
-                ? Colors.transparent
+                ? colorTheme.surfaceContainerLow
                 : colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,

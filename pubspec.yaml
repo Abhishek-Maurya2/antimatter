@@ -1,7 +1,7 @@
 name: orches
 description: "AntiMatter - A Material 3 Expressive Task Manager App."
 publish_to: 'none'
-version: 2.18.0
+version: 2.19.0
 
 environment:
   sdk: ^3.11.0
@@ -78,6 +78,10 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
+  web:
+    generate: true
+  windows:
+    generate: true
   image_path: "assets/icon/app_icon.png"
   min_sdk_android: 21
 

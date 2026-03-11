@@ -23,7 +23,7 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
       length: 3,
       child: Scaffold(
         backgroundColor: widget.isEmbedded
-            ? Colors.transparent
+            ? colorTheme.surfaceContainerLow
             : colorTheme.surfaceContainer,
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -44,7 +44,7 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
                       ),
                     ),
               backgroundColor: widget.isEmbedded
-                  ? Colors.transparent
+                  ? colorTheme.surfaceContainerLow
                   : colorTheme.surfaceContainer,
               scrolledUnderElevation: 1,
               expandedHeight: 160, // slightly taller for tabs

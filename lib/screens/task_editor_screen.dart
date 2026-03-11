@@ -156,12 +156,16 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
     final colorTheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorTheme.surfaceContainer,
+      backgroundColor: widget.isStandaloneScreen
+          ? colorTheme.surfaceContainer
+          : colorTheme.surfaceContainerHigh,
       appBar: AppBar(
         title: widget.isStandaloneScreen
             ? Text(widget.task == null ? 'New Task' : 'Edit Task')
             : null,
-        backgroundColor: colorTheme.surfaceContainer,
+        backgroundColor: widget.isStandaloneScreen
+            ? colorTheme.surfaceContainer
+            : colorTheme.surfaceContainerHigh,
         leadingWidth: 80,
         leading: Center(
           child: IconButtonM3E(

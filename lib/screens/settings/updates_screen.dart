@@ -340,7 +340,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
 
     return Scaffold(
       backgroundColor: widget.isEmbedded
-          ? Colors.transparent
+          ? colorTheme.surfaceContainerLow
           : colorTheme.surfaceContainer,
       bottomNavigationBar: _buildBottomButtonGroup(),
       body: CustomScrollView(
@@ -362,7 +362,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                     ),
                   ),
             backgroundColor: widget.isEmbedded
-                ? Colors.transparent
+                ? colorTheme.surfaceContainerLow
                 : colorTheme.surfaceContainer,
             scrolledUnderElevation: 1,
             expandedHeight: 120,
