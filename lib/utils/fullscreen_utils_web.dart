@@ -1,6 +1,6 @@
 import 'dart:html' as html;
 
-void toggleFullscreen(bool enable) {
+Future<void> toggleFullscreen(bool enable) async {
   if (enable) {
     html.window.document.documentElement?.requestFullscreen();
   } else {

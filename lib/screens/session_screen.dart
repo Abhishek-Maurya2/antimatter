@@ -64,16 +64,16 @@ class _SessionScreenState extends State<SessionScreen>
           _seconds++;
         });
       });
-      if (_ambientModeEnabled) {
-        _startAmbientTimer();
-        if (kIsWeb) {
-          toggleFullscreen(true);
-        }
-      }
     }
     setState(() {
       _isRunning = !_isRunning;
     });
+    if (_isRunning && _ambientModeEnabled) {
+      _startAmbientTimer();
+      if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
+        toggleFullscreen(true);
+      }
+    }
   }
 
   void _resetTimer() {
@@ -84,7 +84,7 @@ class _SessionScreenState extends State<SessionScreen>
       _seconds = 0;
       _isRunning = false;
     });
-    if (kIsWeb) {
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
       toggleFullscreen(false);
     }
   }
@@ -111,7 +111,7 @@ class _SessionScreenState extends State<SessionScreen>
     _ambientFadeController.forward();
     // Go fullscreen immersive
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    if (kIsWeb) {
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
       toggleFullscreen(true);
     }
   }
@@ -126,7 +126,7 @@ class _SessionScreenState extends State<SessionScreen>
     });
     // Restore system UI
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    if (kIsWeb) {
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
       toggleFullscreen(false);
     }
     // Restart ambient timer if still running
@@ -179,7 +179,7 @@ class _SessionScreenState extends State<SessionScreen>
     _ambientFadeController.dispose();
     // Restore system UI on dispose
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    if (kIsWeb) {
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
       toggleFullscreen(false);
     }
     super.dispose();

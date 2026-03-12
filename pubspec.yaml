@@ -1,7 +1,7 @@
 name: orches
 description: "AntiMatter - A Material 3 Expressive Task Manager App."
 publish_to: 'none'
-version: 3.0.0
+version: 3.0.1
 
 environment:
   sdk: ^3.11.0
@@ -42,6 +42,7 @@ dependencies:
   flutter_local_notifications: ^21.0.0-dev.2
   timezone: ^0.11.0
   audioplayers: ^6.5.1
+  window_manager: ^0.5.1
 
 dev_dependencies:
   flutter_test:
