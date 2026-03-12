@@ -25,7 +25,7 @@ class TaskAdapter extends TypeAdapter<Task> {
       subTasks: (fields[5] as List).cast<Task>(),
       isArchived: fields[6] == null ? false : fields[6] as bool,
       isDeleted: fields[7] == null ? false : fields[7] as bool,
-      labels: fields[8] == null ? [] : (fields[8] as List).cast<String>(),
+      categories: fields[8] == null ? [] : (fields[8] as List).cast<String>(),
       completedAt: fields[9] as DateTime?,
     );
   }
@@ -51,7 +51,7 @@ class TaskAdapter extends TypeAdapter<Task> {
       ..writeByte(7)
       ..write(obj.isDeleted)
       ..writeByte(8)
-      ..write(obj.labels)
+      ..write(obj.categories)
       ..writeByte(9)
       ..write(obj.completedAt);
   }

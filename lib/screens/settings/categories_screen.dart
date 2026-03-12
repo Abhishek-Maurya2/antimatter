@@ -101,7 +101,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           vertical: 14,
                         ),
                         prefixIcon: Icon(
-                          Symbols.label,
+                          Symbols.category,
                           color: colorTheme.onSurfaceVariant,
                         ),
                       ),
@@ -179,7 +179,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             borderRadius: BorderRadius.circular(50),
                           ),
                           child: Icon(
-                            Symbols.label,
+                            Symbols.category,
                             fill: 1,
                             color: colorTheme.onPrimaryContainer,
                             size: 20,

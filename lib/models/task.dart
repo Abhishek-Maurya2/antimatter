@@ -29,7 +29,7 @@ class Task extends HiveObject {
   bool isDeleted;
 
   @HiveField(8, defaultValue: [])
-  List<String> labels;
+  List<String> categories;
 
   @HiveField(9)
   DateTime? completedAt;
@@ -43,7 +43,7 @@ class Task extends HiveObject {
     this.subTasks = const [],
     this.isArchived = false,
     this.isDeleted = false,
-    this.labels = const [],
+    this.categories = const [],
     this.completedAt,
   });
 
@@ -67,11 +67,14 @@ class Task extends HiveObject {
       completedAt: json['completed_at'] != null
           ? DateTime.parse(json['completed_at'] as String).toLocal()
           : null,
-      labels:
-          (json['labels'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          [],
+      categories:
+          (json['categories'] as List<dynamic>?)
+                  ?.map((e) => e as String)
+                  .toList() ??
+              (json['labels'] as List<dynamic>?)
+                  ?.map((e) => e as String)
+                  .toList() ??
+              [],
     );
   }
 
@@ -86,7 +89,7 @@ class Task extends HiveObject {
       'sub_tasks': subTasks.map((t) => t.toJson()).toList(),
       'is_archived': isArchived,
       'is_deleted': isDeleted,
-      'labels': labels,
+      'categories': categories,
       'completed_at': completedAt?.toUtc().toIso8601String(),
     };
   }

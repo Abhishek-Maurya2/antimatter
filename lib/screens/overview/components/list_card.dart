@@ -123,7 +123,7 @@ class ListCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'No upcoming tasks',
+                            'No today tasks',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(color: colorTheme.onSurfaceVariant),
                           ),
@@ -140,7 +140,7 @@ class ListCard extends StatelessWidget {
                       ),
                       itemBuilder: (context, index) {
                         final task = tasks[index];
-                        return _UpcomingTaskItem(task: task);
+                        return _TaskItem(task: task);
                       },
                     ),
             ),
@@ -151,10 +151,10 @@ class ListCard extends StatelessWidget {
   }
 }
 
-class _UpcomingTaskItem extends StatelessWidget {
+class _TaskItem extends StatelessWidget {
   final Task task;
 
-  const _UpcomingTaskItem({required this.task});
+  const _TaskItem({required this.task});
 
   @override
   Widget build(BuildContext context) {
@@ -186,14 +186,14 @@ class _UpcomingTaskItem extends StatelessWidget {
               ),
             ),
           ],
-          // Labels row
-          if (task.labels.isNotEmpty)
+          // Categories row - renamed from Labels
+          if (task.categories.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(left: 18),
+              padding: const EdgeInsets.only(top: 8),
               child: Wrap(
                 spacing: 6,
                 runSpacing: 4,
-                children: task.labels.map((label) {
+                children: task.categories.map((category) {
                   return Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -204,7 +204,7 @@ class _UpcomingTaskItem extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      label,
+                      category,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: colorTheme.primary,
                         fontWeight: FontWeight.w500,
@@ -217,12 +217,6 @@ class _UpcomingTaskItem extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Color _getPriorityColor(BuildContext context) {
-    final colorTheme = Theme.of(context).colorScheme;
-    if (_isOverdue()) return colorTheme.error;
-    return colorTheme.primary;
   }
 
   bool _isOverdue() {

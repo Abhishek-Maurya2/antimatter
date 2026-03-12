@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:orches/models/task.dart';
 import 'package:orches/services/audio_service.dart';
 import 'package:m3e_collection/m3e_collection.dart';
+import 'package:orches/utils/preferences_helper.dart';
 
 class TaskEditorScreen extends StatelessWidget {
   final Task? task;
@@ -45,12 +46,13 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
   late TextEditingController _descriptionController;
   DateTime? _deadline;
   late List<Task> _subTasks;
-  late List<String> _labels;
-  final TextEditingController _labelController = TextEditingController();
+  late List<String> _selectedCategories;
+  List<String> _allCategories = [];
 
   @override
   void initState() {
     super.initState();
+    _loadAllCategories();
     _initFromTask();
   }
 
@@ -63,13 +65,16 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
     }
   }
 
+  void _loadAllCategories() {
+    _allCategories = PreferencesHelper.getStringList('categories') ?? [];
+  }
+
   void _initFromTask() {
     _titleController = TextEditingController(text: widget.task?.title ?? '');
     _descriptionController = TextEditingController(
       text: widget.task?.description ?? '',
     );
     _deadline = widget.task?.deadline;
-    // Deep copy subtasks to avoid mutating original task until save
     _subTasks =
         widget.task?.subTasks
             .map(
@@ -79,20 +84,18 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                 description: e.description,
                 isCompleted: e.isCompleted,
                 deadline: e.deadline,
-                subTasks:
-                    [], // simplified for now, assuming 1 level deep nesting
+                subTasks: [],
               ),
             )
             .toList() ??
         [];
-    _labels = List<String>.from(widget.task?.labels ?? []);
+    _selectedCategories = List<String>.from(widget.task?.categories ?? []);
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _labelController.dispose();
     super.dispose();
   }
 
@@ -107,7 +110,7 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
         isCompleted: widget.task?.isCompleted ?? false,
         deadline: _deadline,
         subTasks: _subTasks,
-        labels: _labels,
+        categories: _selectedCategories,
       );
       widget.onResult(newTask);
     }
@@ -151,6 +154,49 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
     });
   }
 
+  Future<void> _showAddCategoryDialog() async {
+    final controller = TextEditingController();
+    final newCategory = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Add Category'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: const InputDecoration(hintText: 'Category name'),
+            onSubmitted: (value) => Navigator.of(context).pop(value),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (newCategory != null && newCategory.trim().isNotEmpty) {
+      final trimmed = newCategory.trim();
+      if (!_allCategories.contains(trimmed)) {
+        setState(() {
+          _allCategories.add(trimmed);
+          _selectedCategories.add(trimmed);
+        });
+        await PreferencesHelper.setStringList('categories', _allCategories);
+      } else if (!_selectedCategories.contains(trimmed)) {
+        setState(() {
+          _selectedCategories.add(trimmed);
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
@@ -191,7 +237,6 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
               backgroundColor: colorTheme.errorContainer,
               foregroundColor: colorTheme.onErrorContainer,
             ),
-
             const SizedBox(width: 8),
           ],
           IconButtonM3E(
@@ -201,7 +246,6 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
             variant: IconButtonM3EVariant.filled,
             width: IconButtonM3EWidth.wide,
           ),
-
           const SizedBox(width: 8),
         ],
       ),
@@ -210,11 +254,10 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Title
             TextFormField(
               controller: _titleController,
               autofocus: !widget.isStandaloneScreen && widget.task == null,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: 'Task Title',
                 border: InputBorder.none,
@@ -230,10 +273,9 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
               },
             ),
             const SizedBox(height: 8),
-            // Description
             TextFormField(
               controller: _descriptionController,
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
               maxLines: null,
               decoration: InputDecoration(
                 hintText: 'Add details',
@@ -245,7 +287,6 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
               ),
             ),
             const SizedBox(height: 16),
-            // Deadline
             InkWell(
               onTap: _pickDateTime,
               borderRadius: BorderRadius.circular(12),
@@ -273,10 +314,12 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                       const Spacer(),
                       IconButtonM3E(
                         onPressed: () => setState(() => _deadline = null),
-                        icon: Icon(Symbols.close, weight: 500),
+                        icon: const Icon(Symbols.close, weight: 500),
                         tooltip: 'Clear deadline',
                         variant: IconButtonM3EVariant.tonal,
                         width: IconButtonM3EWidth.narrow,
+                        backgroundColor: colorTheme.tertiaryContainer,
+                        foregroundColor: colorTheme.onTertiaryContainer,
                       ),
                     ],
                   ],
@@ -285,76 +328,92 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
             ),
             const Divider(),
             const SizedBox(height: 8),
-            // Labels
+            // Categories
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Symbols.label, color: colorTheme.onSurfaceVariant),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextFormField(
-                    controller: _labelController,
-                    decoration: InputDecoration(
-                      hintText: 'Add a label...',
-                      border: InputBorder.none,
-                      isDense: true,
+                Row(
+                  children: [
+                    Icon(Symbols.category, color: colorTheme.onSurfaceVariant),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Categories',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: colorTheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    onFieldSubmitted: (value) {
-                      if (value.trim().isNotEmpty &&
-                          !_labels.contains(value.trim())) {
-                        setState(() {
-                          _labels.add(value.trim());
-                          _labelController.clear();
-                        });
-                      }
-                    },
-                  ),
+                  ],
                 ),
-                IconButtonM3E(
-                  icon: Icon(
-                    Symbols.add,
-                    color: colorTheme.primary,
-                    weight: 500,
+                Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: IconButtonM3E(
+                    onPressed: _showAddCategoryDialog,
+                    icon: const Icon(Symbols.add_circle),
+                    tooltip: 'add category',
+                    variant: IconButtonM3EVariant.filled,
+                    width: IconButtonM3EWidth.wide,
                   ),
-                  onPressed: () {
-                    final value = _labelController.text;
-                    if (value.trim().isNotEmpty &&
-                        !_labels.contains(value.trim())) {
-                      setState(() {
-                        _labels.add(value.trim());
-                        _labelController.clear();
-                      });
-                    }
-                  },
-                  tooltip: 'Clear deadline',
-                  variant: IconButtonM3EVariant.tonal,
-                  width: IconButtonM3EWidth.narrow,
                 ),
               ],
             ),
-            if (_labels.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 8, left: 40),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: _labels.map((label) {
-                    return InputChip(
-                      label: Text(label),
-                      labelStyle: TextStyle(fontSize: 12),
-                      backgroundColor: colorTheme.secondaryContainer,
-                      deleteIcon: Icon(Symbols.close, size: 16),
-                      onDeleted: () {
-                        setState(() {
-                          _labels.remove(label);
-                        });
-                      },
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.only(left: 40),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+              child: Builder(
+                builder: (context) {
+                    final sortedCategories = [
+                      ..._allCategories.where(
+                        (c) => _selectedCategories.contains(c),
+                      ),
+                      ..._allCategories.where(
+                        (c) => !_selectedCategories.contains(c),
+                      ),
+                    ];
+
+                    final actions = sortedCategories
+                        .map(
+                          (category) =>
+                              _buildCategoryAction(category, colorTheme),
+                        )
+                        .toList();
+
+                    if (actions.isEmpty) return const SizedBox.shrink();
+
+                    // Split actions into two rows
+                    final half = (actions.length / 2).ceil();
+                    final row1 = actions.take(half).toList();
+                    final row2 = actions.skip(half).toList();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ButtonGroupM3E(
+                          type: ButtonGroupM3EType.connected,
+                          size: ButtonGroupM3ESize.sm,
+                          style: ButtonM3EStyle.tonal,
+                          actions: row1,
+                        ),
+                        if (row2.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          ButtonGroupM3E(
+                            type: ButtonGroupM3EType.connected,
+                            size: ButtonGroupM3ESize.sm,
+                            style: ButtonM3EStyle.tonal,
+                            actions: row2,
+                          ),
+                        ],
+                      ],
                     );
-                  }).toList(),
+                  },
                 ),
               ),
+            ),
             const Divider(),
             const SizedBox(height: 8),
-            // Subtasks Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -378,7 +437,6 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                 ),
               ],
             ),
-            // Subtasks List
             ..._subTasks.asMap().entries.map((entry) {
               final index = entry.key;
               final subTask = entry.value;
@@ -401,7 +459,7 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                     Expanded(
                       child: TextFormField(
                         initialValue: subTask.title,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           hintText: 'Subtask title',
                           border: InputBorder.none,
                           isDense: true,
@@ -415,6 +473,8 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                       icon: const Icon(Symbols.close, size: 18, weight: 600),
                       variant: IconButtonM3EVariant.tonal,
                       width: IconButtonM3EWidth.narrow,
+                      backgroundColor: colorTheme.tertiaryContainer,
+                      foregroundColor: colorTheme.onTertiaryContainer,
                       onPressed: () {
                         setState(() {
                           _subTasks.removeAt(index);
@@ -429,6 +489,27 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
           ],
         ),
       ),
+    );
+  }
+
+  ButtonGroupM3EAction _buildCategoryAction(
+    String category,
+    ColorScheme colorTheme,
+  ) {
+    final isSelected = _selectedCategories.contains(category);
+    return ButtonGroupM3EAction(
+      label: Text(category),
+      selected: isSelected,
+      onPressed: () {
+        setState(() {
+          if (!isSelected) {
+            _selectedCategories.add(category);
+          } else {
+            _selectedCategories.remove(category);
+          }
+        });
+      },
+      style: isSelected ? ButtonM3EStyle.filled : ButtonM3EStyle.tonal,
     );
   }
 }

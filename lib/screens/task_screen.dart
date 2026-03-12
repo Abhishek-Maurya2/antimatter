@@ -42,9 +42,9 @@ class TaskScreenState extends State<TaskScreen> {
   List<Task> _selectedTasksForToolbar = [];
   List<Task> _previousTasksForToolbar =
       []; // Used to keep the toolbar rendered while it animates out
-  // Tasks sub-filter: 0=All, 1=Today, 2=Upcoming, 3=Completed, 4=Labels, 5=Archive, 6=Trash
+  // Tasks sub-filter: 0=All, 1=Today, 2=Completed, 3=Categories, 4=Archive, 5=Trash
   int _taskSubFilter = 0;
-  String? _selectedLabelFilter;
+  String? _selectedCategoryFilter;
   Task? _editingTask;
   bool _isEditingNewTask = false;
   final TextEditingController _searchController = TextEditingController();
@@ -237,14 +237,14 @@ class TaskScreenState extends State<TaskScreen> {
     await _autoMoveOldCompletedTasksToTrash();
   }
 
-  List<String> get _uniqueLabels {
-    final Set<String> labels = {};
+  List<String> get _uniqueCategories {
+    final Set<String> categories = {};
     for (final task in _tasksBox.values) {
       if (!task.isDeleted) {
-        labels.addAll(task.labels);
+        categories.addAll(task.categories);
       }
     }
-    final sorted = labels.toList();
+    final sorted = categories.toList();
     sorted.sort();
     return sorted;
   }
@@ -261,13 +261,13 @@ class TaskScreenState extends State<TaskScreen> {
         final descMatch = (task.description ?? '').toLowerCase().contains(
           query,
         );
-        final labelMatch = task.labels.any(
-          (l) => l.toLowerCase().contains(query),
+        final categoryMatch = task.categories.any(
+          (c) => c.toLowerCase().contains(query),
         );
-        if (!titleMatch && !descMatch && !labelMatch) return false;
+        if (!titleMatch && !descMatch && !categoryMatch) return false;
       }
 
-      if (_taskSubFilter == 6) {
+      if (_taskSubFilter == 5) {
         // Trash
         return task.isDeleted;
       }
@@ -286,23 +286,15 @@ class TaskScreenState extends State<TaskScreen> {
             task.deadline!.day,
           );
           return taskDate.isAtSameMomentAs(today);
-        case 2: // Upcoming
-          if (task.isArchived || task.deadline == null) return false;
-          final taskDate = DateTime(
-            task.deadline!.year,
-            task.deadline!.month,
-            task.deadline!.day,
-          );
-          return taskDate.isAfter(today);
-        case 3: // Completed
+        case 2: // Completed
           return task.isCompleted && !task.isArchived;
-        case 4: // Labels
-          if (_selectedLabelFilter != null) {
-            return task.labels.contains(_selectedLabelFilter) &&
+        case 3: // Categories
+          if (_selectedCategoryFilter != null) {
+            return task.categories.contains(_selectedCategoryFilter) &&
                 !task.isArchived;
           }
-          return task.labels.isNotEmpty && !task.isArchived;
-        case 5: // Archive
+          return task.categories.isNotEmpty && !task.isArchived;
+        case 4: // Archive
           return task.isArchived;
         default:
           return !task.isArchived;
@@ -737,7 +729,7 @@ class TaskScreenState extends State<TaskScreen> {
                             ),
                           ),
                         ),
-                        if (_taskSubFilter == 4)
+                        if (_taskSubFilter == 3) // Categories index
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16.0,
@@ -748,38 +740,38 @@ class TaskScreenState extends State<TaskScreen> {
                               child: Row(
                                 children: [
                                   ChoiceChip(
-                                    label: Text('All Labeled'),
-                                    selected: _selectedLabelFilter == null,
+                                    label: const Text('All Categories'),
+                                    selected: _selectedCategoryFilter == null,
                                     onSelected: (selected) {
                                       if (selected) {
                                         setState(() {
-                                          _selectedLabelFilter = null;
+                                          _selectedCategoryFilter = null;
                                         });
                                       }
                                     },
                                     selectedColor:
                                         colorTheme.secondaryContainer,
                                     labelStyle: TextStyle(
-                                      color: _selectedLabelFilter == null
+                                      color: _selectedCategoryFilter == null
                                           ? colorTheme.onSecondaryContainer
                                           : colorTheme.onSurface,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  ..._uniqueLabels.map((label) {
+                                  ..._uniqueCategories.map((category) {
                                     final isSelected =
-                                        _selectedLabelFilter == label;
+                                        _selectedCategoryFilter == category;
                                     return Padding(
                                       padding: const EdgeInsets.only(
                                         right: 8.0,
                                       ),
                                       child: ChoiceChip(
-                                        label: Text(label),
+                                        label: Text(category),
                                         selected: isSelected,
                                         onSelected: (selected) {
                                           setState(() {
-                                            _selectedLabelFilter = selected
-                                                ? label
+                                            _selectedCategoryFilter = selected
+                                                ? category
                                                 : null;
                                           });
                                         },
@@ -824,7 +816,7 @@ class TaskScreenState extends State<TaskScreen> {
                                         task.description?.isNotEmpty == true
                                         ? task.description
                                         : null,
-                                    labels: task.labels,
+                                    labels: task.categories, // Changed here
                                     isDeadlineMissed:
                                         task.deadline != null &&
                                         task.deadline!.isBefore(DateTime.now()),
@@ -906,7 +898,7 @@ class TaskScreenState extends State<TaskScreen> {
                                 })
                                 .toList(),
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                         ],
                         if (completedTasks.isNotEmpty)
                           SettingSection(
@@ -933,7 +925,7 @@ class TaskScreenState extends State<TaskScreen> {
                                         task.description?.isNotEmpty == true
                                         ? task.description
                                         : null,
-                                    labels: task.labels,
+                                    labels: task.categories, // Changed here
                                     deadlineText: task.deadline != null
                                         ? formatDeadline(task.deadline)
                                         : null,
@@ -1013,11 +1005,11 @@ class TaskScreenState extends State<TaskScreen> {
                                 .toList(),
                           ),
                         if (_isLoadingMoreCompletedTasks)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 24.0),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24.0),
                             child: Center(child: ExpressiveLoadingIndicator()),
                           ),
-                        SizedBox(height: 125),
+                        const SizedBox(height: 125),
                       ],
                     ),
                   ),
@@ -1036,136 +1028,136 @@ class TaskScreenState extends State<TaskScreen> {
             alignment: Alignment.bottomCenter,
             child:
                 _selectedTasksForToolbar.isNotEmpty ||
-                    _previousTasksForToolbar.isNotEmpty
-                ? TaskFloatingToolbar(
-                    tasks: _selectedTasksForToolbar.isNotEmpty
-                        ? _selectedTasksForToolbar
-                        : _previousTasksForToolbar,
-                    colorTheme: colorTheme,
-                    onComplete: () async {
-                      final tasksToComplete = List<Task>.from(
-                        _selectedTasksForToolbar,
-                      );
-                      if (tasksToComplete.isEmpty) return;
+                        _previousTasksForToolbar.isNotEmpty
+                    ? TaskFloatingToolbar(
+                        tasks: _selectedTasksForToolbar.isNotEmpty
+                            ? _selectedTasksForToolbar
+                            : _previousTasksForToolbar,
+                        colorTheme: colorTheme,
+                        onComplete: () async {
+                          final tasksToComplete = List<Task>.from(
+                            _selectedTasksForToolbar,
+                          );
+                          if (tasksToComplete.isEmpty) return;
 
-                      final allCompleted = tasksToComplete.every(
-                        (t) => t.isCompleted,
-                      );
-                      final newState = !allCompleted;
+                          final allCompleted = tasksToComplete.every(
+                            (t) => t.isCompleted,
+                          );
+                          final newState = !allCompleted;
 
-                      for (final task in tasksToComplete) {
-                        setState(() {
-                          task.isCompleted = newState;
-                        });
-                        await _setTaskCompleted(task, newState);
-                      }
+                          for (final task in tasksToComplete) {
+                            setState(() {
+                              task.isCompleted = newState;
+                            });
+                            await _setTaskCompleted(task, newState);
+                          }
 
-                      await _autoMoveOldCompletedTasksToTrash();
+                          await _autoMoveOldCompletedTasksToTrash();
 
-                      _clearSelection();
-                    },
-                    onEdit: () async {
-                      if (_selectedTasksForToolbar.length != 1) return;
-                      final taskToEdit = _selectedTasksForToolbar.first;
+                          _clearSelection();
+                        },
+                        onEdit: () async {
+                          if (_selectedTasksForToolbar.length != 1) return;
+                          final taskToEdit = _selectedTasksForToolbar.first;
 
-                      _clearSelection();
+                          _clearSelection();
 
-                      // Wait for animation
-                      await Future.delayed(const Duration(milliseconds: 200));
+                          // Wait for animation
+                          await Future.delayed(const Duration(milliseconds: 200));
 
-                      if (isExpanded) {
-                        setState(() {
-                          _editingTask = taskToEdit;
-                          _isEditingNewTask = false;
-                        });
-                      } else {
-                        final updatedTask = await Navigator.of(context)
-                            .push<dynamic>(
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    TaskEditorScreen(task: taskToEdit),
-                              ),
-                            );
-                        if (updatedTask != null) {
-                          setState(() {
-                            _editingTask = taskToEdit;
-                            _isEditingNewTask = false;
-                          });
-                          _handleTaskResult(updatedTask);
-                        }
-                      }
-                    },
-                    onDelete: () async {
-                      final tasksToDelete = List<Task>.from(
-                        _selectedTasksForToolbar,
-                      );
-                      if (tasksToDelete.isEmpty) return;
-
-                      for (final task in tasksToDelete) {
-                        if (task.isDeleted) {
-                          setState(() {
-                            final index = _tasks.indexWhere(
-                              (t) => t.id == task.id,
-                            );
-                            if (index != -1) {
-                              _tasks.removeAt(index);
+                          if (isExpanded) {
+                            setState(() {
+                              _editingTask = taskToEdit;
+                              _isEditingNewTask = false;
+                            });
+                          } else {
+                            final updatedTask = await Navigator.of(context)
+                                .push<dynamic>(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        TaskEditorScreen(task: taskToEdit),
+                                  ),
+                                );
+                            if (updatedTask != null) {
+                              setState(() {
+                                _editingTask = taskToEdit;
+                                _isEditingNewTask = false;
+                              });
+                              _handleTaskResult(updatedTask);
                             }
-                          });
-                          await _tasksBox.delete(task.id);
-                          await syncService.deleteTask(task.id);
-                        } else {
-                          setState(() {
-                            task.isDeleted = true;
-                          });
-                          await task.save();
-                          await syncService.pushTask(task);
-                        }
-                      }
+                          }
+                        },
+                        onDelete: () async {
+                          final tasksToDelete = List<Task>.from(
+                            _selectedTasksForToolbar,
+                          );
+                          if (tasksToDelete.isEmpty) return;
 
-                      _clearSelection();
-                    },
-                    onArchive: () async {
-                      final tasksToArchive = List<Task>.from(
-                        _selectedTasksForToolbar,
-                      );
-                      if (tasksToArchive.isEmpty) return;
+                          for (final task in tasksToDelete) {
+                            if (task.isDeleted) {
+                              setState(() {
+                                final index = _tasks.indexWhere(
+                                  (t) => t.id == task.id,
+                                );
+                                if (index != -1) {
+                                  _tasks.removeAt(index);
+                                }
+                              });
+                              await _tasksBox.delete(task.id);
+                              await syncService.deleteTask(task.id);
+                            } else {
+                              setState(() {
+                                task.isDeleted = true;
+                              });
+                              await task.save();
+                              await syncService.pushTask(task);
+                            }
+                          }
 
-                      final allArchived = tasksToArchive.every(
-                        (t) => t.isArchived,
-                      );
-                      final newState = !allArchived;
+                          _clearSelection();
+                        },
+                        onArchive: () async {
+                          final tasksToArchive = List<Task>.from(
+                            _selectedTasksForToolbar,
+                          );
+                          if (tasksToArchive.isEmpty) return;
 
-                      for (final task in tasksToArchive) {
-                        setState(() {
-                          task.isArchived = newState;
-                        });
-                        await task.save();
-                        await syncService.pushTask(task);
-                      }
+                          final allArchived = tasksToArchive.every(
+                            (t) => t.isArchived,
+                          );
+                          final newState = !allArchived;
 
-                      _clearSelection();
-                    },
-                    onRestore: () async {
-                      final tasksToRestore = List<Task>.from(
-                        _selectedTasksForToolbar,
-                      );
-                      if (tasksToRestore.isEmpty) return;
+                          for (final task in tasksToArchive) {
+                            setState(() {
+                              task.isArchived = newState;
+                            });
+                            await task.save();
+                            await syncService.pushTask(task);
+                          }
 
-                      for (final task in tasksToRestore) {
-                        setState(() {
-                          task.isDeleted = false;
-                        });
-                        await task.save();
-                        await syncService.pushTask(task);
-                      }
+                          _clearSelection();
+                        },
+                        onRestore: () async {
+                          final tasksToRestore = List<Task>.from(
+                            _selectedTasksForToolbar,
+                          );
+                          if (tasksToRestore.isEmpty) return;
 
-                      _clearSelection();
-                    },
-                    onClose: () {
-                      _clearSelection();
-                    },
-                  )
-                : const SizedBox.shrink(),
+                          for (final task in tasksToRestore) {
+                            setState(() {
+                              task.isDeleted = false;
+                            });
+                            await task.save();
+                            await syncService.pushTask(task);
+                          }
+
+                          _clearSelection();
+                        },
+                        onClose: () {
+                          _clearSelection();
+                        },
+                      )
+                    : const SizedBox.shrink(),
           ),
         ),
       ],
@@ -1213,7 +1205,7 @@ class TaskScreenState extends State<TaskScreen> {
               ),
             ),
           ),
-          SizedBox(height: 80),
+          const SizedBox(height: 80),
         ],
       ),
     );

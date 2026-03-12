@@ -8,7 +8,7 @@ import 'utils/theme_controller.dart';
 import 'utils/preferences_helper.dart';
 import 'utils/typography_helper.dart';
 import 'notifiers/settings_notifier.dart';
-import 'screens/loading_screen.dart';
+
 import 'screens/home_screen.dart';
 import 'models/task.dart';
 import 'services/home_widget_service.dart';
@@ -198,52 +198,8 @@ class OrchesApp extends StatelessWidget {
             ),
           ),
       themeMode: themeController.themeMode,
-      home: const AppShell(),
+      home: const HomeScreen(),
     );
   }
 }
 
-class AppShell extends StatefulWidget {
-  const AppShell({super.key});
-
-  @override
-  State<AppShell> createState() => _AppShellState();
-}
-
-class _AppShellState extends State<AppShell> {
-  // Static flag — survives widget rebuilds & app resumes within the same process.
-  // The splash only ever shows once: the very first cold launch.
-  static bool _hasLoaded = false;
-
-  bool _showSplash = !_hasLoaded;
-
-  @override
-  void initState() {
-    super.initState();
-    if (!_hasLoaded) {
-      _runSplash();
-    }
-  }
-
-  Future<void> _runSplash() async {
-    await Future.delayed(const Duration(milliseconds: 1800));
-    _hasLoaded = true;
-    if (mounted) {
-      setState(() {
-        _showSplash = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 400),
-      switchInCurve: Curves.easeOut,
-      switchOutCurve: Curves.easeIn,
-      child: _showSplash
-          ? const LoadingScreen(key: ValueKey('loading'))
-          : const HomeScreen(key: ValueKey('home')),
-    );
-  }
-}

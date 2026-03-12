@@ -157,6 +157,10 @@ class TaskTile extends SettingTile {
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),
+                if (descriptionText == null && labels.isNotEmpty)
+                  const SizedBox(
+                    height: 4,
+                  ),
                 if (labels.isNotEmpty)
                   Padding(
                     padding: EdgeInsets.only(top: descriptionText != null ? 4.0 : 0),
@@ -165,24 +169,14 @@ class TaskTile extends SettingTile {
                       runSpacing: 4,
                       children: labels.map((label) {
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: colorScheme.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: checked
-                                  ? colorScheme.outlineVariant.withValues(alpha: 0.5)
-                                  : colorScheme.outlineVariant,
-                            ),
+                            color: checked ? Colors.transparent : colorScheme.secondaryContainer,
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             label,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: checked
-                                  ? colorScheme.onSurfaceVariant.withValues(alpha: 0.6)
-                                  : colorScheme.onSurfaceVariant,
-                            ),
+                            style: TextStyle(fontSize: 10, color: colorScheme.onSecondaryContainer),
                           ),
                         );
                       }).toList(),

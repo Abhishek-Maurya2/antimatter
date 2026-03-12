@@ -6,6 +6,8 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:button_m3e/button_m3e.dart';
 import 'package:button_group_m3e/button_group_m3e.dart';
 import '../utils/preferences_helper.dart';
+import '../utils/fullscreen_utils.dart';
+import 'package:flutter/foundation.dart';
 
 class SessionScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -64,6 +66,9 @@ class _SessionScreenState extends State<SessionScreen>
       });
       if (_ambientModeEnabled) {
         _startAmbientTimer();
+        if (kIsWeb) {
+          toggleFullscreen(true);
+        }
       }
     }
     setState(() {
@@ -79,6 +84,9 @@ class _SessionScreenState extends State<SessionScreen>
       _seconds = 0;
       _isRunning = false;
     });
+    if (kIsWeb) {
+      toggleFullscreen(false);
+    }
   }
 
   // ===== Ambient Mode Logic =====
@@ -103,6 +111,9 @@ class _SessionScreenState extends State<SessionScreen>
     _ambientFadeController.forward();
     // Go fullscreen immersive
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    if (kIsWeb) {
+      toggleFullscreen(true);
+    }
   }
 
   void _exitAmbientMode() {
@@ -115,6 +126,9 @@ class _SessionScreenState extends State<SessionScreen>
     });
     // Restore system UI
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    if (kIsWeb) {
+      toggleFullscreen(false);
+    }
     // Restart ambient timer if still running
     if (_isRunning && _ambientModeEnabled) {
       _startAmbientTimer();
@@ -165,6 +179,9 @@ class _SessionScreenState extends State<SessionScreen>
     _ambientFadeController.dispose();
     // Restore system UI on dispose
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    if (kIsWeb) {
+      toggleFullscreen(false);
+    }
     super.dispose();
   }
 
