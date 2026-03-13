@@ -31,69 +31,70 @@ class ListCard extends StatelessWidget {
           color: bgColor,
           borderRadius: BorderRadius.circular(24),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'GoogleSansFlex',
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: colorTheme.onSurface,
-                      fontVariations: const [
-                        FontVariation('wght', 800),
-                        FontVariation('wdth', 100),
-                        FontVariation('ROND', 80),
-                        FontVariation('GRAD', 0),
-                        FontVariation('opsz', 22),
-                        FontVariation('slnt', 0),
-                      ],
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'GoogleSansFlex',
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: colorTheme.onSurface,
+                        fontVariations: const [
+                          FontVariation('wght', 800),
+                          FontVariation('wdth', 100),
+                          FontVariation('ROND', 80),
+                          FontVariation('GRAD', 0),
+                          FontVariation('opsz', 22),
+                          FontVariation('slnt', 0),
+                        ],
+                      ),
                     ),
                   ),
                 ),
+                if (tasks.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorTheme.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${tasks.length}',
+                      style: TextStyle(
+                        fontFamily: 'GoogleSansFlex',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: colorTheme.primary,
+                        fontVariations: const [
+                          FontVariation('wght', 700),
+                          FontVariation('wdth', 100),
+                          FontVariation('ROND', 100),
+                          FontVariation('GRAD', 0),
+                          FontVariation('opsz', 14),
+                          FontVariation('slnt', 0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
-            const SizedBox(height: 16),
-            if (tasks.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(left: 0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorTheme.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${tasks.length}',
-                    style: TextStyle(
-                      fontFamily: 'GoogleSansFlex',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: colorTheme.primary,
-                      fontVariations: const [
-                        FontVariation('wght', 700),
-                        FontVariation('wdth', 100),
-                        FontVariation('ROND', 100),
-                        FontVariation('GRAD', 0),
-                        FontVariation('opsz', 14),
-                        FontVariation('slnt', 0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             const SizedBox(height: 12),
 
             Expanded(
@@ -123,7 +124,7 @@ class ListCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'No today tasks',
+                            'No upcoming tasks',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(color: colorTheme.onSurfaceVariant),
                           ),
@@ -140,7 +141,7 @@ class ListCard extends StatelessWidget {
                       ),
                       itemBuilder: (context, index) {
                         final task = tasks[index];
-                        return _TaskItem(task: task);
+                        return _UpcomingTaskItem(task: task);
                       },
                     ),
             ),
@@ -151,10 +152,10 @@ class ListCard extends StatelessWidget {
   }
 }
 
-class _TaskItem extends StatelessWidget {
+class _UpcomingTaskItem extends StatelessWidget {
   final Task task;
 
-  const _TaskItem({required this.task});
+  const _UpcomingTaskItem({required this.task});
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +187,7 @@ class _TaskItem extends StatelessWidget {
               ),
             ),
           ],
-          // Categories row - renamed from Labels
+          // Categories row
           if (task.categories.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -217,6 +218,12 @@ class _TaskItem extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Color _getPriorityColor(BuildContext context) {
+    final colorTheme = Theme.of(context).colorScheme;
+    if (_isOverdue()) return colorTheme.error;
+    return colorTheme.primary;
   }
 
   bool _isOverdue() {

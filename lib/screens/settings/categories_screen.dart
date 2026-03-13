@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:m3e_collection/m3e_collection.dart';
+import 'package:settings_tiles/settings_tiles.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:material_new_shapes/material_new_shapes.dart';
 import '../../utils/preferences_helper.dart';
+import '../../utils/ui_utils.dart';
 
 class CategoriesScreen extends StatefulWidget {
   final bool isEmbedded;
@@ -42,6 +45,113 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     _saveCategories();
   }
 
+  void _showAddCategorySheet() {
+    final colorTheme = Theme.of(context).colorScheme;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: colorTheme.surfaceContainerHighest,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colorTheme.onSurfaceVariant.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Add Category',
+                style: TextStyle(
+                  fontFamily: 'GoogleSansFlex',
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: colorTheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  ClipPath(
+                    clipper: PolygonClipper(MaterialShapes.sunny),
+                    child: Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: colorTheme.primaryContainer,
+                      ),
+                      child: Icon(
+                        Symbols.label,
+                        fill: 1,
+                        color: colorTheme.onPrimaryContainer,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      autofocus: true,
+                      style: TextStyle(color: colorTheme.onSurface),
+                      decoration: InputDecoration(
+                        hintText: 'Category name...',
+                        filled: true,
+                        fillColor: colorTheme.surfaceContainerLow,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(40),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 18,
+                        ),
+                      ),
+                      onSubmitted: (val) {
+                        _addCategory(val);
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: ButtonM3E(
+                      onPressed: () {
+                        _addCategory(_controller.text);
+                        Navigator.pop(context);
+                      },
+                      label: const Text('Save Category'),
+                      style: ButtonM3EStyle.filled,
+                      size: ButtonM3ESize.lg,
+                      shape: ButtonM3EShape.round,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -56,10 +166,23 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       backgroundColor: widget.isEmbedded
           ? colorTheme.surfaceContainerLow
           : colorTheme.surfaceContainer,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        child: SafeArea(
+          child: ButtonM3E(
+            onPressed: _showAddCategorySheet,
+            label: const Text('Add Category'),
+            icon: const Icon(Symbols.add_circle, size: 28),
+            style: ButtonM3EStyle.filled,
+            size: ButtonM3ESize.xl,
+            shape: ButtonM3EShape.round,
+          ),
+        ),
+      ),
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: Text('Categories'),
+            title: const Text('Categories'),
             titleSpacing: widget.isEmbedded ? 16 : 0,
             leadingWidth: widget.isEmbedded ? 0 : 80,
             automaticallyImplyLeading: !widget.isEmbedded,
@@ -80,50 +203,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             scrolledUnderElevation: 1,
             expandedHeight: 120,
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        hintText: 'New category name...',
-                        filled: true,
-                        fillColor: colorTheme.surfaceContainerHighest,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(28),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 14,
-                        ),
-                        prefixIcon: Icon(
-                          Symbols.category,
-                          color: colorTheme.onSurfaceVariant,
-                        ),
-                      ),
-                      onSubmitted: _addCategory,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: colorTheme.primary,
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: IconButton(
-                      onPressed: () => _addCategory(_controller.text),
-                      icon: Icon(Symbols.add, color: colorTheme.onPrimary),
-                      tooltip: 'Add category',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
           if (_categories.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
@@ -131,78 +210,88 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Symbols.category,
-                      size: 64,
-                      color: colorTheme.onSurfaceVariant.withOpacity(0.3),
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: colorTheme.surfaceContainerHighest.withValues(
+                          alpha: 0.5,
+                        ),
+                        borderRadius: BorderRadius.circular(36),
+                      ),
+                      child: Icon(
+                        Symbols.category,
+                        size: 48,
+                        color: colorTheme.primary.withValues(alpha: 0.3),
+                        fill: 1,
+                      ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     Text(
                       'No categories yet',
                       style: TextStyle(
-                        color: colorTheme.onSurfaceVariant.withOpacity(0.5),
-                        fontSize: 16,
+                        fontFamily: 'GoogleSansFlex',
+                        color: colorTheme.onSurface,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Add categories to organize your tasks',
-                      style: TextStyle(
-                        color: colorTheme.onSurfaceVariant.withOpacity(0.4),
-                        fontSize: 14,
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 48),
+                      child: Text(
+                        'Add categories to organize your tasks by topic or priority.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: colorTheme.onSurfaceVariant,
+                          fontSize: 15,
+                          height: 1.4,
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
             )
           else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final category = _categories[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Card(
-                      elevation: 0,
-                      color: colorTheme.surfaceContainerHigh,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+            SliverToBoxAdapter(
+              child: SettingSection(
+                tiles: _categories.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final category = entry.value;
+                  return SettingActionTile(
+                    onTap: () {},
+                    icon: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: colorTheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(50),
                       ),
-                      child: ListTile(
-                        leading: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: colorTheme.primaryContainer,
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: Icon(
-                            Symbols.category,
-                            fill: 1,
-                            color: colorTheme.onPrimaryContainer,
-                            size: 20,
-                          ),
-                        ),
-                        title: Text(
-                          category,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                        trailing: IconButton(
-                          icon: Icon(Symbols.delete, color: colorTheme.error),
-                          onPressed: () => _removeCategory(index),
-                          tooltip: 'Delete',
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+                      child: Icon(
+                        Symbols.category,
+                        fill: 1,
+                        color: colorTheme.onPrimaryContainer,
+                        size: 20,
                       ),
                     ),
+                    title: Text(
+                      category,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    trailing: IconButtonM3E(
+                      onPressed: () => _removeCategory(index),
+                      icon: const Icon(Symbols.delete),
+                      variant: IconButtonM3EVariant.standard,
+                      foregroundColor: colorTheme.error,
+                      tooltip: 'Delete',
+                    ),
                   );
-                }, childCount: _categories.length),
+                }).toList(),
               ),
             ),
+          const SliverToBoxAdapter(child: SizedBox(height: 120)),
         ],
       ),
     );

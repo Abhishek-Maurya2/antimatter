@@ -26,7 +26,8 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
   bool _isLoading = true;
   String? _latestVersion;
   String? _releaseNotes;
-  String? _downloadUrl;
+  String? _apkDownloadUrl;
+  String? _exeDownloadUrl;
   String? _error;
 
   // Download state
@@ -74,19 +75,22 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
         final versionOnly = tagName.split('-build').first;
 
         String? apkUrl;
+        String? exeUrl;
         final assets = data['assets'] as List<dynamic>? ?? [];
         for (final asset in assets) {
-          final name = asset['name'] as String? ?? '';
+          final name = (asset['name'] as String? ?? '').toLowerCase();
           if (name.endsWith('.apk')) {
             apkUrl = asset['browser_download_url'] as String?;
-            break;
+          } else if (name.endsWith('.exe')) {
+            exeUrl = asset['browser_download_url'] as String?;
           }
         }
 
         setState(() {
           _latestVersion = versionOnly;
           _releaseNotes = data['body'] as String? ?? 'No release notes.';
-          _downloadUrl = apkUrl;
+          _apkDownloadUrl = apkUrl;
+          _exeDownloadUrl = exeUrl;
           _isLoading = false;
         });
       } else if (response.statusCode == 404) {
@@ -110,7 +114,10 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
   }
 
   Future<void> _downloadAndInstall() async {
-    if (_downloadUrl == null) return;
+    final isWindows = Theme.of(context).platform == TargetPlatform.windows;
+    final downloadUrl = isWindows ? _exeDownloadUrl : _apkDownloadUrl;
+    
+    if (downloadUrl == null) return;
 
     setState(() {
       _isDownloading = true;
@@ -122,12 +129,17 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
     });
 
     try {
-      final dir = await getTemporaryDirectory();
-      final filePath = '${dir.path}/antimatter-update.apk';
+      final dir = isWindows 
+          ? await getDownloadsDirectory() ?? await getTemporaryDirectory()
+          : await getTemporaryDirectory();
+      
+      final extension = isWindows ? 'exe' : 'apk';
+      final fileName = 'antimatter-update-$_latestVersion.$extension';
+      final filePath = '${dir.path}/$fileName';
 
       final dio = Dio();
       await dio.download(
-        _downloadUrl!,
+        downloadUrl,
         filePath,
         onReceiveProgress: (received, total) {
           if (total > 0 && _downloadStartTime != null) {
@@ -273,10 +285,11 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
         ),
       );
     } else if (_downloadedFilePath != null) {
+      final isWindows = Theme.of(context).platform == TargetPlatform.windows;
       actions.add(
         ButtonGroupM3EAction(
-          icon: const Icon(Symbols.install_mobile),
-          label: const Text('Install'),
+          icon: Icon(isWindows ? Symbols.download_done : Symbols.install_mobile),
+          label: Text(isWindows ? 'Open Installer' : 'Install'),
           shape: ButtonM3EShape.round,
           onPressed: () => OpenFilex.open(_downloadedFilePath!),
         ),
@@ -587,7 +600,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                                   ],
                                 ],
                               ),
-                              if (_isUpdateAvailable && _downloadUrl != null)
+                              if (_isUpdateAvailable && (_apkDownloadUrl != null || _exeDownloadUrl != null))
                                 Builder(
                                   builder: (context) {
                                     final section = _buildDownloadSection(

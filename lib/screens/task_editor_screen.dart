@@ -5,6 +5,8 @@ import 'package:orches/models/task.dart';
 import 'package:orches/services/audio_service.dart';
 import 'package:m3e_collection/m3e_collection.dart';
 import 'package:orches/utils/preferences_helper.dart';
+import 'package:material_new_shapes/material_new_shapes.dart';
+import 'package:orches/utils/ui_utils.dart';
 
 class TaskEditorScreen extends StatelessWidget {
   final Task? task;
@@ -154,46 +156,129 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
     });
   }
 
-  Future<void> _showAddCategoryDialog() async {
+  void _showAddCategorySheet() {
+    final colorTheme = Theme.of(context).colorScheme;
     final controller = TextEditingController();
-    final newCategory = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Add Category'),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(hintText: 'Category name'),
-            onSubmitted: (value) => Navigator.of(context).pop(value),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(controller.text),
-              child: const Text('Add'),
-            ),
-          ],
-        );
-      },
-    );
 
-    if (newCategory != null && newCategory.trim().isNotEmpty) {
-      final trimmed = newCategory.trim();
-      if (!_allCategories.contains(trimmed)) {
-        setState(() {
-          _allCategories.add(trimmed);
-          _selectedCategories.add(trimmed);
-        });
-        await PreferencesHelper.setStringList('categories', _allCategories);
-      } else if (!_selectedCategories.contains(trimmed)) {
-        setState(() {
-          _selectedCategories.add(trimmed);
-        });
-      }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: colorTheme.surfaceContainerHighest,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colorTheme.onSurfaceVariant.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Add Category',
+                style: TextStyle(
+                  fontFamily: 'GoogleSansFlex',
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: colorTheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  ClipPath(
+                    clipper: PolygonClipper(MaterialShapes.sunny),
+                    child: Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: colorTheme.primaryContainer,
+                      ),
+                      child: Icon(
+                        Symbols.label,
+                        fill: 1,
+                        color: colorTheme.onPrimaryContainer,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextField(
+                      controller: controller,
+                      autofocus: true,
+                      style: TextStyle(color: colorTheme.onSurface),
+                      decoration: InputDecoration(
+                        hintText: 'Category name...',
+                        filled: true,
+                        fillColor: colorTheme.surfaceContainerLow,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(40),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 18,
+                        ),
+                      ),
+                      onSubmitted: (val) {
+                        _handleNewCategory(val);
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: ButtonM3E(
+                      onPressed: () {
+                        _handleNewCategory(controller.text);
+                        Navigator.pop(context);
+                      },
+                      label: const Text('Save Category'),
+                      style: ButtonM3EStyle.filled,
+                      size: ButtonM3ESize.lg,
+                      shape: ButtonM3EShape.round,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleNewCategory(String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+
+    if (!_allCategories.contains(trimmed)) {
+      setState(() {
+        _allCategories.add(trimmed);
+        _selectedCategories.add(trimmed);
+      });
+      await PreferencesHelper.setStringList('categories', _allCategories);
+    } else if (!_selectedCategories.contains(trimmed)) {
+      setState(() {
+        _selectedCategories.add(trimmed);
+      });
     }
   }
 
@@ -349,7 +434,7 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                 Padding(
                   padding: const EdgeInsets.all(2.0),
                   child: IconButtonM3E(
-                    onPressed: _showAddCategoryDialog,
+                    onPressed: _showAddCategorySheet,
                     icon: const Icon(Symbols.add_circle),
                     tooltip: 'add category',
                     variant: IconButtonM3EVariant.filled,

@@ -31,13 +31,28 @@ class OverviewPage extends StatelessWidget {
         final todayStart = DateTime(now.year, now.month, now.day);
         final tomorrowStart = todayStart.add(const Duration(days: 1));
 
-        final todayTasks = allTasks.where((t) {
+        final todayTotalTasks = allTasks.where((t) {
           if (t.deadline == null) return false;
           return t.deadline!.isAfter(todayStart) &&
               t.deadline!.isBefore(tomorrowStart);
         }).toList();
 
-        final todayCompleted = todayTasks.where((t) => t.isCompleted).length;
+        final todayTasks = todayTotalTasks.where((t) => !t.isCompleted).toList();
+
+        final todayCompletedCount = todayTotalTasks.where((t) => t.isCompleted).length;
+
+        final upcomingTasks =
+            allTasks.where((t) {
+              return !t.isCompleted;
+            }).toList()..sort((a, b) {
+              if (a.deadline == null && b.deadline == null)
+                return a.title.compareTo(b.title);
+              if (a.deadline == null) return 1;
+              if (b.deadline == null) return -1;
+              final cmp = a.deadline!.compareTo(b.deadline!);
+              if (cmp != 0) return cmp;
+              return a.title.compareTo(b.title);
+            });
 
         return Scaffold(
           backgroundColor: colorTheme.surfaceContainer,
@@ -96,50 +111,56 @@ class OverviewPage extends StatelessWidget {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                 sliver: SliverToBoxAdapter(
-                  child: Column(
-                    children: [
-                      // Combined Stats Card (full width)
-                      StatsCard(
-                        totalTasks: totalTasks,
-                        completedTasks: completedTasks,
-                        pendingTasks: pendingTasks,
-                        onTap: onNavigateToTasks,
-                      ),
-                      const SizedBox(height: 12),
-                      // Today's Tasks Row
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      const spacing = 12.0;
+                      final upcomingHeight = 265.0;
+
+                      return Column(
                         children: [
-                          Expanded(
-                            flex: 3,
-                            child: SizedBox(
-                              height: 265,
-                              child: ListCard(
-                                title: "Today's Tasks",
-                                tasks: todayTasks,
-                                onTap: onNavigateToTasks,
-                              ),
-                            ),
+                          // Combined Stats Card (full width)
+                          StatsCard(
+                            totalTasks: totalTasks,
+                            completedTasks: completedTasks,
+                            pendingTasks: pendingTasks,
+                            onTap: onNavigateToTasks,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            flex: 2,
-                            child: SizedBox(
-                              height: 265,
-                              child: ProgressCard(
-                                title: "Progress",
-                                total: todayTasks.length,
-                                completed: todayCompleted,
-                                onTap: onNavigateToTasks,
+                          const SizedBox(height: spacing),
+                          // Bottom row: Today's Tasks + Progress
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  height: upcomingHeight,
+                                  child: ListCard(
+                                    title: "Pending Tasks",
+                                    tasks: upcomingTasks,
+                                    onTap: onNavigateToTasks,
+                                  ),
+                                ),
                               ),
-                            ),
+                              const SizedBox(width: spacing),
+                              Expanded(
+                                child: SizedBox(
+                                  height: upcomingHeight,
+                                  child: ProgressCard(
+                                    title: "Progress",
+                                    total: todayTotalTasks.length,
+                                    completed: todayCompletedCount,
+                                    onTap: onNavigateToTasks,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
               ),
+              
 
               // Activity Heat Map
               SliverPadding(
