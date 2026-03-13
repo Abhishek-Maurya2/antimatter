@@ -31,13 +31,15 @@ class OverviewPage extends StatelessWidget {
         final todayStart = DateTime(now.year, now.month, now.day);
         final tomorrowStart = todayStart.add(const Duration(days: 1));
 
-        final todayTasks = allTasks.where((t) {
+        final todayTotalTasks = allTasks.where((t) {
           if (t.deadline == null) return false;
           return t.deadline!.isAfter(todayStart) &&
               t.deadline!.isBefore(tomorrowStart);
         }).toList();
 
-        final todayCompleted = todayTasks.where((t) => t.isCompleted).length;
+        final todayTasks = todayTotalTasks.where((t) => !t.isCompleted).toList();
+
+        final todayCompletedCount = todayTotalTasks.where((t) => t.isCompleted).length;
 
         final upcomingTasks =
             allTasks.where((t) {
@@ -119,6 +121,7 @@ class OverviewPage extends StatelessWidget {
 
                       return Column(
                         children: [
+<<<<<<< Updated upstream
                           // Combined Stats Card (full width)
                           StatsCard(
                             totalTasks: totalTasks,
@@ -139,6 +142,29 @@ class OverviewPage extends StatelessWidget {
                                   tasks: upcomingTasks,
                                   onTap: onNavigateToTasks,
                                 ),
+=======
+                          Expanded(
+                            flex: 1,
+                            child: SizedBox(
+                              height: 265,
+                              child: ListCard(
+                                title: "Today's Tasks",
+                                tasks: todayTasks,
+                                onTap: onNavigateToTasks,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 1,
+                            child: SizedBox(
+                              height: 265,
+                              child: ProgressCard(
+                                title: "Progress",
+                                total: todayTotalTasks.length,
+                                completed: todayCompletedCount,
+                                onTap: onNavigateToTasks,
+>>>>>>> Stashed changes
                               ),
                               const SizedBox(width: spacing),
                               SizedBox(

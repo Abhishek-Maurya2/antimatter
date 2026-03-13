@@ -40,31 +40,37 @@ class ProgressCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            Text(
-              title,
-              style: TextStyle(
-                fontFamily: 'GoogleSansFlex',
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: colorTheme.onSurface,
-                fontVariations: const [
-                  FontVariation('wght', 800),
-                  FontVariation('wdth', 100),
-                  FontVariation('ROND', 80),
-                  FontVariation('GRAD', 0),
-                  FontVariation('opsz', 22),
-                  FontVariation('slnt', 0),
-                ],
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: 'GoogleSansFlex',
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: colorTheme.onSurface,
+                  fontVariations: const [
+                    FontVariation('wght', 800),
+                    FontVariation('wdth', 100),
+                    FontVariation('ROND', 80),
+                    FontVariation('GRAD', 0),
+                    FontVariation('opsz', 22),
+                    FontVariation('slnt', 0),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
             if (total == 0)
               // Empty state
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+              Expanded(
                 child: Center(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(
                         width: 80,
@@ -89,8 +95,8 @@ class ProgressCard extends StatelessWidget {
                       Text(
                         'No tasks for today',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: colorTheme.onSurfaceVariant,
-                        ),
+                              color: colorTheme.onSurfaceVariant,
+                            ),
                       ),
                     ],
                   ),
@@ -98,7 +104,8 @@ class ProgressCard extends StatelessWidget {
               )
             else
               // Circular wavy progress indicator + count
-              Center(
+            Expanded(
+              child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -181,6 +188,7 @@ class ProgressCard extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
           ],
         ),
       ),
