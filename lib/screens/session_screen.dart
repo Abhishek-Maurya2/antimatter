@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:m3e_collection/m3e_collection.dart';
 import 'package:flutter/services.dart';
@@ -34,7 +35,7 @@ class _SessionScreenState extends State<SessionScreen>
   Timer? _ambientTimer;
   late AnimationController _ambientFadeController;
   late Animation<double> _ambientFadeAnimation;
-  
+
   // Weight animation
   late AnimationController _weightController;
   late Animation<double> _weightAnimation;
@@ -42,14 +43,14 @@ class _SessionScreenState extends State<SessionScreen>
   @override
   void initState() {
     super.initState();
-    
-    // Initialize all animation variables first to avoid LateInitializationError
+
+    // Initialize all animation variables first
     _weightController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-    _weightAnimation = Tween<double>(begin: 120, end: 920).animate(
-      CurvedAnimation(parent: _weightController, curve: Curves.easeInOut),
+    _weightAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _weightController, curve: Curves.easeInOutCubic),
     );
 
     _ambientFadeController = AnimationController(
@@ -64,11 +65,9 @@ class _SessionScreenState extends State<SessionScreen>
     WidgetsBinding.instance.addObserver(this);
     _loadAmbientSettings();
     _loadTimerState();
-    
-    // If loading a previously running timer, sync the animation state.
-    if (_isRunning) {
-      _weightController.value = 1.0;
-    }
+
+    // Sync the animation state with the current timer state
+    _weightController.value = _isRunning ? 1.0 : 0.0;
   }
 
   void _loadTimerState() {
@@ -255,6 +254,37 @@ class _SessionScreenState extends State<SessionScreen>
     );
   }
 
+  TextStyle _getTimerTextStyle({
+    required double fontSize,
+    required Color color,
+    required double progress,
+  }) {
+    // Explicitly clamp and handle nulls for robustness
+    final t = progress.clamp(0.0, 1.0);
+
+    // Manual lerping with rounding to avoid precision issues
+    double l(double a, double b) => a + (b - a) * t;
+
+    return TextStyle(
+      fontFamily: 'GoogleSansFlex',
+      fontSize: fontSize,
+      height: .9,
+      fontWeight: FontWeight.w500,
+      color: color,
+      fontVariations: <FontVariation>[
+        FontVariation('wght', l(120.0, 920.0)),
+        FontVariation('wdth', l(200.0, 150.0)),
+        FontVariation('ROND', l(-10.0, 80.0)),
+        FontVariation('CNTR', l(40.0, 100.0)),
+        FontVariation('XTRA', l(468.0, 600.0)),
+        const FontVariation('opsz', 98.0),
+        const FontVariation('YOPQ', 36.0),
+        const FontVariation('YTPQ', 105.0),
+      ],
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -328,25 +358,10 @@ class _SessionScreenState extends State<SessionScreen>
                             return Transform.scale(
                               scaleY: 1.8,
                               child: _buildTimerDisplay(
-                                TextStyle(
-                                  fontFamily: 'GoogleSansFlex',
+                                _getTimerTextStyle(
                                   fontSize: 84,
-                                  height: 0.9,
-                                  fontWeight: FontWeight.w500,
                                   color: colorTheme.primary,
-                                  fontVariations: <FontVariation>[
-                                    const FontVariation('wdth', 150),
-                                    FontVariation('wght', _weightAnimation.value),
-                                    const FontVariation('opsz', 98),
-                                    const FontVariation('ROND', -10),
-                                    const FontVariation('CNTR', 70),
-                                    const FontVariation('YOPQ', 36),
-                                    const FontVariation('YTPQ', 105),
-                                    const FontVariation('XTRA', 520),
-                                  ],
-                                  fontFeatures: const [
-                                    FontFeature.tabularFigures(),
-                                  ],
+                                  progress: _weightAnimation.value,
                                 ),
                               ),
                             );
@@ -420,34 +435,21 @@ class _SessionScreenState extends State<SessionScreen>
                     child: SizedBox(
                       width: 270,
                       height: 270,
-                          child: AnimatedBuilder(
-                            animation: _weightAnimation,
-                            builder: (context, child) {
-                              return Transform.scale(
-                                scaleY: 1.8,
-                                child: _buildTimerDisplay(
-                                  TextStyle(
-                                    fontFamily: 'GoogleSansFlex',
-                                    fontSize: 94,
-                                    height: 0.9,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white.withOpacity(0.5),
-                                    fontVariations: <FontVariation>[
-                                      const FontVariation('wdth', 150),
-                                      FontVariation('wght', _weightAnimation.value),
-                                      const FontVariation('opsz', 98),
-                                      const FontVariation('ROND', -10),
-                                      const FontVariation('CNTR', 70),
-                                      const FontVariation('YOPQ', 36),
-                                      const FontVariation('YTPQ', 105),
-                                      const FontVariation('XTRA', 520),
-                                    ],
-                                    fontFeatures: const [FontFeature.tabularFigures()],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                      child: AnimatedBuilder(
+                        animation: _weightAnimation,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scaleY: 1.8,
+                            child: _buildTimerDisplay(
+                              _getTimerTextStyle(
+                                fontSize: 94,
+                                color: Colors.white.withOpacity(0.5),
+                                progress: _weightAnimation.value,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
