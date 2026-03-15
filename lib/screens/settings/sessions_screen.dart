@@ -18,6 +18,7 @@ class SessionsScreen extends StatefulWidget {
 class _SessionsScreenState extends State<SessionsScreen> {
   bool _ambientModeEnabled = true;
   int _ambientIntervalSeconds = 5;
+  bool _stayAwakeEnabled = true;
 
   @override
   void initState() {
@@ -28,6 +29,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
   void _loadSettings() {
     _ambientModeEnabled =
         PreferencesHelper.getBool('ambientModeEnabled') ?? true;
+    _stayAwakeEnabled = PreferencesHelper.getBool('stayAwakeEnabled') ?? true;
     final savedInterval =
         PreferencesHelper.getInt('ambientModeIntervalSeconds') ?? 5;
     _ambientIntervalSeconds = savedInterval.clamp(1, 60);
@@ -126,6 +128,22 @@ class _SessionsScreenState extends State<SessionsScreen> {
                           'ambientModeIntervalSeconds',
                           val.round(),
                         );
+                      },
+                    ),
+                    SettingSwitchTile(
+                      icon: iconContainer(
+                        Symbols.keep,
+                        isLight ? const Color(0xfffce4ec) : const Color(0xff880e4f).withValues(alpha: 0.2),
+                        isLight ? const Color(0xff880e4f) : const Color(0xfffce4ec),
+                      ),
+                      title: const Text('Stay Awake'),
+                      description: const Text(
+                        'Prevent device from sleeping during sessions',
+                      ),
+                      toggled: _stayAwakeEnabled,
+                      onChanged: (value) {
+                        setState(() => _stayAwakeEnabled = value);
+                        PreferencesHelper.setBool('stayAwakeEnabled', value);
                       },
                     ),
                   ],

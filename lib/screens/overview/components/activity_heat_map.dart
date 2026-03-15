@@ -7,10 +7,10 @@ import 'package:orches/models/task.dart';
 class ActivityHeatMap extends StatelessWidget {
   const ActivityHeatMap({super.key});
 
-  static const double _cellSize = 14.0;
-  static const double _cellGap = 3.0;
-  static const double _labelWidth = 28.0;
-  static const int _weeksToShow = 26; // ~6 months
+  static const double _cellSize = 20.0;
+  static const double _cellGap = 6.0;
+  static const double _labelWidth = 25.0;
+  static const int _weeksToShow = 36; // ~6 months
 
   @override
   Widget build(BuildContext context) {
@@ -59,31 +59,56 @@ class _HeatMapContent extends StatelessWidget {
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
 
-    // Find the Monday of the current week
-    final currentWeekMonday = todayDate.subtract(
-      Duration(days: todayDate.weekday - 1),
-    );
-    // Go back _weeksToShow weeks
-    final startDate = currentWeekMonday.subtract(
-      Duration(days: (_weeksToShow - 1) * 7),
-    );
+    // --- NEW: Generate calendar-style grouped months ---
+    final monthGroups = <_MonthGroup>[];
 
-    // Build the list of weeks (each week = list of 7 days)
-    final weeks = <List<DateTime?>>[];
-    var weekStart = startDate;
-    while (!weekStart.isAfter(currentWeekMonday)) {
-      final week = <DateTime?>[];
-      for (int d = 0; d < 7; d++) {
-        final day = weekStart.add(Duration(days: d));
-        if (day.isAfter(todayDate)) {
-          week.add(null); // future days
+    // We'll show approximately _weeksToShow weeks, but grouped by month
+    int monthsBack = (_weeksToShow / 4.3).ceil();
+
+    for (int i = monthsBack; i >= 0; i--) {
+      // Calculate start and end of the month
+      final startOfMonth = DateTime(todayDate.year, todayDate.month - i, 1);
+      final nextMonth = DateTime(startOfMonth.year, startOfMonth.month + 1, 1);
+      final endOfMonth = nextMonth.subtract(const Duration(days: 1));
+
+      final List<DateTime?> daysInBlocks = [];
+
+      // Padding before the 1st: Monday is weekday 1
+      final firstWeekday = startOfMonth.weekday;
+      for (int p = 1; p < firstWeekday; p++) {
+        daysInBlocks.add(null);
+      }
+
+      // Fill the days for THIS month only
+      for (int d = 1; d <= endOfMonth.day; d++) {
+        final currentDay = DateTime(startOfMonth.year, startOfMonth.month, d);
+        if (currentDay.isAfter(todayDate)) {
+          daysInBlocks.add(null);
         } else {
-          week.add(day);
+          daysInBlocks.add(currentDay);
         }
       }
-      weeks.add(week);
-      weekStart = weekStart.add(const Duration(days: 7));
+
+      // Padding at the end of the month to complete the last week of the month
+      while (daysInBlocks.length % 7 != 0) {
+        daysInBlocks.add(null);
+      }
+
+      // Split days in blocks into weeks for this month
+      final List<List<DateTime?>> weeksInMonth = [];
+      for (int s = 0; s < daysInBlocks.length; s += 7) {
+        weeksInMonth.add(daysInBlocks.sublist(s, s + 7));
+      }
+
+      monthGroups.add(
+        _MonthGroup(
+          month: startOfMonth.month,
+          name: _getMonthName(startOfMonth.month),
+          weeks: weeksInMonth,
+        ),
+      );
     }
+    // ----------------------------------------------------
 
     // Find max value for color scaling
     final maxCount = completionMap.values.fold<int>(
@@ -91,11 +116,8 @@ class _HeatMapContent extends StatelessWidget {
       (prev, val) => val > prev ? val : prev,
     );
 
-    // Day labels (only show Mon, Wed, Fri for compactness)
-    final dayLabels = ['M', '', 'W', '', 'F', '', ''];
-
-    // Build month labels
-    final monthLabels = _buildMonthLabels(weeks);
+    // Day labels for all days
+    final dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     final gridHeight = _cellSize * 7 + _cellGap * 6;
 
@@ -167,46 +189,14 @@ class _HeatMapContent extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Month header row
-          SizedBox(
-            height: 16,
-            child: Row(
-              children: [
-                SizedBox(width: _labelWidth + 4),
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    reverse: true,
-                    child: Row(
-                      children: monthLabels.map((label) {
-                        return SizedBox(
-                          width: _cellSize + _cellGap,
-                          child: label != null
-                              ? Text(
-                                  label,
-                                  style: textTheme.labelSmall?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                    fontSize: 10,
-                                  ),
-                                )
-                              : null,
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-
-          // Heat map grid
-          SizedBox(
-            height: gridHeight,
-            child: Row(
-              children: [
-                // Day labels column
-                SizedBox(
+          // Combined scrollable area for headers and grid
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Fixed Day labels column
+              Padding(
+                padding: const EdgeInsets.only(top: 20), // Align with grid
+                child: SizedBox(
                   width: _labelWidth,
                   height: gridHeight,
                   child: Column(
@@ -227,51 +217,97 @@ class _HeatMapContent extends StatelessWidget {
                     }),
                   ),
                 ),
-                const SizedBox(width: 4),
+              ),
+              const SizedBox(width: 8),
 
-                // Scrollable grid
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    reverse: true, // scroll to show most recent first
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: _cellGap,
-                      children: weeks.map((week) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          spacing: _cellGap,
-                          children: week.map((day) {
-                            if (day == null) {
-                              return SizedBox(
-                                width: _cellSize,
-                                height: _cellSize,
-                              );
-                            }
-                            final count = completionMap[day] ?? 0;
-                            return Tooltip(
-                              message: _tooltipText(day, count),
-                              child: Container(
-                                width: _cellSize,
-                                height: _cellSize,
-                                decoration: BoxDecoration(
-                                  color: _getCellColor(
-                                    count,
-                                    maxCount,
-                                    colorScheme,
-                                  ),
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
+              // Scrollable content (Months + Grid)
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  reverse: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Month names row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: monthGroups.map((group) {
+                          final weeksCount = group.weeks.length;
+                          final groupWidth =
+                              weeksCount * _cellSize +
+                              (weeksCount - 1) * _cellGap;
+                          return SizedBox(
+                            width: groupWidth + 16, // match month spacing (16)
+                            child: Text(
+                              group.name,
+                              style: textTheme.labelSmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
                               ),
-                            );
-                          }).toList(),
-                        );
-                      }).toList(),
-                    ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 4),
+
+                      // Grid rows
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: monthGroups.map((group) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 16),
+                            child: Row(
+                              spacing: _cellGap,
+                              children: group.weeks.map((week) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  spacing: _cellGap,
+                                  children: week.map((day) {
+                                    if (day == null) {
+                                      return SizedBox(
+                                        width: _cellSize,
+                                        height: _cellSize,
+                                      );
+                                    }
+                                    final count = completionMap[day] ?? 0;
+                                    return Tooltip(
+                                      message: _tooltipText(day, count),
+                                      child: Container(
+                                        width: _cellSize,
+                                        height: _cellSize,
+                                        decoration: BoxDecoration(
+                                          color: count == 0
+                                              ? Colors.transparent
+                                              : _getCellColor(
+                                                  count,
+                                                  maxCount,
+                                                  colorScheme,
+                                                ),
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          border: count == 0
+                                              ? Border.all(
+                                                  color: colorScheme
+                                                      .outlineVariant,
+                                                  width: 1,
+                                                )
+                                              : null,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                );
+                              }).toList(),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
 
@@ -305,12 +341,12 @@ class _HeatMapContent extends StatelessWidget {
 
   Color _getCellColor(int count, int maxCount, ColorScheme colorScheme) {
     if (count == 0) {
-      return colorScheme.surfaceContainerHighest;
+      return Colors.transparent;
     }
     // Scale opacity from 0.3 to 1.0
     final intensity = 0.3 + (0.7 * count / maxCount);
     return Color.lerp(
-      colorScheme.surfaceContainerHighest,
+      colorScheme.primaryContainer,
       colorScheme.primary,
       intensity,
     )!;
@@ -337,8 +373,8 @@ class _HeatMapContent extends StatelessWidget {
     return '$count tasks on $dayStr';
   }
 
-  List<String?> _buildMonthLabels(List<List<DateTime?>> weeks) {
-    final months = [
+  String _getMonthName(int month) {
+    const names = [
       'Jan',
       'Feb',
       'Mar',
@@ -352,40 +388,39 @@ class _HeatMapContent extends StatelessWidget {
       'Nov',
       'Dec',
     ];
-    final labels = <String?>[];
-    int? lastMonth;
-    for (final week in weeks) {
-      // Use the Monday of each week
-      final monday = week.firstWhere((d) => d != null, orElse: () => null);
-      if (monday != null && monday.month != lastMonth) {
-        labels.add(months[monday.month - 1]);
-        lastMonth = monday.month;
-      } else {
-        labels.add(null);
-      }
-    }
-    return labels;
+    return names[month - 1];
   }
 
   List<Widget> _buildLegendCells(ColorScheme colorScheme) {
     return [0.0, 0.3, 0.5, 0.7, 1.0].map((intensity) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 1),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         child: Container(
-          width: 10,
-          height: 10,
+          width: 12,
+          height: 12,
           decoration: BoxDecoration(
             color: intensity == 0.0
-                ? colorScheme.surfaceContainerHighest
+                ? Colors.transparent
                 : Color.lerp(
-                    colorScheme.surfaceContainerHighest,
+                    colorScheme.primaryContainer,
                     colorScheme.primary,
                     0.3 + 0.7 * intensity,
                   )!,
             borderRadius: BorderRadius.circular(2),
+            border: intensity == 0.0
+                ? Border.all(color: colorScheme.outlineVariant, width: 1.5)
+                : null,
           ),
         ),
       );
     }).toList();
   }
+}
+
+class _MonthGroup {
+  final int month;
+  final String name;
+  final List<List<DateTime?>> weeks;
+
+  _MonthGroup({required this.month, required this.name, required this.weeks});
 }

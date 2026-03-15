@@ -19,7 +19,7 @@ class SessionScreen extends StatefulWidget {
 }
 
 class _SessionScreenState extends State<SessionScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   Timer? _timer;
   int _seconds = 0;
   bool _isRunning = false;
@@ -35,7 +35,9 @@ class _SessionScreenState extends State<SessionScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadAmbientSettings();
+    _loadTimerState();
     _ambientFadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -44,6 +46,28 @@ class _SessionScreenState extends State<SessionScreen>
       parent: _ambientFadeController,
       curve: Curves.easeInOut,
     );
+  }
+
+  void _loadTimerState() {
+    final savedSeconds = PreferencesHelper.getInt('session_seconds') ?? 0;
+    // We only persist the count, we don't resume automatically or calculate elapsed time
+    // as per user request "when app is closed timer pause"
+    _seconds = savedSeconds;
+    _isRunning = false;
+  }
+
+  void _saveTimerState() {
+    PreferencesHelper.setInt('session_seconds', _seconds);
+    PreferencesHelper.setBool('session_is_running', _isRunning);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      _saveTimerState();
+    }
   }
 
   void _loadAmbientSettings() {
@@ -58,22 +82,33 @@ class _SessionScreenState extends State<SessionScreen>
     if (_isRunning) {
       _timer?.cancel();
       _cancelAmbientTimer();
+      _saveTimerState();
     } else {
-      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        setState(() {
-          _seconds++;
-        });
-      });
+      _startTimer();
     }
     setState(() {
       _isRunning = !_isRunning;
     });
+    _saveTimerState(); // Save state on toggle
     if (_isRunning && _ambientModeEnabled) {
       _startAmbientTimer();
       if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
         toggleFullscreen(true);
       }
     }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _seconds++;
+      });
+      // Save every 10 seconds to avoid too many IO writes while still being reliable
+      if (_seconds % 10 == 0) {
+        _saveTimerState();
+      }
+    });
   }
 
   void _resetTimer() {
@@ -84,6 +119,10 @@ class _SessionScreenState extends State<SessionScreen>
       _seconds = 0;
       _isRunning = false;
     });
+    // Clear persisted state
+    PreferencesHelper.remove('session_seconds');
+    PreferencesHelper.remove('session_is_running');
+
     if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
       toggleFullscreen(false);
     }
@@ -174,6 +213,8 @@ class _SessionScreenState extends State<SessionScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _saveTimerState();
     _timer?.cancel();
     _ambientTimer?.cancel();
     _ambientFadeController.dispose();
