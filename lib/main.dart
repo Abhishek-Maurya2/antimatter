@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:animations/animations.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'utils/theme_controller.dart';
 import 'utils/preferences_helper.dart';
@@ -14,8 +14,10 @@ import 'notifiers/settings_notifier.dart';
 
 import 'screens/home_screen.dart';
 import 'models/task.dart';
+import 'models/session.dart';
 import 'services/home_widget_service.dart';
 import 'services/supabase_sync_service.dart';
+import 'services/session_sync_service.dart';
 import 'services/notification_service.dart';
 
 // Initialize Supabase details
@@ -24,6 +26,7 @@ const String supaAnonKey = 'sb_publishable_fILUo9xhkWoqMlt2UiNlWg_kZf220ex';
 
 // Global reference for Supabase Sync
 late final SupabaseSyncService syncService;
+late final SessionSyncService sessionSyncService;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,17 +48,24 @@ void main() async {
 
   await Hive.initFlutter();
   Hive.registerAdapter(TaskAdapter());
+  Hive.registerAdapter(SessionAdapter());
   final tasksBox = await Hive.openBox<Task>('tasksBox');
+  final sessionsBox = await Hive.openBox<Session>('sessionsBox');
 
   // Initialize notifications
   await NotificationService().init();
 
   // Initialize and start Sync Service
   syncService = SupabaseSyncService(tasksBox);
+  sessionSyncService = SessionSyncService(sessionsBox);
+
   // Asynchronously pull latest tasks from the cloud
   syncService.pullTasks();
+  sessionSyncService.pullSessions();
+
   // Start pushing future local changes
   syncService.startListening();
+  sessionSyncService.startListening();
 
   // Listen to changes in the tasksBox and update the home widget
   tasksBox.listenable().addListener(() {

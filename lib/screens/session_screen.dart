@@ -8,6 +8,8 @@ import 'package:button_group_m3e/button_group_m3e.dart';
 import '../utils/preferences_helper.dart';
 import '../utils/fullscreen_utils.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
+import '../models/session.dart';
 
 class SessionScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -19,10 +21,11 @@ class SessionScreen extends StatefulWidget {
 }
 
 class _SessionScreenState extends State<SessionScreen>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   Timer? _timer;
   int _seconds = 0;
   bool _isRunning = false;
+  DateTime? _currentStartTime;
 
   // Ambient mode state
   bool _isAmbient = false;
@@ -31,13 +34,24 @@ class _SessionScreenState extends State<SessionScreen>
   Timer? _ambientTimer;
   late AnimationController _ambientFadeController;
   late Animation<double> _ambientFadeAnimation;
+  
+  // Weight animation
+  late AnimationController _weightController;
+  late Animation<double> _weightAnimation;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _loadAmbientSettings();
-    _loadTimerState();
+    
+    // Initialize all animation variables first to avoid LateInitializationError
+    _weightController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _weightAnimation = Tween<double>(begin: 120, end: 920).animate(
+      CurvedAnimation(parent: _weightController, curve: Curves.easeInOut),
+    );
+
     _ambientFadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -46,6 +60,15 @@ class _SessionScreenState extends State<SessionScreen>
       parent: _ambientFadeController,
       curve: Curves.easeInOut,
     );
+
+    WidgetsBinding.instance.addObserver(this);
+    _loadAmbientSettings();
+    _loadTimerState();
+    
+    // If loading a previously running timer, sync the animation state.
+    if (_isRunning) {
+      _weightController.value = 1.0;
+    }
   }
 
   void _loadTimerState() {
@@ -83,8 +106,10 @@ class _SessionScreenState extends State<SessionScreen>
       _timer?.cancel();
       _cancelAmbientTimer();
       _saveTimerState();
+      _weightController.reverse();
     } else {
       _startTimer();
+      _weightController.forward();
     }
     setState(() {
       _isRunning = !_isRunning;
@@ -100,6 +125,7 @@ class _SessionScreenState extends State<SessionScreen>
 
   void _startTimer() {
     _timer?.cancel();
+    _currentStartTime ??= DateTime.now();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _seconds++;
@@ -112,12 +138,18 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _resetTimer() {
+    if (_seconds > 0) {
+      _saveSession();
+    }
+
     _timer?.cancel();
     _cancelAmbientTimer();
     _exitAmbientMode();
+    _weightController.reverse();
     setState(() {
       _seconds = 0;
       _isRunning = false;
+      _currentStartTime = null;
     });
     // Clear persisted state
     PreferencesHelper.remove('session_seconds');
@@ -126,6 +158,18 @@ class _SessionScreenState extends State<SessionScreen>
     if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
       toggleFullscreen(false);
     }
+  }
+
+  void _saveSession() {
+    final session = Session(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      startTime: _currentStartTime ?? DateTime.now(),
+      durationSeconds: _seconds,
+    );
+
+    final box = Hive.box<Session>('sessionsBox');
+    box.put(session.id, session);
+    // sessionSyncService will push automatically via startListening() in main.dart
   }
 
   // ===== Ambient Mode Logic =====
@@ -218,6 +262,7 @@ class _SessionScreenState extends State<SessionScreen>
     _timer?.cancel();
     _ambientTimer?.cancel();
     _ambientFadeController.dispose();
+    _weightController.dispose();
     // Restore system UI on dispose
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
@@ -277,30 +322,35 @@ class _SessionScreenState extends State<SessionScreen>
                       SizedBox(
                         width: 270,
                         height: 270,
-                        child: Transform.scale(
-                          scaleY: 1.8,
-                          child: _buildTimerDisplay(
-                            TextStyle(
-                              fontFamily: 'GoogleSansFlex',
-                              fontSize: 84,
-                              height: 0.9,
-                              fontWeight: FontWeight.w500,
-                              color: colorTheme.primary,
-                              fontVariations: const [
-                                FontVariation('wdth', 150),
-                                FontVariation('wght', 920),
-                                FontVariation('opsz', 98),
-                                FontVariation('ROND', -10),
-                                FontVariation('CNTR', 70),
-                                FontVariation('YOPQ', 36),
-                                FontVariation('YTPQ', 105),
-                                FontVariation('XTRA', 520),
-                              ],
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
-                            ),
-                          ),
+                        child: AnimatedBuilder(
+                          animation: _weightAnimation,
+                          builder: (context, child) {
+                            return Transform.scale(
+                              scaleY: 1.8,
+                              child: _buildTimerDisplay(
+                                TextStyle(
+                                  fontFamily: 'GoogleSansFlex',
+                                  fontSize: 84,
+                                  height: 0.9,
+                                  fontWeight: FontWeight.w500,
+                                  color: colorTheme.primary,
+                                  fontVariations: <FontVariation>[
+                                    const FontVariation('wdth', 150),
+                                    FontVariation('wght', _weightAnimation.value),
+                                    const FontVariation('opsz', 98),
+                                    const FontVariation('ROND', -10),
+                                    const FontVariation('CNTR', 70),
+                                    const FontVariation('YOPQ', 36),
+                                    const FontVariation('YTPQ', 105),
+                                    const FontVariation('XTRA', 520),
+                                  ],
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(height: 48),
@@ -370,29 +420,34 @@ class _SessionScreenState extends State<SessionScreen>
                     child: SizedBox(
                       width: 270,
                       height: 270,
-                      child: Transform.scale(
-                        scaleY: 1.8,
-                        child: _buildTimerDisplay(
-                          TextStyle(
-                            fontFamily: 'GoogleSansFlex',
-                            fontSize: 94,
-                            height: 0.9,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontVariations: const [
-                              FontVariation('wdth', 150),
-                              FontVariation('wght', 920),
-                              FontVariation('opsz', 98),
-                              FontVariation('ROND', -10),
-                              FontVariation('CNTR', 70),
-                              FontVariation('YOPQ', 36),
-                              FontVariation('YTPQ', 105),
-                              FontVariation('XTRA', 520),
-                            ],
-                            fontFeatures: const [FontFeature.tabularFigures()],
+                          child: AnimatedBuilder(
+                            animation: _weightAnimation,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scaleY: 1.8,
+                                child: _buildTimerDisplay(
+                                  TextStyle(
+                                    fontFamily: 'GoogleSansFlex',
+                                    fontSize: 94,
+                                    height: 0.9,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white.withOpacity(0.5),
+                                    fontVariations: <FontVariation>[
+                                      const FontVariation('wdth', 150),
+                                      FontVariation('wght', _weightAnimation.value),
+                                      const FontVariation('opsz', 98),
+                                      const FontVariation('ROND', -10),
+                                      const FontVariation('CNTR', 70),
+                                      const FontVariation('YOPQ', 36),
+                                      const FontVariation('YTPQ', 105),
+                                      const FontVariation('XTRA', 520),
+                                    ],
+                                    fontFeatures: const [FontFeature.tabularFigures()],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        ),
-                      ),
                     ),
                   ),
                 ),

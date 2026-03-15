@@ -6,6 +6,7 @@ import 'package:orches/screens/overview/components/stats_card.dart';
 import 'package:orches/screens/overview/components/progress_card.dart';
 import 'package:orches/screens/overview/components/list_card.dart';
 import 'package:orches/screens/overview/components/activity_heat_map.dart';
+import 'package:orches/screens/overview/components/focus_time_graph.dart';
 
 class OverviewPage extends StatelessWidget {
   final VoidCallback? onNavigateToTasks;
@@ -161,6 +162,12 @@ class OverviewPage extends StatelessWidget {
                 ),
               ),
               
+
+              // Focus Time Graph
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                sliver: SliverToBoxAdapter(child: FocusTimeGraph()),
+              ),
 
               // Activity Heat Map
               SliverPadding(
