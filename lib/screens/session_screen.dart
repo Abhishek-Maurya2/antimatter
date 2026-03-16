@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:m3e_collection/m3e_collection.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:button_m3e/button_m3e.dart';
 import 'package:button_group_m3e/button_group_m3e.dart';
 import '../utils/preferences_helper.dart';
@@ -33,6 +34,7 @@ class _SessionScreenState extends State<SessionScreen>
   bool _ambientModeEnabled = true;
   int _ambientIntervalSeconds = 5;
   Timer? _ambientTimer;
+  bool _stayAwakeEnabled = true;
   late AnimationController _ambientFadeController;
   late Animation<double> _ambientFadeAnimation;
 
@@ -95,6 +97,7 @@ class _SessionScreenState extends State<SessionScreen>
   void _loadAmbientSettings() {
     _ambientModeEnabled =
         PreferencesHelper.getBool('ambientModeEnabled') ?? true;
+    _stayAwakeEnabled = PreferencesHelper.getBool('stayAwakeEnabled') ?? true;
     final savedInterval =
         PreferencesHelper.getInt('ambientModeIntervalSeconds') ?? 5;
     _ambientIntervalSeconds = savedInterval.clamp(1, 60);
@@ -109,9 +112,19 @@ class _SessionScreenState extends State<SessionScreen>
     } else {
       _startTimer();
       _weightController.forward();
+      
+      // Enable wakelock if starting and enabled in settings
+      if (_stayAwakeEnabled) {
+        WakelockPlus.enable();
+      }
     }
     setState(() {
       _isRunning = !_isRunning;
+      
+      // If we just paused, disable wakelock
+      if (!_isRunning) {
+        WakelockPlus.disable();
+      }
     });
     _saveTimerState(); // Save state on toggle
     if (_isRunning && _ambientModeEnabled) {
@@ -145,6 +158,7 @@ class _SessionScreenState extends State<SessionScreen>
     _cancelAmbientTimer();
     _exitAmbientMode();
     _weightController.reverse();
+    WakelockPlus.disable(); // Always disable on reset
     setState(() {
       _seconds = 0;
       _isRunning = false;
@@ -293,6 +307,7 @@ class _SessionScreenState extends State<SessionScreen>
     _ambientTimer?.cancel();
     _ambientFadeController.dispose();
     _weightController.dispose();
+    WakelockPlus.disable(); // Clean up wakelock
     // Restore system UI on dispose
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {

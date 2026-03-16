@@ -284,8 +284,9 @@ class _HeatMapContent extends StatelessWidget {
                                                   maxCount,
                                                   colorScheme,
                                                 ),
-                                          borderRadius:
-                                              BorderRadius.circular(5),
+                                          borderRadius: BorderRadius.circular(
+                                            5,
+                                          ),
                                           border: count == 0
                                               ? Border.all(
                                                   color: colorScheme
@@ -343,13 +344,10 @@ class _HeatMapContent extends StatelessWidget {
     if (count == 0) {
       return Colors.transparent;
     }
-    // Scale opacity from 0.3 to 1.0
-    final intensity = 0.3 + (0.7 * count / maxCount);
-    return Color.lerp(
-      colorScheme.primaryContainer,
-      colorScheme.primary,
-      intensity,
-    )!;
+    const baseColor = Color.fromARGB(255, 72, 198, 72);
+    // Scale opacity from 0.2 to 1.0 based on intensity
+    final opacity = 0.2 + (0.8 * count / maxCount).clamp(0.0, 1.0);
+    return baseColor.withOpacity(opacity);
   }
 
   String _tooltipText(DateTime day, int count) {
@@ -396,17 +394,13 @@ class _HeatMapContent extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: Container(
-          width: 12,
-          height: 12,
+          width: 19,
+          height: 19,
           decoration: BoxDecoration(
             color: intensity == 0.0
                 ? Colors.transparent
-                : Color.lerp(
-                    colorScheme.primaryContainer,
-                    colorScheme.primary,
-                    0.3 + 0.7 * intensity,
-                  )!,
-            borderRadius: BorderRadius.circular(2),
+                : const Color(0xFF80DA88).withOpacity(0.2 + 0.8 * intensity),
+            borderRadius: BorderRadius.circular(5),
             border: intensity == 0.0
                 ? Border.all(color: colorScheme.outlineVariant, width: 1.5)
                 : null,
