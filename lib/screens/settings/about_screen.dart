@@ -40,179 +40,187 @@ class _AboutScreenState extends State<AboutScreen> {
       backgroundColor: widget.isEmbedded
           ? colorTheme.surfaceContainerLow
           : colorTheme.surfaceContainer,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar.large(
-            title: const Text('About'),
-            titleSpacing: widget.isEmbedded ? 16 : 0,
-            leadingWidth: widget.isEmbedded ? 0 : 80,
-            automaticallyImplyLeading: !widget.isEmbedded,
-            leading: widget.isEmbedded
-                ? null
-                : Center(
-                    child: IconButtonM3E(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Symbols.arrow_back),
-                      tooltip: 'Back',
-                      variant: IconButtonM3EVariant.tonal,
-                      width: IconButtonM3EWidth.wide,
-                    ),
-                  ),
-            backgroundColor: widget.isEmbedded
-                ? colorTheme.surfaceContainerLow
-                : colorTheme.surfaceContainer,
-            scrolledUnderElevation: 1,
-            expandedHeight: 120,
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  const SizedBox(height: 16),
-                  // App Icon & Name
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: colorTheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(32),
-                    ),
-                    child: Icon(
-                      Symbols.task_alt,
-                      fill: 1,
-                      size: 56,
-                      color: colorTheme.onPrimaryContainer,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'AntiMatter',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      fontFamily: 'RobotoFlex',
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorTheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'v$_appVersion',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: colorTheme.onSurface,
-                        fontSize: 13,
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverAppBar.large(
+                title: const Text('About'),
+                titleSpacing: widget.isEmbedded ? 16 : 0,
+                leadingWidth: widget.isEmbedded ? 0 : 80,
+                automaticallyImplyLeading: !widget.isEmbedded,
+                leading: widget.isEmbedded
+                    ? null
+                    : Center(
+                        child: IconButtonM3E(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Symbols.arrow_back),
+                          tooltip: 'Back',
+                          variant: IconButtonM3EVariant.tonal,
+                          width: IconButtonM3EWidth.wide,
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'A beautiful task manager built with Material 3 Expressive design language. '
-                    'Stay organized, track your progress, and achieve your goals with style.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: colorTheme.onSurfaceVariant,
-                      fontSize: 16,
-                      height: 1.6,
-                    ),
-                  ),
-                  const SizedBox(height: 48),
-
-                  // Info Cards Group
-                  Column(
-                    children: [
-                      _infoTile(
-                        context,
-                        icon: Symbols.code,
-                        title: 'Built with Flutter',
-                        subtitle: 'Cross-platform, native performance',
-                      ),
-                      const SizedBox(height: 12),
-                      _infoTile(
-                        context,
-                        icon: Symbols.palette,
-                        title: 'Material 3 Expressive',
-                        subtitle: 'Dynamic color, modern design tokens',
-                      ),
-                      const SizedBox(height: 12),
-                      _infoTile(
-                        context,
-                        icon: Symbols.cloud_sync,
-                        title: 'Cloud Sync',
-                        subtitle: 'Powered by Supabase',
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 48),
-
-                  // Action buttons
-                  ButtonGroupM3E(
-                    type: ButtonGroupM3EType.standard,
-                    direction: Axis.vertical,
-                    size: ButtonGroupM3ESize.lg,
-                    style: ButtonM3EStyle.filled,
-                    expanded: true,
-                    equalizeWidths: true,
-                    spacing: 0,
-                    actions: [
-                      ButtonGroupM3EAction(
-                        icon: const Icon(Symbols.description),
-                        label: const Text('Licenses'),
-                        shape: ButtonM3EShape.round,
-                        onPressed: () {
-                          showLicensePage(
-                            context: context,
-                            applicationName: 'AntiMatter',
-                            applicationVersion: _appVersion,
-                            applicationIcon: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: colorTheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  Symbols.task_alt,
-                                  fill: 1,
-                                  color: colorTheme.onPrimaryContainer,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      ButtonGroupM3EAction(
-                        icon: const Icon(Symbols.open_in_new),
-                        label: const Text('GitHub'),
-                        style: ButtonM3EStyle.tonal,
-                        shape: ButtonM3EShape.round,
-                        onPressed: () async {
-                          final uri = Uri.parse(_githubUrl);
-                          await launchUrl(
-                            uri,
-                            mode: LaunchMode.externalApplication,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 80),
-                ],
+                backgroundColor: widget.isEmbedded
+                    ? colorTheme.surfaceContainerLow
+                    : colorTheme.surfaceContainer,
+                scrolledUnderElevation: 1,
+                expandedHeight: 120,
               ),
-            ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 120),
+                  child: Column(
+                    children: [
+                      // App Icon & Name
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: colorTheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                        child: Icon(
+                          Symbols.task_alt,
+                          fill: 1,
+                          size: 56,
+                          color: colorTheme.onPrimaryContainer,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'AntiMatter',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'RobotoFlex',
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorTheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'v$_appVersion',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: colorTheme.onSurface,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'A beautiful task manager built with Material 3 Expressive design language. '
+                        'Stay organized, track your progress, and achieve your goals with style.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: colorTheme.onSurfaceVariant,
+                          fontSize: 16,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 48),
+
+                      // Info Cards Group
+                      Column(
+                        children: [
+                          _infoTile(
+                            context,
+                            icon: Symbols.code,
+                            title: 'Built with Flutter',
+                            subtitle: 'Cross-platform, native performance',
+                          ),
+                          const SizedBox(height: 12),
+                          _infoTile(
+                            context,
+                            icon: Symbols.palette,
+                            title: 'Material 3 Expressive',
+                            subtitle: 'Dynamic color, modern design tokens',
+                          ),
+                          const SizedBox(height: 12),
+                          _infoTile(
+                            context,
+                            icon: Symbols.cloud_sync,
+                            title: 'Cloud Sync',
+                            subtitle: 'Powered by Supabase',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: _buildBottomButtonGroup(),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBottomButtonGroup() {
+    final colorTheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      child: SafeArea(
+        child: ButtonGroupM3E(
+          type: ButtonGroupM3EType.connected,
+          size: ButtonGroupM3ESize.lg,
+          style: ButtonM3EStyle.filled,
+          expanded: true,
+          linearMainAxisAlignment: MainAxisAlignment.center,
+          actions: [
+            ButtonGroupM3EAction(
+              icon: const Icon(Symbols.description),
+              label: const Text('Licenses'),
+              shape: ButtonM3EShape.round,
+              onPressed: () {
+                showLicensePage(
+                  context: context,
+                  applicationName: 'AntiMatter',
+                  applicationVersion: _appVersion,
+                  applicationIcon: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: colorTheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Symbols.task_alt,
+                        fill: 1,
+                        color: colorTheme.onPrimaryContainer,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            ButtonGroupM3EAction(
+              icon: const Icon(Symbols.open_in_new),
+              label: const Text('GitHub'),
+              style: ButtonM3EStyle.tonal,
+              shape: ButtonM3EShape.round,
+              onPressed: () async {
+                final uri = Uri.parse(_githubUrl);
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

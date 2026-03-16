@@ -355,9 +355,10 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
       backgroundColor: widget.isEmbedded
           ? colorTheme.surfaceContainerLow
           : colorTheme.surfaceContainer,
-      bottomNavigationBar: _buildBottomButtonGroup(),
-      body: CustomScrollView(
-        slivers: [
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
           SliverAppBar.large(
             title: Text('Updates'),
             titleSpacing: widget.isEmbedded ? 16 : 0,
@@ -383,7 +384,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
           SliverFillRemaining(
             hasScrollBody: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 84),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
               child: _isLoading
                   ? Center(
                       child: Column(
@@ -662,6 +663,12 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                       ],
                     ),
             ),
+          ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: _buildBottomButtonGroup() ?? const SizedBox.shrink(),
           ),
         ],
       ),
