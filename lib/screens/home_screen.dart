@@ -38,7 +38,12 @@ class _HomeScreenState extends State<HomeScreen> {
         // Build the body based on top-level nav index
         Widget bodyContent;
         if (_navIndex == 0) {
+          final bool isRailExpanded = isExpanded &&
+              MediaQuery.sizeOf(context).width >= 1000 &&
+              _railType == NavigationRailM3EType.expanded;
+
           bodyContent = OverviewPage(
+            isRailExpanded: isRailExpanded,
             onNavigateToTasks: () {
               setState(() {
                 _navIndex = 1;

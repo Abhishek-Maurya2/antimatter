@@ -10,8 +10,13 @@ import 'package:orches/screens/overview/components/focus_time_graph.dart';
 
 class OverviewPage extends StatelessWidget {
   final VoidCallback? onNavigateToTasks;
+  final bool isRailExpanded;
 
-  const OverviewPage({super.key, this.onNavigateToTasks});
+  const OverviewPage({
+    super.key,
+    this.onNavigateToTasks,
+    this.isRailExpanded = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -163,17 +168,34 @@ class OverviewPage extends StatelessWidget {
               ),
               
 
-              // Focus Time Graph
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                sliver: SliverToBoxAdapter(child: FocusTimeGraph()),
-              ),
+              // Focus Time & Heat Map (Responsive)
+              if (isRailExpanded)
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                  sliver: SliverToBoxAdapter(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 3, child: FocusTimeGraph()),
+                        const SizedBox(width: 12),
+                        Expanded(flex: 2, child: ActivityHeatMap()),
+                      ],
+                    ),
+                  ),
+                )
+              else ...[
+                // Focus Time Graph
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  sliver: SliverToBoxAdapter(child: FocusTimeGraph()),
+                ),
 
-              // Activity Heat Map
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                sliver: SliverToBoxAdapter(child: ActivityHeatMap()),
-              ),
+                // Activity Heat Map
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                  sliver: SliverToBoxAdapter(child: ActivityHeatMap()),
+                ),
+              ],
             ],
           ),
         );
