@@ -174,7 +174,7 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                               _formatDuration(todayTotal).toUpperCase(),
                               style: TextStyle(
                                 fontFamily: 'GoogleSansFlex',
-                                fontSize: 24,
+                                fontSize: 28,
                                 fontVariations: const [
                                   FontVariation('wght', 600),
                                   FontVariation('wdth', 100),
@@ -217,7 +217,7 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                               key: const ValueKey('expanded_stats'),
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const SizedBox(height: 10),
+                                const SizedBox(height: 20),
                                 Text(
                                   'Average Focus',
                                   style: TextStyle(
@@ -234,12 +234,12 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(height: 3),
+                                // const SizedBox(height: 1),
                                 Text(
                                   _formatDuration(averageFocus).toUpperCase(),
                                   style: TextStyle(
                                     fontFamily: 'GoogleSansFlex',
-                                    fontSize: 34,
+                                    fontSize: 38,
                                     fontVariations: const [
                                       FontVariation('wght', 700),
                                       FontVariation('wdth', 100),
@@ -260,7 +260,7 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
           ),
           const SizedBox(height: 24),
           SizedBox(
-            height: 180, // Increased height
+            height: 320, // Increased height
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -307,20 +307,18 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                             children: [
                               Tooltip(
                                 message: _formatDuration(seconds),
+                                triggerMode: TooltipTriggerMode.tap,
                                 child: Container(
                                   margin: const EdgeInsets.symmetric(
                                     horizontal: 2,
                                   ),
-                                  height: (heightFactor * 120).clamp(
-                                    4,
-                                    120,
-                                  ),
+                                  height: (heightFactor * 200).clamp(4, 200),
                                   decoration: BoxDecoration(
                                     color: isLowFocus
                                         ? colorScheme.error
                                         : (isLessFocus
-                                            ? colorScheme.primary
-                                            : barDefaultColor),
+                                              ? colorScheme.primary
+                                              : barDefaultColor),
                                     borderRadius: BorderRadius.circular(50),
                                   ),
                                   alignment: Alignment.topCenter,
@@ -336,8 +334,9 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                                             polygon: isLowFocus
                                                 ? MaterialShapes.arrow
                                                 : (isLessFocus
-                                                    ? MaterialShapes.gem
-                                                    : MaterialShapes.softBurst),
+                                                      ? MaterialShapes.gem
+                                                      : MaterialShapes
+                                                            .softBurst),
                                             color: colorScheme.surface
                                                 .withOpacity(0.7),
                                           ),
@@ -350,10 +349,9 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                               const SizedBox(height: 8),
                               // Day Name
                               Text(
-                                DateFormat('E')
-                                    .format(date)
-                                    .substring(0, 1)
-                                    .toUpperCase(),
+                                DateFormat(
+                                  'E',
+                                ).format(date).substring(0, 1).toUpperCase(),
                                 style: textTheme.labelSmall?.copyWith(
                                   color: colorScheme.onSurfaceVariant,
                                   fontSize: 10,
