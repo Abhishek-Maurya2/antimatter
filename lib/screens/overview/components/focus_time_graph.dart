@@ -312,7 +312,7 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                                   margin: const EdgeInsets.symmetric(
                                     horizontal: 2,
                                   ),
-                                  height: (heightFactor * 200).clamp(4, 200),
+                                  height: (heightFactor * 286).clamp(4, 286),
                                   decoration: BoxDecoration(
                                     color: isLowFocus
                                         ? colorScheme.error
@@ -398,9 +398,10 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
     if (seconds <= 0) return '0m';
     final minutes = seconds ~/ 60;
     if (minutes < 60) return '${minutes}m';
-    final hours = minutes / 60;
-    if (hours == hours.toInt()) return '${hours.toInt()}h';
-    return '${hours.toStringAsFixed(1)}h';
+    final hours = minutes ~/ 60;
+    final remainingMins = minutes % 60;
+    if (remainingMins == 0) return '${hours}h';
+    return '${hours}h ${remainingMins}m';
   }
 
   bool _isSameDay(DateTime a, DateTime b) {
