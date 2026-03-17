@@ -53,6 +53,7 @@ class _HeatMapContent extends StatefulWidget {
 class _HeatMapContentState extends State<_HeatMapContent> {
   final ScrollController _scrollController = ScrollController();
   bool _isHovering = false;
+  bool _isStatsExpanded = false;
 
   static const double _cellSize = ActivityHeatMap._cellSize;
   static const double _cellGap = ActivityHeatMap._cellGap;
@@ -72,6 +73,39 @@ class _HeatMapContentState extends State<_HeatMapContent> {
 
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
+    final int totalCompleted = widget.completionMap.values.fold<int>(
+      0,
+      (a, b) => a + b,
+    );
+    final int todayCompleted = widget.completionMap[todayDate] ?? 0;
+
+    int sevenDayTotal = 0;
+    int activeDaysLast7 = 0;
+    for (int i = 0; i < 7; i++) {
+      final date = todayDate.subtract(Duration(days: i));
+      final count = widget.completionMap[date] ?? 0;
+      sevenDayTotal += count;
+      if (count > 0) activeDaysLast7++;
+    }
+    final double avgPerDay = sevenDayTotal / 7;
+
+    int currentStreak = 0;
+    for (int i = 0; ; i++) {
+      final date = todayDate.subtract(Duration(days: i));
+      final count = widget.completionMap[date] ?? 0;
+      if (count == 0) break;
+      currentStreak++;
+    }
+
+    int bestDayCount = 0;
+    String bestDayLabel = '-';
+    if (widget.completionMap.isNotEmpty) {
+      final bestDayEntry = widget.completionMap.entries.reduce(
+        (a, b) => a.value >= b.value ? a : b,
+      );
+      bestDayCount = bestDayEntry.value;
+      bestDayLabel = _formatDayLabel(bestDayEntry.key);
+    }
 
     // --- NEW: Generate calendar-style grouped months ---
     final monthGroups = <_MonthGroup>[];
@@ -185,7 +219,7 @@ class _HeatMapContentState extends State<_HeatMapContent> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '${widget.completionMap.values.fold<int>(0, (a, b) => a + b)} done',
+                    '$totalCompleted done',
                     style: TextStyle(
                       fontFamily: 'GoogleSansFlex',
                       fontSize: 12,
@@ -202,7 +236,102 @@ class _HeatMapContentState extends State<_HeatMapContent> {
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _isStatsExpanded = !_isStatsExpanded;
+                    });
+                  },
+                  icon: Icon(
+                    _isStatsExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                  ),
+                  tooltip: _isStatsExpanded ? 'Show less' : 'Show more',
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.surfaceContainer,
+                  ),
+                ),
               ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Today Done',
+              style: textTheme.labelLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              '$todayCompleted ${_taskWord(todayCompleted)}',
+              style: TextStyle(
+                fontFamily: 'GoogleSansFlex',
+                fontSize: 30,
+                color: colorScheme.onSurface,
+                fontVariations: const [
+                  FontVariation('wght', 700),
+                  FontVariation('wdth', 100),
+                  FontVariation('ROND', 180),
+                ],
+              ),
+            ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              child: _isStatsExpanded
+                  ? Column(
+                      key: const ValueKey('expanded_activity_stats'),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 10),
+                        Text(
+                          '7D Total: $sevenDayTotal ${_taskWord(sevenDayTotal)}',
+                          style: textTheme.labelLarge?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Avg/Day: ${avgPerDay.toStringAsFixed(1)}',
+                          style: textTheme.labelLarge?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Active Days (7D): $activeDaysLast7/7',
+                          style: textTheme.labelLarge?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Current Streak: $currentStreak ${_dayWord(currentStreak)}',
+                          style: textTheme.labelLarge?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Best Day: $bestDayCount ${_taskWord(bestDayCount)} · $bestDayLabel',
+                          style: textTheme.labelLarge?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(
+                      key: ValueKey('collapsed_activity_stats'),
+                    ),
             ),
             const SizedBox(height: 16),
 
@@ -412,6 +541,28 @@ class _HeatMapContentState extends State<_HeatMapContent> {
       'Dec',
     ];
     return names[month - 1];
+  }
+
+  String _taskWord(int count) => count == 1 ? 'task' : 'tasks';
+
+  String _dayWord(int count) => count == 1 ? 'day' : 'days';
+
+  String _formatDayLabel(DateTime day) {
+    const names = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${names[day.month - 1]} ${day.day}'.toUpperCase();
   }
 
   List<Widget> _buildLegendCells(ColorScheme colorScheme) {

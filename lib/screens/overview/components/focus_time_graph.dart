@@ -91,6 +91,7 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
     final now = DateTime.now();
     int todayTotal = 0;
     int sevenDayTotal = 0;
+    int activeDaysLast7 = 0;
 
     for (int i = 0; i < 7; i++) {
       final targetDate = now.subtract(Duration(days: i));
@@ -98,11 +99,19 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
         if (_isSameDay(entry.key, targetDate)) {
           sevenDayTotal += entry.value;
           if (i == 0) todayTotal = entry.value;
+          if (entry.value > 0) activeDaysLast7++;
           break;
         }
       }
     }
     final int averageFocus = sevenDayTotal ~/ 7;
+    final bestDayEntry = widget.dailyFocus.entries.reduce(
+      (a, b) => a.value >= b.value ? a : b,
+    );
+    final int bestDaySeconds = bestDayEntry.value;
+    final String bestDayLabel = DateFormat(
+      'd MMM',
+    ).format(bestDayEntry.key).toUpperCase();
 
     const barDefaultColor = Color(0xFF80DA88);
 
@@ -251,6 +260,30 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                                         FontVariation('CNTR', 100),
                                         FontVariation('XTRA', 500),
                                       ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '7D TOTAL: ${_formatDuration(sevenDayTotal).toUpperCase()}',
+                                    style: textTheme.labelMedium?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'ACTIVE DAYS: $activeDaysLast7/7',
+                                    style: textTheme.labelMedium?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'BEST DAY: ${_formatDuration(bestDaySeconds).toUpperCase()} · $bestDayLabel',
+                                    style: textTheme.labelMedium?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.w400,
                                     ),
                                   ),
                                 ],
