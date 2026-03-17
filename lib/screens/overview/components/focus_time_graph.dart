@@ -58,6 +58,7 @@ class _FocusGraphCard extends StatefulWidget {
 class _FocusGraphCardState extends State<_FocusGraphCard> {
   final ScrollController _scrollController = ScrollController();
   bool _isStatsExpanded = false;
+  bool _isHovering = false;
 
   @override
   void initState() {
@@ -105,280 +106,303 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
 
     const barDefaultColor = Color(0xFF80DA88);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.analytics_rounded,
-                          color: colorScheme.primary,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Focus Time',
-                          style: TextStyle(
-                            fontFamily: 'GoogleSansFlex',
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
-                            fontVariations: const [
-                              FontVariation('wght', 600),
-                              FontVariation('wdth', 100),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.analytics_rounded,
+                            color: colorScheme.primary,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Focus Time',
+                            style: TextStyle(
+                              fontFamily: 'GoogleSansFlex',
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                              fontVariations: const [
+                                FontVariation('wght', 600),
+                                FontVariation('wdth', 100),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Today Focused',
+                                style: TextStyle(
+                                  fontFamily: 'GoogleSansFlex',
+                                  fontSize: 14,
+                                  fontVariations: const [
+                                    FontVariation('wght', 500),
+                                    FontVariation('wdth', 110),
+                                    FontVariation('wght', 600),
+                                    FontVariation('wdth', 100),
+                                    FontVariation('ROND', 100),
+                                    FontVariation('CNTR', 100),
+                                    FontVariation('XTRA', 100),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                _formatDuration(todayTotal).toUpperCase(),
+                                style: TextStyle(
+                                  fontFamily: 'GoogleSansFlex',
+                                  fontSize: 28,
+                                  fontVariations: const [
+                                    FontVariation('wght', 600),
+                                    FontVariation('wdth', 100),
+                                    FontVariation('ROND', 200),
+                                    FontVariation('CNTR', 100),
+                                    FontVariation('XTRA', 100),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Today Focused',
-                              style: TextStyle(
-                                fontFamily: 'GoogleSansFlex',
-                                fontSize: 14,
-                                fontVariations: const [
-                                  FontVariation('wght', 500),
-                                  FontVariation('wdth', 110),
-                                  FontVariation('wght', 600),
-                                  FontVariation('wdth', 100),
-                                  FontVariation('ROND', 100),
-                                  FontVariation('CNTR', 100),
-                                  FontVariation('XTRA', 100),
-                                ],
-                              ),
+                          IconButtonM3E(
+                            onPressed: () {
+                              setState(() {
+                                _isStatsExpanded = !_isStatsExpanded;
+                              });
+                            },
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                            selectedIcon: const Icon(
+                              Icons.keyboard_arrow_up_rounded,
                             ),
-                            const SizedBox(height: 3),
-                            Text(
-                              _formatDuration(todayTotal).toUpperCase(),
-                              style: TextStyle(
-                                fontFamily: 'GoogleSansFlex',
-                                fontSize: 28,
-                                fontVariations: const [
-                                  FontVariation('wght', 600),
-                                  FontVariation('wdth', 100),
-                                  FontVariation('ROND', 200),
-                                  FontVariation('CNTR', 100),
-                                  FontVariation('XTRA', 100),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        IconButtonM3E(
-                          onPressed: () {
-                            setState(() {
-                              _isStatsExpanded = !_isStatsExpanded;
-                            });
-                          },
-                          icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                          selectedIcon: const Icon(
-                            Icons.keyboard_arrow_up_rounded,
+                            isSelected: _isStatsExpanded,
+                            variant: IconButtonM3EVariant.tonal,
+                            backgroundColor: colorScheme.surfaceContainer,
+                            width: IconButtonM3EWidth.wide,
                           ),
-                          isSelected: _isStatsExpanded,
-                          variant: IconButtonM3EVariant.tonal,
-                          backgroundColor: colorScheme.surfaceContainer,
-                          width: IconButtonM3EWidth.wide,
-                        ),
-                      ],
-                    ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      transitionBuilder:
-                          (Widget child, Animation<double> animation) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
-                          },
-                      child: _isStatsExpanded
-                          ? Column(
-                              key: const ValueKey('expanded_stats'),
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 20),
-                                Text(
-                                  'Average Focus',
-                                  style: TextStyle(
-                                    fontFamily: 'GoogleSansFlex',
-                                    fontSize: 14,
-                                    fontVariations: const [
-                                      FontVariation('wght', 500),
-                                      FontVariation('wdth', 110),
-                                      FontVariation('wght', 600),
-                                      FontVariation('wdth', 100),
-                                      FontVariation('ROND', 100),
-                                      FontVariation('CNTR', 100),
-                                      FontVariation('XTRA', 100),
-                                    ],
+                        ],
+                      ),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder:
+                            (Widget child, Animation<double> animation) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                        child: _isStatsExpanded
+                            ? Column(
+                                key: const ValueKey('expanded_stats'),
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 20),
+                                  Text(
+                                    'Average Focus',
+                                    style: TextStyle(
+                                      fontFamily: 'GoogleSansFlex',
+                                      fontSize: 14,
+                                      fontVariations: const [
+                                        FontVariation('wght', 500),
+                                        FontVariation('wdth', 110),
+                                        FontVariation('wght', 600),
+                                        FontVariation('wdth', 100),
+                                        FontVariation('ROND', 100),
+                                        FontVariation('CNTR', 100),
+                                        FontVariation('XTRA', 100),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                // const SizedBox(height: 1),
-                                Text(
-                                  _formatDuration(averageFocus).toUpperCase(),
-                                  style: TextStyle(
-                                    fontFamily: 'GoogleSansFlex',
-                                    fontSize: 38,
-                                    fontVariations: const [
-                                      FontVariation('wght', 700),
-                                      FontVariation('wdth', 100),
-                                      FontVariation('ROND', 200),
-                                      FontVariation('CNTR', 100),
-                                      FontVariation('XTRA', 500),
-                                    ],
+                                  // const SizedBox(height: 1),
+                                  Text(
+                                    _formatDuration(averageFocus).toUpperCase(),
+                                    style: TextStyle(
+                                      fontFamily: 'GoogleSansFlex',
+                                      fontSize: 38,
+                                      fontVariations: const [
+                                        FontVariation('wght', 700),
+                                        FontVariation('wdth', 100),
+                                        FontVariation('ROND', 200),
+                                        FontVariation('CNTR', 100),
+                                        FontVariation('XTRA', 500),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            )
-                          : const SizedBox.shrink(key: ValueKey('empty_stats')),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            height: 320, // Increased height
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // Y-Axis Labels
-                Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: 34.0, // Adjusted for new label block height
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      _buildYLabel(_formatYLabel(maxSeconds)),
-                      _buildYLabel(_formatYLabel(maxSeconds ~/ 1.5)),
-                      _buildYLabel(_formatYLabel(maxSeconds ~/ 2)),
-                      _buildYLabel(_formatYLabel(maxSeconds ~/ 3)),
-                      _buildYLabel('0m'),
+                                ],
+                              )
+                            : const SizedBox.shrink(
+                                key: ValueKey('empty_stats'),
+                              ),
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                // Scrollable Bars
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Row(
+              ],
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              height: 320, // Increased height
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Y-Axis Labels
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 34.0, // Adjusted for new label block height
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.end,
-                      children: List.generate(sortedDates.length, (index) {
-                        final date = sortedDates[index];
-                        final seconds = widget.dailyFocus[date] ?? 0;
-                        final heightFactor = seconds / maxSeconds;
-                        final isToday = _isSameDay(date, DateTime.now());
-                        final isLowFocus =
-                            averageFocus > 0 && seconds < (averageFocus / 2);
-                        final isLessFocus =
-                            averageFocus > 0 && seconds < (averageFocus / 1.2);
+                      children: [
+                        _buildYLabel(_formatYLabel(maxSeconds)),
+                        _buildYLabel(_formatYLabel(maxSeconds ~/ 1.5)),
+                        _buildYLabel(_formatYLabel(maxSeconds ~/ 2)),
+                        _buildYLabel(_formatYLabel(maxSeconds ~/ 3)),
+                        _buildYLabel('0m'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Scrollable Bars
+                  Expanded(
+                    child: Scrollbar(
+                      controller: _scrollController,
+                      thumbVisibility: _isHovering,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        controller: _scrollController,
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: List.generate(sortedDates.length, (index) {
+                            final date = sortedDates[index];
+                            final seconds = widget.dailyFocus[date] ?? 0;
+                            final heightFactor = seconds / maxSeconds;
+                            final isToday = _isSameDay(date, DateTime.now());
+                            final isLowFocus =
+                                averageFocus > 0 &&
+                                seconds < (averageFocus / 2);
+                            final isLessFocus =
+                                averageFocus > 0 &&
+                                seconds < (averageFocus / 1.2);
 
-                        return SizedBox(
-                          width: 48,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Tooltip(
-                                message: _formatDuration(seconds),
-                                triggerMode: TooltipTriggerMode.tap,
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                  ),
-                                  height: (heightFactor * 286).clamp(4, 286),
-                                  decoration: BoxDecoration(
-                                    color: isLowFocus
-                                        ? colorScheme.error
-                                        : (isLessFocus
-                                              ? colorScheme.primary
-                                              : barDefaultColor),
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                  alignment: Alignment.topCenter,
-                                  padding: const EdgeInsets.all(4),
-                                  child: AspectRatio(
-                                    aspectRatio: 1,
-                                    child: Center(
-                                      child: FractionallySizedBox(
-                                        widthFactor: 1,
-                                        heightFactor: 1,
-                                        child: CustomPaint(
-                                          painter: _ShapePainter(
-                                            polygon: isLowFocus
-                                                ? MaterialShapes.arrow
-                                                : (isLessFocus
-                                                      ? MaterialShapes.gem
-                                                      : MaterialShapes
-                                                            .softBurst),
-                                            color: colorScheme.surface
-                                                .withOpacity(0.7),
+                            return SizedBox(
+                              width: 48,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Tooltip(
+                                    message: _formatDuration(seconds),
+                                    triggerMode: TooltipTriggerMode.tap,
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 2,
+                                      ),
+                                      height: (heightFactor * 286).clamp(
+                                        4,
+                                        286,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isLowFocus
+                                            ? colorScheme.error
+                                            : (isLessFocus
+                                                  ? colorScheme.primary
+                                                  : barDefaultColor),
+                                        borderRadius: BorderRadius.circular(50),
+                                      ),
+                                      alignment: Alignment.topCenter,
+                                      padding: const EdgeInsets.all(4),
+                                      child: AspectRatio(
+                                        aspectRatio: 1,
+                                        child: Center(
+                                          child: FractionallySizedBox(
+                                            widthFactor: 1,
+                                            heightFactor: 1,
+                                            child: CustomPaint(
+                                              painter: _ShapePainter(
+                                                polygon: isLowFocus
+                                                    ? MaterialShapes.arrow
+                                                    : (isLessFocus
+                                                          ? MaterialShapes.gem
+                                                          : MaterialShapes
+                                                                .softBurst),
+                                                color: colorScheme.surface
+                                                    .withOpacity(0.7),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
+                                  const SizedBox(height: 8),
+                                  // Day Name
+                                  Text(
+                                    DateFormat('E')
+                                        .format(date)
+                                        .substring(0, 1)
+                                        .toUpperCase(),
+                                    style: textTheme.labelSmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                      fontSize: 10,
+                                      fontWeight: isToday
+                                          ? FontWeight.bold
+                                          : null,
+                                    ),
+                                  ),
+                                  // Date Number
+                                  Text(
+                                    DateFormat(
+                                      'd MMM',
+                                    ).format(date).toUpperCase(),
+                                    style: textTheme.labelSmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant
+                                          .withOpacity(0.6),
+                                      fontSize: 8,
+                                      fontWeight: isToday
+                                          ? FontWeight.bold
+                                          : null,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 8),
-                              // Day Name
-                              Text(
-                                DateFormat(
-                                  'E',
-                                ).format(date).substring(0, 1).toUpperCase(),
-                                style: textTheme.labelSmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  fontSize: 10,
-                                  fontWeight: isToday ? FontWeight.bold : null,
-                                ),
-                              ),
-                              // Date Number
-                              Text(
-                                DateFormat('d MMM').format(date).toUpperCase(),
-                                style: textTheme.labelSmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant
-                                      .withOpacity(0.6),
-                                  fontSize: 8,
-                                  fontWeight: isToday ? FontWeight.bold : null,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
+                            );
+                          }),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

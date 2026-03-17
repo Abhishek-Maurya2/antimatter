@@ -41,15 +41,29 @@ class ActivityHeatMap extends StatelessWidget {
   }
 }
 
-class _HeatMapContent extends StatelessWidget {
+class _HeatMapContent extends StatefulWidget {
   final Map<DateTime, int> completionMap;
 
   const _HeatMapContent({required this.completionMap});
+
+  @override
+  State<_HeatMapContent> createState() => _HeatMapContentState();
+}
+
+class _HeatMapContentState extends State<_HeatMapContent> {
+  final ScrollController _scrollController = ScrollController();
+  bool _isHovering = false;
 
   static const double _cellSize = ActivityHeatMap._cellSize;
   static const double _cellGap = ActivityHeatMap._cellGap;
   static const double _labelWidth = ActivityHeatMap._labelWidth;
   static const int _weeksToShow = ActivityHeatMap._weeksToShow;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +125,7 @@ class _HeatMapContent extends StatelessWidget {
     // ----------------------------------------------------
 
     // Find max value for color scaling
-    final maxCount = completionMap.values.fold<int>(
+    final maxCount = widget.completionMap.values.fold<int>(
       1,
       (prev, val) => val > prev ? val : prev,
     );
@@ -121,221 +135,232 @@ class _HeatMapContent extends StatelessWidget {
 
     final gridHeight = _cellSize * 7 + _cellGap * 6;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title row
-          Row(
-            children: [
-              Icon(
-                Icons.local_fire_department_rounded,
-                color: colorScheme.primary,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Activity',
-                style: TextStyle(
-                  fontFamily: 'GoogleSansFlex',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                  fontVariations: const [
-                    FontVariation('wght', 600),
-                    FontVariation('wdth', 100),
-                    FontVariation('ROND', 80),
-                    FontVariation('GRAD', 0),
-                    FontVariation('opsz', 18),
-                    FontVariation('slnt', 0),
-                  ],
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title row
+            Row(
+              children: [
+                Icon(
+                  Icons.local_fire_department_rounded,
+                  color: colorScheme.primary,
+                  size: 24,
                 ),
-              ),
-              const Spacer(),
-              // Summary chip
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${completionMap.values.fold<int>(0, (a, b) => a + b)} done',
+                const SizedBox(width: 12),
+                Text(
+                  'Activity',
                   style: TextStyle(
                     fontFamily: 'GoogleSansFlex',
-                    fontSize: 12,
-                    color: colorScheme.onPrimaryContainer,
+                    fontSize: 18,
                     fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
                     fontVariations: const [
                       FontVariation('wght', 600),
                       FontVariation('wdth', 100),
-                      FontVariation('ROND', 100),
+                      FontVariation('ROND', 80),
                       FontVariation('GRAD', 0),
-                      FontVariation('opsz', 12),
+                      FontVariation('opsz', 18),
                       FontVariation('slnt', 0),
                     ],
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Combined scrollable area for headers and grid
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Fixed Day labels column
-              Padding(
-                padding: const EdgeInsets.only(top: 20), // Align with grid
-                child: SizedBox(
-                  width: _labelWidth,
-                  height: gridHeight,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: List.generate(7, (i) {
-                      return SizedBox(
-                        height: _cellSize,
-                        child: Center(
-                          child: Text(
-                            dayLabels[i],
-                            style: textTheme.labelSmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
+                const Spacer(),
+                // Summary chip
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${widget.completionMap.values.fold<int>(0, (a, b) => a + b)} done',
+                    style: TextStyle(
+                      fontFamily: 'GoogleSansFlex',
+                      fontSize: 12,
+                      color: colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w600,
+                      fontVariations: const [
+                        FontVariation('wght', 600),
+                        FontVariation('wdth', 100),
+                        FontVariation('ROND', 100),
+                        FontVariation('GRAD', 0),
+                        FontVariation('opsz', 12),
+                        FontVariation('slnt', 0),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
+              ],
+            ),
+            const SizedBox(height: 16),
 
-              // Scrollable content (Months + Grid)
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  reverse: true,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Month names row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: monthGroups.map((group) {
-                          final weeksCount = group.weeks.length;
-                          final groupWidth =
-                              weeksCount * _cellSize +
-                              (weeksCount - 1) * _cellGap;
-                          return SizedBox(
-                            width: groupWidth + 16, // match month spacing (16)
+            // Combined scrollable area for headers and grid
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Fixed Day labels column
+                Padding(
+                  padding: const EdgeInsets.only(top: 20), // Align with grid
+                  child: SizedBox(
+                    width: _labelWidth,
+                    height: gridHeight,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(7, (i) {
+                        return SizedBox(
+                          height: _cellSize,
+                          child: Center(
                             child: Text(
-                              group.name,
+                              dayLabels[i],
                               style: textTheme.labelSmall?.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                                 fontSize: 10,
-                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 4),
-
-                      // Grid rows
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: monthGroups.map((group) {
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 16),
-                            child: Row(
-                              spacing: _cellGap,
-                              children: group.weeks.map((week) {
-                                return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  spacing: _cellGap,
-                                  children: week.map((day) {
-                                    if (day == null) {
-                                      return SizedBox(
-                                        width: _cellSize,
-                                        height: _cellSize,
-                                      );
-                                    }
-                                    final count = completionMap[day] ?? 0;
-                                    return Tooltip(
-                                      message: _tooltipText(day, count),
-                                      child: Container(
-                                        width: _cellSize,
-                                        height: _cellSize,
-                                        decoration: BoxDecoration(
-                                          color: count == 0
-                                              ? Colors.transparent
-                                              : _getCellColor(
-                                                  count,
-                                                  maxCount,
-                                                  colorScheme,
-                                                ),
-                                          borderRadius: BorderRadius.circular(
-                                            5,
-                                          ),
-                                          border: count == 0
-                                              ? Border.all(
-                                                  color: colorScheme
-                                                      .outlineVariant,
-                                                  width: 1,
-                                                )
-                                              : null,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                );
-                              }).toList(),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
+                          ),
+                        );
+                      }),
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+                const SizedBox(width: 8),
 
-          // Legend
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                'Less',
-                style: textTheme.labelSmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontSize: 10,
+                // Scrollable content (Months + Grid)
+                Expanded(
+                  child: Scrollbar(
+                    controller: _scrollController,
+                    thumbVisibility: _isHovering,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      controller: _scrollController,
+                      scrollDirection: Axis.horizontal,
+                      reverse: true,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Month names row
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: monthGroups.map((group) {
+                              final weeksCount = group.weeks.length;
+                              final groupWidth =
+                                  weeksCount * _cellSize +
+                                  (weeksCount - 1) * _cellGap;
+                              return SizedBox(
+                                width:
+                                    groupWidth + 16, // match month spacing (16)
+                                child: Text(
+                                  group.name,
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 4),
+
+                          // Grid rows
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: monthGroups.map((group) {
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 16),
+                                child: Row(
+                                  spacing: _cellGap,
+                                  children: group.weeks.map((week) {
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      spacing: _cellGap,
+                                      children: week.map((day) {
+                                        if (day == null) {
+                                          return SizedBox(
+                                            width: _cellSize,
+                                            height: _cellSize,
+                                          );
+                                        }
+                                        final count =
+                                            widget.completionMap[day] ?? 0;
+                                        return Tooltip(
+                                          message: _tooltipText(day, count),
+                                          child: Container(
+                                            width: _cellSize,
+                                            height: _cellSize,
+                                            decoration: BoxDecoration(
+                                              color: count == 0
+                                                  ? Colors.transparent
+                                                  : _getCellColor(
+                                                      count,
+                                                      maxCount,
+                                                      colorScheme,
+                                                    ),
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                              border: count == 0
+                                                  ? Border.all(
+                                                      color: colorScheme
+                                                          .outlineVariant,
+                                                      width: 1,
+                                                    )
+                                                  : null,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    );
+                                  }).toList(),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              ..._buildLegendCells(colorScheme),
-              const SizedBox(width: 4),
-              Text(
-                'More',
-                style: textTheme.labelSmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontSize: 10,
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Legend
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  'Less',
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 10,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(width: 4),
+                ..._buildLegendCells(colorScheme),
+                const SizedBox(width: 4),
+                Text(
+                  'More',
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
