@@ -113,6 +113,12 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
       'd MMM',
     ).format(bestDayEntry.key).toUpperCase();
 
+    const double chartHeight = 320;
+    const double xAxisBottomOffset = 34;
+    const double scrollbarBottomInset = 12;
+    final double maxBarHeight =
+        chartHeight - xAxisBottomOffset - scrollbarBottomInset;
+
     const barDefaultColor = Color(0xFF80DA88);
 
     return MouseRegion(
@@ -299,14 +305,14 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
             ),
             const SizedBox(height: 24),
             SizedBox(
-              height: 320, // Increased height
+              height: chartHeight,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   // Y-Axis Labels
                   Padding(
                     padding: const EdgeInsets.only(
-                      bottom: 34.0, // Adjusted for new label block height
+                      bottom: xAxisBottomOffset + scrollbarBottomInset,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -327,7 +333,9 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                       controller: _scrollController,
                       thumbVisibility: _isHovering,
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.only(
+                          bottom: scrollbarBottomInset,
+                        ),
                         controller: _scrollController,
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
@@ -357,10 +365,8 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                                       margin: const EdgeInsets.symmetric(
                                         horizontal: 2,
                                       ),
-                                      height: (heightFactor * 286).clamp(
-                                        4,
-                                        286,
-                                      ),
+                                      height: (heightFactor * maxBarHeight)
+                                          .clamp(4.0, maxBarHeight),
                                       decoration: BoxDecoration(
                                         color: isLowFocus
                                             ? colorScheme.error
