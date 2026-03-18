@@ -118,6 +118,7 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
     const double scrollbarBottomInset = 12;
     final double maxBarHeight =
         chartHeight - xAxisBottomOffset - scrollbarBottomInset;
+    final double drawableMaxBarHeight = maxBarHeight - 1;
 
     const barDefaultColor = Color(0xFF80DA88);
 
@@ -365,8 +366,9 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                                       margin: const EdgeInsets.symmetric(
                                         horizontal: 2,
                                       ),
-                                      height: (heightFactor * maxBarHeight)
-                                          .clamp(4.0, maxBarHeight),
+                                      height:
+                                          (heightFactor * drawableMaxBarHeight)
+                                              .clamp(4.0, drawableMaxBarHeight),
                                       decoration: BoxDecoration(
                                         color: isLowFocus
                                             ? colorScheme.error

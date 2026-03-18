@@ -448,8 +448,8 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
               padding: const EdgeInsets.only(left: 40),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-              child: Builder(
-                builder: (context) {
+                child: Builder(
+                  builder: (context) {
                     final sortedCategories = [
                       ..._allCategories.where(
                         (c) => _selectedCategories.contains(c),

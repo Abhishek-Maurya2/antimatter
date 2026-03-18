@@ -528,55 +528,65 @@ class TaskScreenState extends State<TaskScreen> {
                       children: [
                         // Search bar
                         Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: colorTheme.surface,
-                              borderRadius: BorderRadius.circular(28),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            alignment: Alignment.centerLeft,
-                            height: 58,
-                            child: TextField(
-                              controller: _searchController,
-                              textAlignVertical: TextAlignVertical.center,
-                              onChanged: (value) {
-                                setState(() {
-                                  _searchQuery = value;
-                                });
-                              },
-                              decoration: InputDecoration(
-                                hintText: 'Search Tasks',
-                                hintStyle: TextStyle(
-                                  color: colorTheme.onSurfaceVariant,
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 500),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: colorTheme.surface,
+                                  borderRadius: BorderRadius.circular(28),
                                 ),
-                                border: InputBorder.none,
-                                isCollapsed: true,
-                                prefixIcon: Icon(
-                                  Symbols.search,
-                                  fill: 0,
-                                  weight: 400,
-                                  color: colorTheme.onSurfaceVariant,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
                                 ),
-                                suffixIcon: _searchQuery.isNotEmpty
-                                    ? IconButton(
-                                        icon: Icon(
-                                          Symbols.close,
-                                          fill: 0,
-                                          weight: 400,
-                                          color: colorTheme.onSurfaceVariant,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            _searchController.clear();
-                                            _searchQuery = '';
-                                          });
-                                        },
-                                      )
-                                    : null,
-                              ),
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: colorTheme.onSurface,
+                                alignment: Alignment.centerLeft,
+                                height: 58,
+                                child: TextField(
+                                  controller: _searchController,
+                                  textAlign: TextAlign.center,
+                                  textAlignVertical: TextAlignVertical.center,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _searchQuery = value;
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    hintText: 'Search Tasks',
+                                    hintStyle: TextStyle(
+                                      color: colorTheme.onSurfaceVariant,
+                                    ),
+                                    border: InputBorder.none,
+                                    isCollapsed: true,
+                                    prefixIcon: Icon(
+                                      Symbols.search,
+                                      fill: 0,
+                                      weight: 400,
+                                      color: colorTheme.onSurfaceVariant,
+                                    ),
+                                    suffixIcon: _searchQuery.isNotEmpty
+                                        ? IconButton(
+                                            icon: Icon(
+                                              Symbols.close,
+                                              fill: 0,
+                                              weight: 400,
+                                              color:
+                                                  colorTheme.onSurfaceVariant,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                _searchController.clear();
+                                                _searchQuery = '';
+                                              });
+                                            },
+                                          )
+                                        : null,
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: colorTheme.onSurface,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -1028,136 +1038,136 @@ class TaskScreenState extends State<TaskScreen> {
             alignment: Alignment.bottomCenter,
             child:
                 _selectedTasksForToolbar.isNotEmpty ||
-                        _previousTasksForToolbar.isNotEmpty
-                    ? TaskFloatingToolbar(
-                        tasks: _selectedTasksForToolbar.isNotEmpty
-                            ? _selectedTasksForToolbar
-                            : _previousTasksForToolbar,
-                        colorTheme: colorTheme,
-                        onComplete: () async {
-                          final tasksToComplete = List<Task>.from(
-                            _selectedTasksForToolbar,
-                          );
-                          if (tasksToComplete.isEmpty) return;
+                    _previousTasksForToolbar.isNotEmpty
+                ? TaskFloatingToolbar(
+                    tasks: _selectedTasksForToolbar.isNotEmpty
+                        ? _selectedTasksForToolbar
+                        : _previousTasksForToolbar,
+                    colorTheme: colorTheme,
+                    onComplete: () async {
+                      final tasksToComplete = List<Task>.from(
+                        _selectedTasksForToolbar,
+                      );
+                      if (tasksToComplete.isEmpty) return;
 
-                          final allCompleted = tasksToComplete.every(
-                            (t) => t.isCompleted,
-                          );
-                          final newState = !allCompleted;
+                      final allCompleted = tasksToComplete.every(
+                        (t) => t.isCompleted,
+                      );
+                      final newState = !allCompleted;
 
-                          for (final task in tasksToComplete) {
-                            setState(() {
-                              task.isCompleted = newState;
-                            });
-                            await _setTaskCompleted(task, newState);
-                          }
+                      for (final task in tasksToComplete) {
+                        setState(() {
+                          task.isCompleted = newState;
+                        });
+                        await _setTaskCompleted(task, newState);
+                      }
 
-                          await _autoMoveOldCompletedTasksToTrash();
+                      await _autoMoveOldCompletedTasksToTrash();
 
-                          _clearSelection();
-                        },
-                        onEdit: () async {
-                          if (_selectedTasksForToolbar.length != 1) return;
-                          final taskToEdit = _selectedTasksForToolbar.first;
+                      _clearSelection();
+                    },
+                    onEdit: () async {
+                      if (_selectedTasksForToolbar.length != 1) return;
+                      final taskToEdit = _selectedTasksForToolbar.first;
 
-                          _clearSelection();
+                      _clearSelection();
 
-                          // Wait for animation
-                          await Future.delayed(const Duration(milliseconds: 200));
+                      // Wait for animation
+                      await Future.delayed(const Duration(milliseconds: 200));
 
-                          if (isExpanded) {
-                            setState(() {
-                              _editingTask = taskToEdit;
-                              _isEditingNewTask = false;
-                            });
-                          } else {
-                            final updatedTask = await Navigator.of(context)
-                                .push<dynamic>(
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        TaskEditorScreen(task: taskToEdit),
-                                  ),
-                                );
-                            if (updatedTask != null) {
-                              setState(() {
-                                _editingTask = taskToEdit;
-                                _isEditingNewTask = false;
-                              });
-                              _handleTaskResult(updatedTask);
+                      if (isExpanded) {
+                        setState(() {
+                          _editingTask = taskToEdit;
+                          _isEditingNewTask = false;
+                        });
+                      } else {
+                        final updatedTask = await Navigator.of(context)
+                            .push<dynamic>(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    TaskEditorScreen(task: taskToEdit),
+                              ),
+                            );
+                        if (updatedTask != null) {
+                          setState(() {
+                            _editingTask = taskToEdit;
+                            _isEditingNewTask = false;
+                          });
+                          _handleTaskResult(updatedTask);
+                        }
+                      }
+                    },
+                    onDelete: () async {
+                      final tasksToDelete = List<Task>.from(
+                        _selectedTasksForToolbar,
+                      );
+                      if (tasksToDelete.isEmpty) return;
+
+                      for (final task in tasksToDelete) {
+                        if (task.isDeleted) {
+                          setState(() {
+                            final index = _tasks.indexWhere(
+                              (t) => t.id == task.id,
+                            );
+                            if (index != -1) {
+                              _tasks.removeAt(index);
                             }
-                          }
-                        },
-                        onDelete: () async {
-                          final tasksToDelete = List<Task>.from(
-                            _selectedTasksForToolbar,
-                          );
-                          if (tasksToDelete.isEmpty) return;
+                          });
+                          await _tasksBox.delete(task.id);
+                          await syncService.deleteTask(task.id);
+                        } else {
+                          setState(() {
+                            task.isDeleted = true;
+                          });
+                          await task.save();
+                          await syncService.pushTask(task);
+                        }
+                      }
 
-                          for (final task in tasksToDelete) {
-                            if (task.isDeleted) {
-                              setState(() {
-                                final index = _tasks.indexWhere(
-                                  (t) => t.id == task.id,
-                                );
-                                if (index != -1) {
-                                  _tasks.removeAt(index);
-                                }
-                              });
-                              await _tasksBox.delete(task.id);
-                              await syncService.deleteTask(task.id);
-                            } else {
-                              setState(() {
-                                task.isDeleted = true;
-                              });
-                              await task.save();
-                              await syncService.pushTask(task);
-                            }
-                          }
+                      _clearSelection();
+                    },
+                    onArchive: () async {
+                      final tasksToArchive = List<Task>.from(
+                        _selectedTasksForToolbar,
+                      );
+                      if (tasksToArchive.isEmpty) return;
 
-                          _clearSelection();
-                        },
-                        onArchive: () async {
-                          final tasksToArchive = List<Task>.from(
-                            _selectedTasksForToolbar,
-                          );
-                          if (tasksToArchive.isEmpty) return;
+                      final allArchived = tasksToArchive.every(
+                        (t) => t.isArchived,
+                      );
+                      final newState = !allArchived;
 
-                          final allArchived = tasksToArchive.every(
-                            (t) => t.isArchived,
-                          );
-                          final newState = !allArchived;
+                      for (final task in tasksToArchive) {
+                        setState(() {
+                          task.isArchived = newState;
+                        });
+                        await task.save();
+                        await syncService.pushTask(task);
+                      }
 
-                          for (final task in tasksToArchive) {
-                            setState(() {
-                              task.isArchived = newState;
-                            });
-                            await task.save();
-                            await syncService.pushTask(task);
-                          }
+                      _clearSelection();
+                    },
+                    onRestore: () async {
+                      final tasksToRestore = List<Task>.from(
+                        _selectedTasksForToolbar,
+                      );
+                      if (tasksToRestore.isEmpty) return;
 
-                          _clearSelection();
-                        },
-                        onRestore: () async {
-                          final tasksToRestore = List<Task>.from(
-                            _selectedTasksForToolbar,
-                          );
-                          if (tasksToRestore.isEmpty) return;
+                      for (final task in tasksToRestore) {
+                        setState(() {
+                          task.isDeleted = false;
+                        });
+                        await task.save();
+                        await syncService.pushTask(task);
+                      }
 
-                          for (final task in tasksToRestore) {
-                            setState(() {
-                              task.isDeleted = false;
-                            });
-                            await task.save();
-                            await syncService.pushTask(task);
-                          }
-
-                          _clearSelection();
-                        },
-                        onClose: () {
-                          _clearSelection();
-                        },
-                      )
-                    : const SizedBox.shrink(),
+                      _clearSelection();
+                    },
+                    onClose: () {
+                      _clearSelection();
+                    },
+                  )
+                : const SizedBox.shrink(),
           ),
         ),
       ],
