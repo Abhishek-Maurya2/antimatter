@@ -534,7 +534,7 @@ class TaskScreenState extends State<TaskScreen> {
                                 : Alignment.centerLeft,
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
-                                maxWidth: isExpanded ? 500 : double.infinity,
+                                maxWidth: isExpanded ? 600 : double.infinity,
                               ),
                               child: Container(
                                 width: double.infinity,
@@ -596,7 +596,7 @@ class TaskScreenState extends State<TaskScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 12),
 
                         // Avatar → Settings
                         Padding(
@@ -618,6 +618,7 @@ class TaskScreenState extends State<TaskScreen> {
                             ),
                           ),
                         ),
+                        if (isExpanded) const SizedBox(width: 28),
                       ],
                     ),
                   ),
