@@ -529,10 +529,15 @@ class TaskScreenState extends State<TaskScreen> {
                         // Search bar
                         Expanded(
                           child: Align(
-                            alignment: Alignment.centerRight,
+                            alignment: isExpanded
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
                             child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 500),
+                              constraints: BoxConstraints(
+                                maxWidth: isExpanded ? 500 : double.infinity,
+                              ),
                               child: Container(
+                                width: double.infinity,
                                 decoration: BoxDecoration(
                                   color: colorTheme.surface,
                                   borderRadius: BorderRadius.circular(28),
