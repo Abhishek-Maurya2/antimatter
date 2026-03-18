@@ -50,26 +50,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _getDetailScreen() {
+    Widget detailScreen;
     switch (_selectedDetail) {
       case SettingsDetail.appearance:
-        return const AppearanceScreen(isEmbedded: true);
+        detailScreen = const AppearanceScreen(isEmbedded: true);
+        break;
       case SettingsDetail.notifications:
-        return const NotificationsScreen(isEmbedded: true);
+        detailScreen = const NotificationsScreen(isEmbedded: true);
+        break;
       case SettingsDetail.categories:
-        return const CategoriesScreen(isEmbedded: true);
+        detailScreen = const CategoriesScreen(isEmbedded: true);
+        break;
       case SettingsDetail.backupRestore:
-        return const BackupRestoreScreen(isEmbedded: true);
+        detailScreen = const BackupRestoreScreen(isEmbedded: true);
+        break;
       case SettingsDetail.sessions:
-        return const SessionsScreen(isEmbedded: true);
+        detailScreen = const SessionsScreen(isEmbedded: true);
+        break;
       case SettingsDetail.updates:
-        return const UpdatesScreen(isEmbedded: true);
+        detailScreen = const UpdatesScreen(isEmbedded: true);
+        break;
       case SettingsDetail.about:
-        return const AboutScreen(isEmbedded: true);
+        detailScreen = const AboutScreen(isEmbedded: true);
+        break;
       case SettingsDetail.wavyDemo:
-        return const WavyDemoScreen(isEmbedded: true);
+        detailScreen = const WavyDemoScreen(isEmbedded: true);
+        break;
       default:
-        return const Center(child: Text('Select a setting'));
+        detailScreen = const Center(child: Text('Select a setting'));
+        break;
     }
+
+    final baseTheme = Theme.of(context);
+    return Theme(
+      data: baseTheme.copyWith(
+        colorScheme: baseTheme.colorScheme.copyWith(
+          // surfaceContainerLow: Colors.transparent,
+        ),
+      ),
+      child: detailScreen,
+    );
   }
 
   @override
@@ -306,16 +326,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: isExpanded
           ? Row(
               children: [
-                SizedBox(width: 460, child: masterList),
-                VerticalDivider(
-                  width: 1,
-                  thickness: 1,
-                  color: colorTheme.outlineVariant,
-                ),
+                SizedBox(width: 440, child: masterList),
+
                 Expanded(
-                  child: Container(
-                    color: colorTheme.surfaceContainerLow,
-                    child: _getDetailScreen(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: Container(
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        color: colorTheme.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: _getDetailScreen(),
+                    ),
                   ),
                 ),
               ],
