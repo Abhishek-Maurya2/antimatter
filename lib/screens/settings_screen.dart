@@ -85,7 +85,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Theme(
       data: baseTheme.copyWith(
         colorScheme: baseTheme.colorScheme.copyWith(
-          // surfaceContainerLow: Colors.transparent,
+          surfaceContainerLow: baseTheme.colorScheme.surfaceBright,
+          surface: baseTheme.colorScheme.surfaceContainerLowest,
         ),
       ),
       child: detailScreen,
@@ -326,15 +327,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: isExpanded
           ? Row(
               children: [
-                SizedBox(width: 440, child: masterList),
-
+                SizedBox(width: 420, child: masterList),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(15),
                     child: Container(
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
-                        color: colorTheme.surfaceContainerLowest,
+                        color: colorTheme.surface,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: _getDetailScreen(),

@@ -67,8 +67,8 @@ class ListCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
+                      horizontal: 6,
+                      vertical: 6,
                     ),
                     decoration: BoxDecoration(
                       color: colorTheme.primary.withValues(alpha: 0.12),
