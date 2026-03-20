@@ -542,16 +542,47 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                       },
                     ),
                     Expanded(
-                      child: TextFormField(
-                        initialValue: subTask.title,
-                        decoration: const InputDecoration(
-                          hintText: 'Subtask title',
-                          border: InputBorder.none,
-                          isDense: true,
-                        ),
-                        onChanged: (value) {
-                          subTask.title = value;
-                        },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextFormField(
+                            initialValue: subTask.title,
+                            decoration: const InputDecoration(
+                              hintText: 'Subtask title',
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                            onChanged: (value) {
+                              subTask.title = value;
+                            },
+                          ),
+                          TextFormField(
+                            initialValue: subTask.description,
+                            decoration: InputDecoration(
+                              hintText: 'Add details',
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                              hintStyle: TextStyle(
+                                fontSize: 13,
+                                color: colorTheme.onSurfaceVariant.withValues(
+                                  alpha: 0.5,
+                                ),
+                              ),
+                            ),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colorTheme.onSurfaceVariant,
+                            ),
+                            onChanged: (value) {
+                              subTask.description = value;
+                            },
+                            maxLines: null,
+                          ),
+                        ],
                       ),
                     ),
                     IconButtonM3E(

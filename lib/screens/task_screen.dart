@@ -53,6 +53,7 @@ class TaskScreenState extends State<TaskScreen> {
   int _completedTasksLimit = 5;
   bool _isLoadingMoreCompletedTasks = false;
   final ScrollController _scrollController = ScrollController();
+  final Set<String> _collapsedSubTaskTaskIds = {};
 
   void _toggleTaskSelection(Task task) {
     setState(() {
@@ -71,6 +72,62 @@ class TaskScreenState extends State<TaskScreen> {
       _selectedTasksForToolbar.clear();
     });
     widget.onSelectionChanged?.call(false);
+  }
+
+  List<SettingTile> _buildSubTaskTiles(Task task, ColorScheme colorTheme) {
+    final bool isCollapsed = _collapsedSubTaskTaskIds.contains(task.id);
+    final subtasksToShow = isCollapsed
+        ? task.subTasks.take(1).toList()
+        : task.subTasks;
+
+    return subtasksToShow.asMap().entries.map((entry) {
+      final index = entry.key;
+      final subTask = entry.value;
+      final showCollapseToggle = index == 0 && task.subTasks.length > 1;
+
+      return TaskTile(
+        backgroundColor: isCollapsed
+            ? colorTheme.surfaceContainerLowest
+            : colorTheme.surfaceContainerHigh,
+        titleText: subTask.title,
+        descriptionText: subTask.description?.isNotEmpty == true
+            ? subTask.description
+            : null,
+        checked: subTask.isCompleted,
+        onChanged: (value) {
+          setState(() {
+            subTask.isCompleted = value ?? false;
+            if (subTask.isCompleted) {
+              AudioService().playTickSound();
+            }
+            task.save();
+          });
+        },
+        trailing: showCollapseToggle
+            ? IconButtonM3E(
+                onPressed: () {
+                  setState(() {
+                    if (isCollapsed) {
+                      _collapsedSubTaskTaskIds.remove(task.id);
+                    } else {
+                      _collapsedSubTaskTaskIds.add(task.id);
+                    }
+                  });
+                },
+                icon: Icon(
+                  isCollapsed ? Symbols.expand_more : Symbols.expand_less,
+                  size: 18,
+                  weight: 600,
+                ),
+                tooltip: isCollapsed ? 'Show subtasks' : 'Hide subtasks',
+                variant: IconButtonM3EVariant.tonal,
+                width: IconButtonM3EWidth.wide,
+                backgroundColor: colorTheme.tertiaryContainer,
+                foregroundColor: colorTheme.onTertiaryContainer,
+              )
+            : null,
+      );
+    }).toList();
   }
 
   Future<void> openCreateTaskEditor() async {
@@ -859,34 +916,10 @@ class TaskScreenState extends State<TaskScreen> {
                                           deadlineText: task.deadline != null
                                               ? formatDeadline(task.deadline)
                                               : null,
-                                          subTasks: task.subTasks.map((
-                                            subTask,
-                                          ) {
-                                            return TaskTile(
-                                              backgroundColor: colorTheme
-                                                  .surfaceContainerHigh,
-                                              titleText: subTask.title,
-                                              descriptionText:
-                                                  subTask
-                                                          .description
-                                                          ?.isNotEmpty ==
-                                                      true
-                                                  ? subTask.description
-                                                  : null,
-                                              checked: subTask.isCompleted,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  subTask.isCompleted =
-                                                      value ?? false;
-                                                  if (subTask.isCompleted) {
-                                                    AudioService()
-                                                        .playTickSound();
-                                                  }
-                                                  task.save();
-                                                });
-                                              },
-                                            );
-                                          }).toList(),
+                                          subTasks: _buildSubTaskTiles(
+                                            task,
+                                            colorTheme,
+                                          ),
                                           isSelected: _selectedTasksForToolbar
                                               .contains(task),
                                           checked: task.isCompleted,
@@ -973,34 +1006,10 @@ class TaskScreenState extends State<TaskScreen> {
                                           deadlineText: task.deadline != null
                                               ? formatDeadline(task.deadline)
                                               : null,
-                                          subTasks: task.subTasks.map((
-                                            subTask,
-                                          ) {
-                                            return TaskTile(
-                                              backgroundColor: colorTheme
-                                                  .surfaceContainerHigh,
-                                              titleText: subTask.title,
-                                              descriptionText:
-                                                  subTask
-                                                          .description
-                                                          ?.isNotEmpty ==
-                                                      true
-                                                  ? subTask.description
-                                                  : null,
-                                              checked: subTask.isCompleted,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  subTask.isCompleted =
-                                                      value ?? false;
-                                                  if (subTask.isCompleted) {
-                                                    AudioService()
-                                                        .playTickSound();
-                                                  }
-                                                  task.save();
-                                                });
-                                              },
-                                            );
-                                          }).toList(),
+                                          subTasks: _buildSubTaskTiles(
+                                            task,
+                                            colorTheme,
+                                          ),
                                           isSelected: _selectedTasksForToolbar
                                               .contains(task),
                                           checked: task.isCompleted,

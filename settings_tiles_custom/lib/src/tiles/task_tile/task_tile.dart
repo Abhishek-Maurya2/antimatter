@@ -19,6 +19,7 @@ class TaskTile extends SettingTile {
     this.backgroundColor,
     this.onPressed,
     this.onLongPress,
+    this.trailing,
     super.key,
     super.enabled,
     this.isSelected = false,
@@ -33,7 +34,7 @@ class TaskTile extends SettingTile {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
-          trailing: null,
+          trailing: trailing,
         );
 
   /// Whether the checkbox is checked.
@@ -68,6 +69,9 @@ class TaskTile extends SettingTile {
 
   /// Called when the tile is long-pressed.
   final VoidCallback? onLongPress;
+
+  /// Optional trailing widget shown at the end of the tile.
+  final Widget? trailing;
 
   /// Whether the tile is selected for batch operations.
   final bool isSelected;
