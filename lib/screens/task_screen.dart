@@ -121,7 +121,7 @@ class TaskScreenState extends State<TaskScreen> {
                 ),
                 tooltip: isCollapsed ? 'Show subtasks' : 'Hide subtasks',
                 variant: IconButtonM3EVariant.tonal,
-                width: IconButtonM3EWidth.wide,
+                width: IconButtonM3EWidth.narrow,
                 backgroundColor: colorTheme.tertiaryContainer,
                 foregroundColor: colorTheme.onTertiaryContainer,
               )
