@@ -12,6 +12,8 @@ class TaskTile extends SettingTile {
     required this.onChanged,
     required this.titleText,
     this.descriptionText,
+    this.descriptionMaxLines,
+    this.descriptionOverflow,
     this.labels = const [],
     this.deadlineText,
     this.isDeadlineMissed = false,
@@ -48,6 +50,12 @@ class TaskTile extends SettingTile {
 
   /// Optional text to display for the description
   final String? descriptionText;
+
+  /// Optional max lines for description text.
+  final int? descriptionMaxLines;
+
+  /// Optional overflow behavior for description text.
+  final TextOverflow? descriptionOverflow;
 
   /// Optional sub-labels displayed below the description
   final List<String> labels;
@@ -160,6 +168,8 @@ class TaskTile extends SettingTile {
                       decoration: checked ? TextDecoration.lineThrough : null,
                       color: colorScheme.onSurfaceVariant,
                     ),
+                    maxLines: descriptionMaxLines,
+                    overflow: descriptionOverflow,
                   ),
                 if (descriptionText == null && labels.isNotEmpty)
                   const SizedBox(

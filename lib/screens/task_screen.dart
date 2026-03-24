@@ -54,6 +54,10 @@ class TaskScreenState extends State<TaskScreen> {
   bool _isLoadingMoreCompletedTasks = false;
   final ScrollController _scrollController = ScrollController();
   final Set<String> _collapsedSubTaskTaskIds = {};
+  final Set<String> _expandedSubTaskDescriptionIds = {};
+
+  String _subTaskDescriptionKey(Task task, Task subTask) =>
+      '${task.id}:${subTask.id}';
 
   void _toggleTaskSelection(Task task) {
     setState(() {
@@ -84,14 +88,23 @@ class TaskScreenState extends State<TaskScreen> {
       final index = entry.key;
       final subTask = entry.value;
       final showCollapseToggle = index == 0 && task.subTasks.length > 1;
+      final descriptionKey = _subTaskDescriptionKey(task, subTask);
+      final hasDescription = subTask.description?.trim().isNotEmpty == true;
+      final isDescriptionExpanded = _expandedSubTaskDescriptionIds.contains(
+        descriptionKey,
+      );
 
       return TaskTile(
         backgroundColor: isCollapsed
             ? colorTheme.surfaceContainerLowest
             : colorTheme.surfaceContainerHigh,
         titleText: subTask.title,
-        descriptionText: subTask.description?.isNotEmpty == true
-            ? subTask.description
+        descriptionText: hasDescription ? subTask.description : null,
+        descriptionMaxLines: hasDescription && !isDescriptionExpanded
+            ? 1
+            : null,
+        descriptionOverflow: hasDescription && !isDescriptionExpanded
+            ? TextOverflow.ellipsis
             : null,
         checked: subTask.isCompleted,
         onChanged: (value) {
@@ -103,6 +116,17 @@ class TaskScreenState extends State<TaskScreen> {
             task.save();
           });
         },
+        onPressed: hasDescription
+            ? () {
+                setState(() {
+                  if (isDescriptionExpanded) {
+                    _expandedSubTaskDescriptionIds.remove(descriptionKey);
+                  } else {
+                    _expandedSubTaskDescriptionIds.add(descriptionKey);
+                  }
+                });
+              }
+            : null,
         trailing: showCollapseToggle
             ? IconButtonM3E(
                 onPressed: () {
