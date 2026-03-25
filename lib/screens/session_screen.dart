@@ -112,7 +112,7 @@ class _SessionScreenState extends State<SessionScreen>
     } else {
       _startTimer();
       _weightController.forward();
-      
+
       // Enable wakelock if starting and enabled in settings
       if (_stayAwakeEnabled) {
         WakelockPlus.enable();
@@ -120,7 +120,7 @@ class _SessionScreenState extends State<SessionScreen>
     }
     setState(() {
       _isRunning = !_isRunning;
-      
+
       // If we just paused, disable wakelock
       if (!_isRunning) {
         WakelockPlus.disable();
@@ -336,7 +336,13 @@ class _SessionScreenState extends State<SessionScreen>
                   leadingWidth: 80,
                   leading: Center(
                     child: IconButtonM3E(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () {
+                        if (widget.onBack != null) {
+                          widget.onBack!();
+                        } else {
+                          Navigator.of(context).pop();
+                        }
+                      },
                       icon: const Icon(Symbols.arrow_back),
                       tooltip: 'Back',
                       variant: IconButtonM3EVariant.tonal,
