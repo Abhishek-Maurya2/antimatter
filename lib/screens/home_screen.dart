@@ -38,7 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
         // Build the body based on top-level nav index
         Widget bodyContent;
         if (_navIndex == 0) {
-          final bool isRailExpanded = isExpanded &&
+          final bool isRailExpanded =
+              isExpanded &&
               MediaQuery.sizeOf(context).width >= 1000 &&
               _railType == NavigationRailM3EType.expanded;
 
@@ -209,7 +210,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             NavigationRailM3EDestination(
               icon: const Icon(Symbols.check_circle, fill: 0, weight: 400),
-              selectedIcon: const Icon(Symbols.check_circle, fill: 1, weight: 400),
+              selectedIcon: const Icon(
+                Symbols.check_circle,
+                fill: 1,
+                weight: 400,
+              ),
               label: 'Completed',
             ),
           ],

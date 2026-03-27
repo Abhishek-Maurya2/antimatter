@@ -640,14 +640,24 @@ class TaskScreenState extends State<TaskScreen> {
                                   decoration: InputDecoration(
                                     hintText: 'Search Tasks',
                                     hintStyle: TextStyle(
+                                      fontFamily: 'GoogleSansFlex',
+                                      fontSize: 25,
+                                      height: 1.0,
+                                      letterSpacing: -2,
+                                      fontStyle: FontStyle.italic,
                                       color: colorTheme.onSurfaceVariant,
+                                      fontVariations: const [
+                                        FontVariation('wght', 900),
+                                        FontVariation('wdth', 130),
+                                        FontVariation('ROND', 0),
+                                      ],
                                     ),
                                     border: InputBorder.none,
                                     isCollapsed: true,
                                     prefixIcon: Icon(
                                       Symbols.search,
                                       fill: 0,
-                                      weight: 400,
+                                      weight: 600,
                                       color: colorTheme.onSurfaceVariant,
                                     ),
                                     suffixIcon: _searchQuery.isNotEmpty
@@ -669,8 +679,14 @@ class TaskScreenState extends State<TaskScreen> {
                                         : null,
                                   ),
                                   style: TextStyle(
+                                    fontFamily: 'GoogleSansFlex',
                                     fontSize: 16,
                                     color: colorTheme.onSurface,
+                                    fontVariations: const [
+                                      FontVariation('wght', 400),
+                                      FontVariation('wdth', 100),
+                                      FontVariation('ROND', 50),
+                                    ],
                                   ),
                                 ),
                               ),

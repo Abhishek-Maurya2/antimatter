@@ -100,7 +100,7 @@ class TaskTile extends SettingTile {
       selectedColor: colorScheme.onTertiaryContainer,
       iconColor: isSelected ? colorScheme.onTertiaryContainer : null,
       textColor: isSelected ? colorScheme.onTertiaryContainer : null,
-      contentPadding: const EdgeInsets.only(right: 16, left: 16),
+      contentPadding: const EdgeInsets.only(right: 4, left: 14),
       enabled: enabled,
       leading: icon,
       title: Row(
@@ -214,7 +214,7 @@ class TaskTile extends SettingTile {
       children: [
         mainTile,
         SettingSection(
-          padding: const EdgeInsets.only(left: 60.0, right: 10, bottom: 12.0),
+          padding: const EdgeInsets.only(left: 45, right: 10, bottom: 12.0),
           styleTile: true,
           tiles: subTasks!,
           backgroundColor: backgroundColor,

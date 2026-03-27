@@ -7,7 +7,9 @@ import 'package:orches/screens/overview/components/progress_card.dart';
 import 'package:orches/screens/overview/components/list_card.dart';
 import 'package:orches/screens/overview/components/activity_heat_map.dart';
 import 'package:orches/screens/overview/components/focus_time_graph.dart';
-
+import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
+import 'package:m3e_collection/m3e_collection.dart';
+import 'package:orches/main.dart';
 class OverviewPage extends StatelessWidget {
   final VoidCallback? onNavigateToTasks;
   final bool isRailExpanded;
@@ -62,7 +64,57 @@ class OverviewPage extends StatelessWidget {
 
         return Scaffold(
           backgroundColor: colorTheme.surfaceContainer,
-          body: CustomScrollView(
+          body: CustomRefreshIndicator(
+            onRefresh: () async {
+              await syncService.pullTasks();
+              await sessionSyncService.pullSessions();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Data refreshed'),
+                    behavior: SnackBarBehavior.floating,
+                    width: 500,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                );
+              }
+            },
+            builder: (context, child, controller) {
+              return Stack(
+                children: [
+                  child,
+                  AnimatedBuilder(
+                    animation: controller,
+                    builder: (context, _) {
+                      final double opacity =
+                          (controller.value * 2).clamp(0.0, 1.0);
+                      final double scale =
+                          (controller.value * 1.5).clamp(0.0, 1.0);
+
+                      return Positioned(
+                        top: 110 * controller.value,
+                        left: 0,
+                        right: 0,
+                        child: Opacity(
+                          opacity: opacity,
+                          child: Transform.scale(
+                            scale: scale,
+                            child: Center(
+                              child: LoadingIndicatorM3E(
+                                variant: LoadingIndicatorM3EVariant.contained,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              );
+            },
+            child: CustomScrollView(
             slivers: [
               // App bar area
               SliverToBoxAdapter(
@@ -198,10 +250,11 @@ class OverviewPage extends StatelessWidget {
               ],
             ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   String _getGreeting() {
     final hour = DateTime.now().hour;

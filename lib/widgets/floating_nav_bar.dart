@@ -69,7 +69,6 @@ class FloatingNavBar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              spacing: 2,
               children:
                   List.generate(_items.length, (index) {
                     return _NavBarItem(
