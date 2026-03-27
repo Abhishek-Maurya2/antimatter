@@ -110,7 +110,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 }
                               });
                             },
-                            pageActionIcon: _navIndex == 1 ? Symbols.add : null,
+                            pageActionIcon: _navIndex == 1
+                                ? Symbols.add_rounded
+                                : null,
                             pageActionTooltip: _navIndex == 1
                                 ? 'Add task'
                                 : null,

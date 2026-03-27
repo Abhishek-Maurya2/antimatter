@@ -31,7 +31,9 @@ class TaskTile extends SettingTile {
           icon: IconButton(
             onPressed: enabled ? () => onChanged?.call(!checked) : null,
             icon: Icon(
-              checked ? Icons.check : Icons.circle_outlined,
+              checked ? Icons.check_rounded : Icons.circle_outlined,
+              weight: 800,
+              size: checked ? 28 : 24,
             ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -100,7 +102,9 @@ class TaskTile extends SettingTile {
       selectedColor: colorScheme.onTertiaryContainer,
       iconColor: isSelected ? colorScheme.onTertiaryContainer : null,
       textColor: isSelected ? colorScheme.onTertiaryContainer : null,
-      contentPadding: const EdgeInsets.only(right: 4, left: 14),
+      contentPadding: const EdgeInsets.only(right: 4, left: 0),
+      horizontalTitleGap: 0,
+      // titleAlignment: ListTileTitleAlignment.top,
       enabled: enabled,
       leading: icon,
       title: Row(
@@ -135,8 +139,8 @@ class TaskTile extends SettingTile {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.schedule,
-                      size: 14,
+                      Icons.schedule_rounded,
+                      size: 18,
                       color: checked
                           ? colorScheme.onSurfaceVariant
                           : (isDeadlineMissed ? colorScheme.onErrorContainer : colorScheme.onTertiaryContainer),

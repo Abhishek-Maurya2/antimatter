@@ -116,9 +116,9 @@ class _SessionsScreenState extends State<SessionsScreen> {
                         'Time before ambient mode starts',
                       ),
                       sliderValue: _ambientIntervalSeconds.toDouble(),
-                      min: 1.0,
-                      max: 60.0,
-                      divisions: 59,
+                      min: 1,
+                      max: 30,
+                      divisions: 10,
                       label: (val) => '${val.round()} sec',
                       onChanged: (val) {
                         setState(() => _ambientIntervalSeconds = val.round());

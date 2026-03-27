@@ -22,23 +22,23 @@ class FloatingNavBar extends StatelessWidget {
 
   static const _items = [
     FloatingNavItem(
-      icon: Symbols.dashboard,
-      selectedIcon: Symbols.dashboard,
+      icon: Symbols.dashboard_rounded,
+      selectedIcon: Symbols.dashboard_rounded,
       label: 'Overview',
     ),
     FloatingNavItem(
-      icon: Symbols.task_alt,
-      selectedIcon: Symbols.task_alt,
+      icon: Symbols.task_alt_rounded,
+      selectedIcon: Symbols.task_alt_rounded,
       label: 'Tasks',
     ),
     FloatingNavItem(
-      icon: Symbols.timer,
-      selectedIcon: Symbols.timer,
+      icon: Symbols.timer_rounded,
+      selectedIcon: Symbols.timer_rounded,
       label: 'Session',
     ),
     FloatingNavItem(
-      icon: Symbols.settings,
-      selectedIcon: Symbols.settings,
+      icon: Symbols.settings_rounded,
+      selectedIcon: Symbols.settings_rounded,
       label: 'Settings',
     ),
   ];
@@ -119,13 +119,7 @@ class _PageActionButton extends StatelessWidget {
         ),
         child: IconButton(
           onPressed: onTap,
-          icon: Icon(
-            icon,
-            fill: 1,
-            size: 28,
-            weight: 900,
-            color: colorTheme.onPrimary,
-          ),
+          icon: Icon(icon, size: 28, weight: 800, color: colorTheme.onPrimary),
         ),
       ),
     );

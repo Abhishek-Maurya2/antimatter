@@ -139,9 +139,11 @@ class TaskScreenState extends State<TaskScreen> {
                   });
                 },
                 icon: Icon(
-                  isCollapsed ? Symbols.expand_more : Symbols.expand_less,
-                  size: 18,
-                  weight: 600,
+                  isCollapsed
+                      ? Symbols.expand_more_rounded
+                      : Symbols.expand_less_rounded,
+                  size: 32,
+                  weight: 800,
                 ),
                 tooltip: isCollapsed ? 'Show subtasks' : 'Hide subtasks',
                 variant: IconButtonM3EVariant.tonal,
@@ -623,8 +625,9 @@ class TaskScreenState extends State<TaskScreen> {
                                   color: colorTheme.surface,
                                   borderRadius: BorderRadius.circular(28),
                                 ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
+                                padding: const EdgeInsets.only(
+                                  left: 6,
+                                  right: 36,
                                 ),
                                 alignment: Alignment.centerLeft,
                                 height: 58,
@@ -657,13 +660,15 @@ class TaskScreenState extends State<TaskScreen> {
                                     prefixIcon: Icon(
                                       Symbols.search_rounded,
                                       fill: 0,
-                                      weight: 600,
+                                      weight: 800,
+                                      size: 26,
                                       color: colorTheme.onSurfaceVariant,
                                     ),
                                     suffixIcon: _searchQuery.isNotEmpty
                                         ? IconButton(
                                             icon: Icon(
-                                              Symbols.close,
+                                              Symbols.close_rounded,
+                                              size: 26,
                                               fill: 0,
                                               weight: 600,
                                               color:
@@ -795,7 +800,7 @@ class TaskScreenState extends State<TaskScreen> {
                                                 TaskSortOption.newest) ...[
                                               const SizedBox(width: 12),
                                               Icon(
-                                                Symbols.check,
+                                                Symbols.check_rounded,
                                                 size: 18,
                                                 color: colorTheme.primary,
                                               ),
@@ -813,7 +818,7 @@ class TaskScreenState extends State<TaskScreen> {
                                                 TaskSortOption.oldest) ...[
                                               const SizedBox(width: 12),
                                               Icon(
-                                                Symbols.check,
+                                                Symbols.check_rounded,
                                                 size: 18,
                                                 color: colorTheme.primary,
                                               ),
@@ -831,7 +836,7 @@ class TaskScreenState extends State<TaskScreen> {
                                                 TaskSortOption.dueDate) ...[
                                               const SizedBox(width: 12),
                                               Icon(
-                                                Symbols.check,
+                                                Symbols.check_rounded,
                                                 size: 18,
                                                 color: colorTheme.primary,
                                               ),
@@ -1282,7 +1287,7 @@ class TaskScreenState extends State<TaskScreen> {
               borderRadius: BorderRadius.circular(32),
             ),
             child: Icon(
-              Symbols.task_alt,
+              Symbols.task_alt_rounded,
               fill: 1,
               weight: 300,
               size: 64,

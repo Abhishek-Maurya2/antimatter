@@ -215,14 +215,17 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                             icon: const Icon(
                               Icons.keyboard_arrow_down_rounded,
                               weight: 800,
+                              size: 32,
                             ),
                             selectedIcon: const Icon(
                               Icons.keyboard_arrow_up_rounded,
+                              weight: 800,
+                              size: 32,
                             ),
                             isSelected: _isStatsExpanded,
                             variant: IconButtonM3EVariant.tonal,
                             backgroundColor: colorScheme.surfaceContainer,
-                            width: IconButtonM3EWidth.wide,
+                            width: IconButtonM3EWidth.narrow,
                           ),
                         ],
                       ),

@@ -247,8 +247,13 @@ class _HeatMapContentState extends State<_HeatMapContent> {
                   icon: const Icon(
                     Icons.keyboard_arrow_down_rounded,
                     weight: 800,
+                    size: 32,
                   ),
-                  selectedIcon: const Icon(Icons.keyboard_arrow_up_rounded),
+                  selectedIcon: const Icon(
+                    Icons.keyboard_arrow_up_rounded,
+                    weight: 800,
+                    size: 32,
+                  ),
                   isSelected: _isStatsExpanded,
                   variant: IconButtonM3EVariant.tonal,
                   backgroundColor: colorScheme.surfaceContainer,

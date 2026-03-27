@@ -76,7 +76,15 @@ class AppearanceScreen extends StatelessWidget {
                   ),
                   tiles: [
                     SettingSingleOptionTile(
-                      icon: const Icon(Symbols.routine),
+                      icon: iconContainer(
+                        Symbols.routine_rounded,
+                        isLight
+                            ? const Color.fromARGB(193, 255, 224, 130)
+                            : const Color(0xff6a5113),
+                        isLight
+                            ? const Color(0xff6a5113)
+                            : const Color(0xffffe082),
+                      ),
                       title: const Text('Theme'),
                       dialogTitle: 'Theme',
                       value: SettingTileValue(
