@@ -655,7 +655,7 @@ class TaskScreenState extends State<TaskScreen> {
                                     border: InputBorder.none,
                                     isCollapsed: true,
                                     prefixIcon: Icon(
-                                      Symbols.search,
+                                      Symbols.search_rounded,
                                       fill: 0,
                                       weight: 600,
                                       color: colorTheme.onSurfaceVariant,
@@ -665,7 +665,7 @@ class TaskScreenState extends State<TaskScreen> {
                                             icon: Icon(
                                               Symbols.close,
                                               fill: 0,
-                                              weight: 400,
+                                              weight: 600,
                                               color:
                                                   colorTheme.onSurfaceVariant,
                                             ),

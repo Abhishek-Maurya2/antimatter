@@ -260,7 +260,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
     if (_error != null) {
       actions.add(
         ButtonGroupM3EAction(
-          icon: const Icon(Symbols.refresh),
+          icon: const Icon(Symbols.refresh_rounded, weight: 800),
           label: const Text('Retry'),
           shape: ButtonM3EShape.round,
           onPressed: _checkForUpdates,
@@ -269,27 +269,23 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
     } else if (_downloadError != null) {
       actions.add(
         ButtonGroupM3EAction(
-          icon: const Icon(Symbols.refresh),
+          icon: const Icon(Symbols.refresh_rounded, weight: 800),
           label: const Text('Retry Download'),
           shape: ButtonM3EShape.round,
           onPressed: _downloadAndInstall,
         ),
       );
     } else if (_isDownloading) {
-      actions.add(
-        const ButtonGroupM3EAction(
-          icon: Icon(Symbols.download),
-          label: Text('Downloading...'),
-          shape: ButtonM3EShape.round,
-          enabled: false,
-        ),
-      );
+      return null;
     } else if (_downloadedFilePath != null) {
       final isWindows = Theme.of(context).platform == TargetPlatform.windows;
       actions.add(
         ButtonGroupM3EAction(
           icon: Icon(
-            isWindows ? Symbols.download_done : Symbols.install_mobile,
+            isWindows
+                ? Symbols.download_done_rounded
+                : Symbols.install_mobile_rounded,
+            weight: 800,
           ),
           label: Text(isWindows ? 'Open Installer' : 'Install'),
           shape: ButtonM3EShape.round,
@@ -299,7 +295,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
     } else if (_isUpdateAvailable) {
       actions.add(
         ButtonGroupM3EAction(
-          icon: const Icon(Symbols.download),
+          icon: const Icon(Symbols.download_rounded),
           label: const Text('Download'),
           shape: ButtonM3EShape.round,
           onPressed: _downloadAndInstall,
@@ -307,7 +303,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
       );
       actions.add(
         ButtonGroupM3EAction(
-          icon: const Icon(Symbols.refresh),
+          icon: const Icon(Symbols.refresh_rounded, weight: 800),
           width: 100,
           contentPadding: const EdgeInsets.symmetric(horizontal: 6),
           style: ButtonM3EStyle.tonal,
@@ -318,7 +314,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
     } else {
       actions.add(
         ButtonGroupM3EAction(
-          icon: const Icon(Symbols.refresh),
+          icon: const Icon(Symbols.refresh_rounded, weight: 800),
           label: const Text('Check again'),
           shape: ButtonM3EShape.round,
           onPressed: _checkForUpdates,
@@ -371,7 +367,10 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                     : Center(
                         child: IconButtonM3E(
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Symbols.arrow_back),
+                          icon: const Icon(
+                            Symbols.arrow_back_rounded,
+                            weight: 800,
+                          ),
                           tooltip: 'Back',
                           variant: IconButtonM3EVariant.tonal,
                           width: IconButtonM3EWidth.wide,
@@ -564,9 +563,10 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                                             horizontal: 16,
                                           ),
                                           child: Icon(
-                                            Symbols.arrow_forward,
+                                            Symbols.arrow_forward_rounded,
                                             color: colorTheme.onPrimaryContainer
                                                 .withOpacity(0.5),
+                                            weight: 800,
                                           ),
                                         ),
                                         Column(

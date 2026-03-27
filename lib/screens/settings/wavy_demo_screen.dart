@@ -37,7 +37,10 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
                   : Center(
                       child: IconButtonM3E(
                         onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Symbols.arrow_back),
+                        icon: const Icon(
+                          Symbols.arrow_back_rounded,
+                          weight: 800,
+                        ),
                         tooltip: 'Back',
                         variant: IconButtonM3EVariant.tonal,
                         width: IconButtonM3EWidth.wide,

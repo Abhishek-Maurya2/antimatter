@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       fab: _navIndex == 1
           ? NavigationRailM3EFabSlot(
-              icon: const Icon(Symbols.add, fill: 1, weight: 600),
+              icon: const Icon(Symbols.add_rounded, fill: 1, weight: 800),
               label: 'Add Task',
               onPressed: () =>
                   _taskScreenKey.currentState?.openCreateTaskEditor(),
@@ -194,26 +194,42 @@ class _HomeScreenState extends State<HomeScreen> {
           header: const Text('Main'),
           destinations: [
             NavigationRailM3EDestination(
-              icon: const Icon(Symbols.dashboard, fill: 0, weight: 400),
-              selectedIcon: const Icon(Symbols.dashboard, fill: 1, weight: 400),
+              icon: const Icon(Symbols.dashboard_rounded, fill: 0, weight: 600),
+              selectedIcon: const Icon(
+                Symbols.dashboard_rounded,
+                fill: 1,
+                weight: 600,
+              ),
               label: 'Overview',
             ),
             NavigationRailM3EDestination(
-              icon: const Icon(Symbols.task_alt, fill: 0, weight: 400),
-              selectedIcon: const Icon(Symbols.task_alt, fill: 1, weight: 400),
+              icon: const Icon(Symbols.task_alt_rounded, fill: 0, weight: 600),
+              selectedIcon: const Icon(
+                Symbols.task_alt_rounded,
+                fill: 1,
+                weight: 600,
+              ),
               label: 'All Tasks',
             ),
             NavigationRailM3EDestination(
-              icon: const Icon(Symbols.today, fill: 0, weight: 400),
-              selectedIcon: const Icon(Symbols.today, fill: 1, weight: 400),
+              icon: const Icon(Symbols.today_rounded, fill: 0, weight: 600),
+              selectedIcon: const Icon(
+                Symbols.today_rounded,
+                fill: 1,
+                weight: 600,
+              ),
               label: 'Today',
             ),
             NavigationRailM3EDestination(
-              icon: const Icon(Symbols.check_circle, fill: 0, weight: 400),
+              icon: const Icon(
+                Symbols.check_circle_rounded,
+                fill: 0,
+                weight: 600,
+              ),
               selectedIcon: const Icon(
-                Symbols.check_circle,
+                Symbols.check_circle_rounded,
                 fill: 1,
-                weight: 400,
+                weight: 600,
               ),
               label: 'Completed',
             ),
@@ -223,28 +239,48 @@ class _HomeScreenState extends State<HomeScreen> {
           header: const Text('More'),
           destinations: [
             NavigationRailM3EDestination(
-              icon: const Icon(Symbols.category, fill: 0, weight: 400),
-              selectedIcon: const Icon(Symbols.category, fill: 1, weight: 400),
+              icon: const Icon(Symbols.category_rounded, fill: 0, weight: 600),
+              selectedIcon: const Icon(
+                Symbols.category_rounded,
+                fill: 1,
+                weight: 600,
+              ),
               label: 'Categories',
             ),
             NavigationRailM3EDestination(
-              icon: const Icon(Symbols.archive, fill: 0, weight: 400),
-              selectedIcon: const Icon(Symbols.archive, fill: 1, weight: 400),
+              icon: const Icon(Symbols.archive_rounded, fill: 0, weight: 600),
+              selectedIcon: const Icon(
+                Symbols.archive_rounded,
+                fill: 1,
+                weight: 600,
+              ),
               label: 'Archive',
             ),
             NavigationRailM3EDestination(
-              icon: const Icon(Symbols.delete, fill: 0, weight: 400),
-              selectedIcon: const Icon(Symbols.delete, fill: 1, weight: 400),
+              icon: const Icon(Symbols.delete_rounded, fill: 0, weight: 600),
+              selectedIcon: const Icon(
+                Symbols.delete_rounded,
+                fill: 1,
+                weight: 600,
+              ),
               label: 'Trash',
             ),
             NavigationRailM3EDestination(
-              icon: const Icon(Symbols.timer, fill: 0, weight: 400),
-              selectedIcon: const Icon(Symbols.timer, fill: 1, weight: 400),
+              icon: const Icon(Symbols.timer_rounded, fill: 0, weight: 600),
+              selectedIcon: const Icon(
+                Symbols.timer_rounded,
+                fill: 1,
+                weight: 600,
+              ),
               label: 'Session',
             ),
             NavigationRailM3EDestination(
-              icon: const Icon(Symbols.settings, fill: 0, weight: 400),
-              selectedIcon: const Icon(Symbols.settings, fill: 1, weight: 400),
+              icon: const Icon(Symbols.settings_rounded, fill: 0, weight: 600),
+              selectedIcon: const Icon(
+                Symbols.settings_rounded,
+                fill: 1,
+                weight: 600,
+              ),
               label: 'Settings',
             ),
           ],

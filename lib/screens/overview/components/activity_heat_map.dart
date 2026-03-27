@@ -244,7 +244,10 @@ class _HeatMapContentState extends State<_HeatMapContent> {
                       _isStatsExpanded = !_isStatsExpanded;
                     });
                   },
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    weight: 800,
+                  ),
                   selectedIcon: const Icon(Icons.keyboard_arrow_up_rounded),
                   isSelected: _isStatsExpanded,
                   variant: IconButtonM3EVariant.tonal,

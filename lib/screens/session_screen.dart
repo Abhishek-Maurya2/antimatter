@@ -343,7 +343,7 @@ class _SessionScreenState extends State<SessionScreen>
                           Navigator.of(context).pop();
                         }
                       },
-                      icon: const Icon(Symbols.arrow_back),
+                      icon: const Icon(Symbols.arrow_back_rounded, weight: 700),
                       tooltip: 'Back',
                       variant: IconButtonM3EVariant.tonal,
                       width: IconButtonM3EWidth.wide,

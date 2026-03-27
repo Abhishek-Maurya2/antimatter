@@ -57,7 +57,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
                 : Center(
                     child: IconButtonM3E(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Symbols.arrow_back),
+                      icon: const Icon(Symbols.arrow_back_rounded, weight: 700),
                       tooltip: 'Back',
                       variant: IconButtonM3EVariant.tonal,
                       width: IconButtonM3EWidth.wide,
@@ -133,8 +133,12 @@ class _SessionsScreenState extends State<SessionsScreen> {
                     SettingSwitchTile(
                       icon: iconContainer(
                         Symbols.keep,
-                        isLight ? const Color(0xfffce4ec) : const Color(0xff880e4f).withValues(alpha: 0.2),
-                        isLight ? const Color(0xff880e4f) : const Color(0xfffce4ec),
+                        isLight
+                            ? const Color(0xfffce4ec)
+                            : const Color(0xff880e4f).withValues(alpha: 0.2),
+                        isLight
+                            ? const Color(0xff880e4f)
+                            : const Color(0xfffce4ec),
                       ),
                       title: const Text('Stay Awake'),
                       description: const Text(

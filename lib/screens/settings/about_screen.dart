@@ -53,7 +53,10 @@ class _AboutScreenState extends State<AboutScreen> {
                     : Center(
                         child: IconButtonM3E(
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Symbols.arrow_back),
+                          icon: const Icon(
+                            Symbols.arrow_back_rounded,
+                            weight: 800,
+                          ),
                           tooltip: 'Back',
                           variant: IconButtonM3EVariant.tonal,
                           width: IconButtonM3EWidth.wide,
@@ -117,7 +120,8 @@ class _AboutScreenState extends State<AboutScreen> {
               ),
               child: Center(
                 child: Icon(
-                  Symbols.task_alt,
+                  Symbols.task_alt_rounded,
+                  weight: 800,
                   fill: 1,
                   size: 72,
                   color: colorTheme.onPrimary,
@@ -201,7 +205,13 @@ class _AboutScreenState extends State<AboutScreen> {
       children: [
         Row(
           children: [
-            Icon(Symbols.code, size: 20, fill: 1, color: colorTheme.primary),
+            Icon(
+              Symbols.code_rounded,
+              weight: 800,
+              size: 20,
+              fill: 1,
+              color: colorTheme.primary,
+            ),
             const SizedBox(width: 8),
             Text(
               'BUILT WITH',
@@ -354,7 +364,7 @@ class _AboutScreenState extends State<AboutScreen> {
     final colorTheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 24),
       child: SafeArea(
         child: ButtonGroupM3E(
           type: ButtonGroupM3EType.connected,
@@ -364,7 +374,7 @@ class _AboutScreenState extends State<AboutScreen> {
           linearMainAxisAlignment: MainAxisAlignment.center,
           actions: [
             ButtonGroupM3EAction(
-              icon: const Icon(Symbols.description),
+              icon: const Icon(Symbols.description_rounded, weight: 800),
               label: const Text('Licenses'),
               shape: ButtonM3EShape.round,
               onPressed: () {
@@ -373,7 +383,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   applicationName: 'AntiMatter',
                   applicationVersion: _appVersion,
                   applicationIcon: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(1.0),
                     child: Container(
                       width: 48,
                       height: 48,
@@ -382,7 +392,8 @@ class _AboutScreenState extends State<AboutScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
-                        Symbols.task_alt,
+                        Symbols.task_alt_rounded,
+                        weight: 800,
                         fill: 1,
                         color: colorTheme.onPrimaryContainer,
                       ),
@@ -392,8 +403,9 @@ class _AboutScreenState extends State<AboutScreen> {
               },
             ),
             ButtonGroupM3EAction(
-              icon: const Icon(Symbols.open_in_new),
+              icon: const Icon(Symbols.open_in_new_rounded, weight: 800),
               // label: const Text('GitHub'),
+              // width: 110,
               style: ButtonM3EStyle.tonal,
               shape: ButtonM3EShape.round,
               onPressed: () async {

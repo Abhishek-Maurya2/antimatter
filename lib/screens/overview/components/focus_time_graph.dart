@@ -212,7 +212,10 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                                 _isStatsExpanded = !_isStatsExpanded;
                               });
                             },
-                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              weight: 800,
+                            ),
                             selectedIcon: const Icon(
                               Icons.keyboard_arrow_up_rounded,
                             ),
