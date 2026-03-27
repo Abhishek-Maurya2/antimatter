@@ -137,18 +137,13 @@ class _SplitButtonM3EState<T> extends State<SplitButtonM3E<T>> {
       ),
     );
 
-    final trailingIconOffsetBase = (widget.trailingAlignment ==
-                SplitButtonM3ETrailingAlignment.opticalCenter &&
-            !_menuOpen)
-        ? widget.size.menuIconOffsetUnselected
-        : 0.0;
+    final trailingIconOffsetBase = 0.0;
 
-    // Trailing segment total width per state (asymmetrical vs symmetrical)
     final trailingWidthUnselected = widget.size.trailingLeftInnerPadding +
-        widget.size.trailingWidthCentered +
+        (widget.size.trailingWidthCentered + 8) +
         widget.size.rightOuterPadding;
-    final trailingWidthSelected =
-        widget.size.sidePaddingSelected * 2 + widget.size.trailingWidthCentered;
+    final trailingWidthSelected = widget.size.sidePaddingSelected * 2 +
+        (widget.size.trailingWidthCentered + 8);
 
     // When round + pressed/open, morph trailing into a perfect circle
     final bool allowCircle = widget.size == SplitButtonM3ESize.md ||
@@ -229,7 +224,9 @@ class _SplitButtonM3EState<T> extends State<SplitButtonM3E<T>> {
             end: trailingRightPad,
           ),
           child: SizedBox(
-            width: circleTrailing ? height : widget.size.trailingWidthCentered,
+            width: circleTrailing
+                ? height
+                : (widget.size.trailingWidthCentered + 8),
             child: Center(
               child: _TrailingChevron(
                 color: onCont,
@@ -340,8 +337,9 @@ class _SplitButtonM3EState<T> extends State<SplitButtonM3E<T>> {
         final tb = tCtx.findRenderObject() as RenderBox?;
         if (tb != null) _tSize = tb.size;
       }
-      final double _minMenuWidth =
-          _tSize.width > 0 ? _tSize.width : widget.size.trailingWidthCentered;
+      final double _minMenuWidth = _tSize.width > 0
+          ? _tSize.width
+          : (widget.size.trailingWidthCentered + 8);
 
       final res = await showMenu<T>(
         context: context,
@@ -377,8 +375,9 @@ class _SplitButtonM3EState<T> extends State<SplitButtonM3E<T>> {
       final tb2 = tCtx2.findRenderObject() as RenderBox?;
       if (tb2 != null) _tSize = tb2.size;
     }
-    final double _minMenuWidth2 =
-        _tSize.width > 0 ? _tSize.width : widget.size.trailingWidthCentered;
+    final double _minMenuWidth2 = _tSize.width > 0
+        ? _tSize.width
+        : (widget.size.trailingWidthCentered + 8);
 
     final res = await showMenu<T>(
       context: context,
@@ -617,7 +616,7 @@ class _TrailingChevron extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final icon = Icon(Icons.keyboard_arrow_down_rounded,
-        weight: 800, size: size, color: color);
+        weight: 800, size: size + 8, color: color);
 
     return AnimatedRotation(
       duration: SplitButtonM3ETokens.chevronDuration,

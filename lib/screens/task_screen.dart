@@ -142,7 +142,7 @@ class TaskScreenState extends State<TaskScreen> {
                   isCollapsed
                       ? Symbols.expand_more_rounded
                       : Symbols.expand_less_rounded,
-                  size: 32,
+                  size: 28,
                   weight: 800,
                 ),
                 tooltip: isCollapsed ? 'Show subtasks' : 'Hide subtasks',
@@ -645,7 +645,7 @@ class TaskScreenState extends State<TaskScreen> {
                                     hintStyle: TextStyle(
                                       fontFamily: 'GoogleSansFlex',
                                       fontSize: 25,
-                                      height: 1.0,
+                                      height: 1,
                                       letterSpacing: -2,
                                       fontStyle: FontStyle.italic,
                                       color: colorTheme.onSurfaceVariant,

@@ -29,7 +29,7 @@ class TaskFloatingToolbar extends StatelessWidget {
     required String tooltip,
     required VoidCallback onPressed,
     required Color color,
-    double weight = 400,
+    double weight = 800
   }) {
     return IconButton(
       onPressed: onPressed,
@@ -60,14 +60,16 @@ class TaskFloatingToolbar extends StatelessWidget {
           children: [
             if (isDeleted) ...[
               _buildActionIcon(
-                icon: Symbols.restore_from_trash,
+                icon: Symbols.restore_from_trash_rounded,
                 tooltip: 'Restore Task',
                 onPressed: onRestore,
                 color: colorTheme.onPrimaryContainer,
               ),
             ] else ...[
               _buildActionIcon(
-                icon: isCompleted ? Symbols.undo : Symbols.check,
+                icon: isCompleted
+                    ? Symbols.undo_rounded
+                    : Symbols.check_rounded,
                 tooltip: isCompleted ? 'Undo Complete' : 'Mark as Complete',
                 onPressed: onComplete,
                 color: colorTheme.onPrimaryContainer,
@@ -75,20 +77,22 @@ class TaskFloatingToolbar extends StatelessWidget {
               ),
               if (tasks.length == 1)
                 _buildActionIcon(
-                  icon: Symbols.edit,
+                  icon: Symbols.edit_rounded,
                   tooltip: 'Edit Task',
                   onPressed: onEdit,
                   color: colorTheme.onPrimaryContainer,
                 ),
               _buildActionIcon(
-                icon: isArchived ? Symbols.unarchive : Symbols.archive,
+                icon: isArchived
+                    ? Symbols.unarchive_rounded
+                    : Symbols.archive_rounded,
                 tooltip: isArchived ? 'Unarchive Task' : 'Archive Task',
                 onPressed: onArchive,
                 color: colorTheme.onPrimaryContainer,
               ),
             ],
             _buildActionIcon(
-              icon: Symbols.delete_outline,
+              icon: Symbols.delete_rounded,
               tooltip: isDeleted ? 'Delete Permanently' : 'Move to Trash',
               onPressed: onDelete,
               color: colorTheme.error,
@@ -99,7 +103,7 @@ class TaskFloatingToolbar extends StatelessWidget {
                 borderRadius: BorderRadius.circular(50),
               ),
               child: _buildActionIcon(
-                icon: Symbols.close,
+                icon: Symbols.close_rounded,
                 tooltip: 'Close',
                 onPressed: onClose,
                 color: colorTheme.onPrimary,

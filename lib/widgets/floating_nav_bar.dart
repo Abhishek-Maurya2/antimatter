@@ -151,7 +151,7 @@ class _NavBarItem extends StatelessWidget {
           color: isSelected ? colorTheme.surfaceContainer : Colors.transparent,
           borderRadius: BorderRadius.circular(50),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -161,8 +161,8 @@ class _NavBarItem extends StatelessWidget {
                 isSelected ? item.selectedIcon : item.icon,
                 key: ValueKey(isSelected),
                 fill: isSelected ? 1 : 0,
-                weight: isSelected ? 900 : 950,
-                size: 24,
+                weight: isSelected ? 900 : 800,
+                size: isSelected ? 26 : 24,
                 color: isSelected
                     ? colorTheme.onSurface
                     : colorTheme.onPrimaryContainer,
@@ -180,7 +180,7 @@ class _NavBarItem extends StatelessWidget {
                           style: Theme.of(context).textTheme.labelLarge
                               ?.copyWith(
                                 color: colorTheme.onSurface,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w700,
                               ),
                           maxLines: 1,
                           softWrap: false,

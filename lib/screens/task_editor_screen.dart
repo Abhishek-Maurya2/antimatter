@@ -207,7 +207,8 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                         color: colorTheme.primaryContainer,
                       ),
                       child: Icon(
-                        Symbols.label,
+                        Symbols.label_rounded,
+                        weight: 800,
                         fill: 1,
                         color: colorTheme.onPrimaryContainer,
                         size: 28,
@@ -302,7 +303,10 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
           child: IconButtonM3E(
             onPressed: widget.onClose,
             icon: Icon(
-              widget.isStandaloneScreen ? Symbols.arrow_back : Symbols.close,
+              widget.isStandaloneScreen
+                  ? Symbols.arrow_back_rounded
+                  : Symbols.close_rounded,
+              weight: 800,
             ),
             tooltip: widget.isStandaloneScreen ? 'Back' : 'Close',
             variant: IconButtonM3EVariant.tonal,
@@ -315,7 +319,7 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
               onPressed: () {
                 widget.onResult('DELETE');
               },
-              icon: const Icon(Symbols.delete),
+              icon: const Icon(Symbols.delete_rounded, weight: 800, size: 22),
               tooltip: 'Delete',
               variant: IconButtonM3EVariant.tonal,
               width: IconButtonM3EWidth.narrow,
@@ -326,7 +330,7 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
           ],
           IconButtonM3E(
             onPressed: _saveTask,
-            icon: const Icon(Symbols.check),
+            icon: const Icon(Symbols.check_rounded, weight: 800),
             tooltip: 'Save',
             variant: IconButtonM3EVariant.filled,
             width: IconButtonM3EWidth.wide,
@@ -364,7 +368,11 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
               maxLines: null,
               decoration: InputDecoration(
                 hintText: 'Add details',
-                icon: Icon(Symbols.subject, color: colorTheme.onSurfaceVariant),
+                icon: Icon(
+                  Symbols.subject_rounded,
+                  weight: 800,
+                  color: colorTheme.onSurfaceVariant,
+                ),
                 border: InputBorder.none,
                 hintStyle: TextStyle(
                   color: colorTheme.onSurfaceVariant.withOpacity(0.5),
@@ -382,7 +390,11 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Symbols.event, color: colorTheme.onSurfaceVariant),
+                    Icon(
+                      Symbols.event_rounded,
+                      weight: 800,
+                      color: colorTheme.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 16),
                     Text(
                       _deadline == null
@@ -399,7 +411,7 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                       const Spacer(),
                       IconButtonM3E(
                         onPressed: () => setState(() => _deadline = null),
-                        icon: const Icon(Symbols.close, weight: 500),
+                        icon: const Icon(Symbols.close_rounded, weight: 800),
                         tooltip: 'Clear deadline',
                         variant: IconButtonM3EVariant.tonal,
                         width: IconButtonM3EWidth.narrow,
@@ -419,7 +431,11 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
               children: [
                 Row(
                   children: [
-                    Icon(Symbols.category, color: colorTheme.onSurfaceVariant),
+                    Icon(
+                      Symbols.category_rounded,
+                      weight: 800,
+                      color: colorTheme.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 16),
                     Text(
                       'Categories',
@@ -435,7 +451,7 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                   padding: const EdgeInsets.all(2.0),
                   child: IconButtonM3E(
                     onPressed: _showAddCategorySheet,
-                    icon: const Icon(Symbols.add_circle),
+                    icon: const Icon(Symbols.add_circle_rounded, weight: 800),
                     tooltip: 'add category',
                     variant: IconButtonM3EVariant.filled,
                     width: IconButtonM3EWidth.wide,
@@ -514,7 +530,7 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                   padding: const EdgeInsets.all(2.0),
                   child: IconButtonM3E(
                     onPressed: _addSubTask,
-                    icon: const Icon(Symbols.add_circle),
+                    icon: const Icon(Symbols.add_circle_rounded, weight: 800),
                     tooltip: 'add subtask',
                     variant: IconButtonM3EVariant.filled,
                     width: IconButtonM3EWidth.wide,
@@ -586,7 +602,11 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                       ),
                     ),
                     IconButtonM3E(
-                      icon: const Icon(Symbols.close, size: 18, weight: 600),
+                      icon: const Icon(
+                        Symbols.close_rounded,
+                        size: 24,
+                        weight: 800,
+                      ),
                       variant: IconButtonM3EVariant.tonal,
                       width: IconButtonM3EWidth.narrow,
                       backgroundColor: colorTheme.tertiaryContainer,
