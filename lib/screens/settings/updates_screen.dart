@@ -413,7 +413,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                Symbols.cloud_off,
+                                Symbols.cloud_off_rounded,
                                 size: 64,
                                 color: colorTheme.error.withOpacity(0.6),
                               ),
@@ -436,7 +436,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                Symbols.info,
+                                Symbols.info_rounded,
                                 size: 64,
                                 color: colorTheme.onSurfaceVariant.withOpacity(
                                   0.3,
@@ -488,9 +488,10 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                                     ),
                                     child: Icon(
                                       _isUpdateAvailable
-                                          ? Symbols.system_update
-                                          : Symbols.check_circle,
+                                          ? Symbols.system_update_rounded
+                                          : Symbols.check_circle_rounded,
                                       size: 48,
+                                      weight: 600,
                                       color: _isUpdateAvailable
                                           ? colorTheme.onPrimary
                                           : colorTheme.onSecondaryContainer,
@@ -629,7 +630,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                               Row(
                                 children: [
                                   Icon(
-                                    Symbols.description,
+                                    Symbols.description_rounded,
                                     size: 20,
                                     color: colorTheme.primary,
                                   ),

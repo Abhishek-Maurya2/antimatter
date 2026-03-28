@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final bool isExpanded = constraints.maxWidth >= 840;
+        final bool isExpanded = constraints.maxWidth >= 740;
 
         // Build the body based on top-level nav index
         Widget bodyContent;
