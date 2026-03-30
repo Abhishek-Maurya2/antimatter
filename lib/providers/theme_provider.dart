@@ -78,7 +78,9 @@ class ThemeState {
 class ThemeController extends _$ThemeController {
   @override
   ThemeState build() {
-    return _initializeSync();
+    final initState = _initializeSync();
+    Future.microtask(() => initializeAsync());
+    return initState;
   }
 
   ThemeState _initializeSync({Color fallbackColor = const Color(0xFF6750A4)}) {
