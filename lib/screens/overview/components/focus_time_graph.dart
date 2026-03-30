@@ -58,6 +58,7 @@ class _FocusGraphCard extends StatefulWidget {
 class _FocusGraphCardState extends State<_FocusGraphCard> {
   late DateTime _currentWeekStart;
   bool _isStatsExpanded = false;
+  final ScrollController _barsScrollController = ScrollController();
 
   @override
   void initState() {
@@ -66,6 +67,12 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
     final today = DateTime(now.year, now.month, now.day);
     // Start with the week ending today
     _currentWeekStart = today.subtract(const Duration(days: 6));
+  }
+
+  @override
+  void dispose() {
+    _barsScrollController.dispose();
+    super.dispose();
   }
 
   void _goToPreviousWeek() {
@@ -353,91 +360,131 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                     padding: const EdgeInsets.only(
                       bottom: scrollbarBottomInset,
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: List.generate(visibleDates.length, (index) {
-                        final date = visibleDates[index];
-                        final seconds = widget.dailyFocus[date] ?? 0;
-                        final heightFactor = seconds / maxSeconds;
-                        final isToday = _isSameDay(date, today);
-                        final isLowFocus =
-                            averageFocus > 0 && seconds < (averageFocus / 2);
-                        final isLessFocus =
-                            averageFocus > 0 && seconds < (averageFocus / 1.2);
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        const double minBarWidth = 55;
+                        final double totalMinWidth =
+                            minBarWidth * visibleDates.length;
+                        final bool needsScroll =
+                            constraints.maxWidth < totalMinWidth;
 
-                        return Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Tooltip(
-                                message: _formatDuration(seconds),
-                                triggerMode: TooltipTriggerMode.tap,
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 4,
-                                  ),
-                                  height: (heightFactor * drawableMaxBarHeight)
-                                      .clamp(4.0, drawableMaxBarHeight),
-                                  decoration: BoxDecoration(
-                                    color: isLowFocus
-                                        ? colorScheme.error
-                                        : (isLessFocus
-                                              ? colorScheme.primary
-                                              : barDefaultColor),
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                  alignment: Alignment.topCenter,
-                                  padding: const EdgeInsets.all(4),
-                                  child: AspectRatio(
-                                    aspectRatio: 1,
-                                    child: Center(
-                                      child: FractionallySizedBox(
-                                        widthFactor: 1,
-                                        heightFactor: 1,
-                                        child: CustomPaint(
-                                          painter: _ShapePainter(
-                                            polygon: isLowFocus
-                                                ? MaterialShapes.arrow
-                                                : (isLessFocus
-                                                      ? MaterialShapes.gem
-                                                      : MaterialShapes
-                                                            .softBurst),
-                                            color: colorScheme.surface
-                                                .withOpacity(0.7),
+                        Widget barsRow = Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: List.generate(visibleDates.length, (index) {
+                            final date = visibleDates[index];
+                            final seconds = widget.dailyFocus[date] ?? 0;
+                            final heightFactor = seconds / maxSeconds;
+                            final isToday = _isSameDay(date, today);
+                            final isLowFocus =
+                                averageFocus > 0 &&
+                                seconds < (averageFocus / 2);
+                            final isLessFocus =
+                                averageFocus > 0 &&
+                                seconds < (averageFocus / 1.2);
+
+                            final barChild = Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Tooltip(
+                                  message: _formatDuration(seconds),
+                                  triggerMode: TooltipTriggerMode.tap,
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    height:
+                                        (heightFactor * drawableMaxBarHeight)
+                                            .clamp(4.0, drawableMaxBarHeight),
+                                    decoration: BoxDecoration(
+                                      color: isLowFocus
+                                          ? colorScheme.error
+                                          : (isLessFocus
+                                                ? colorScheme.primary
+                                                : barDefaultColor),
+                                      borderRadius: BorderRadius.circular(50),
+                                    ),
+                                    alignment: Alignment.topCenter,
+                                    padding: const EdgeInsets.all(4),
+                                    child: AspectRatio(
+                                      aspectRatio: 1,
+                                      child: Center(
+                                        child: FractionallySizedBox(
+                                          widthFactor: 1,
+                                          heightFactor: 1,
+                                          child: CustomPaint(
+                                            painter: _ShapePainter(
+                                              polygon: isLowFocus
+                                                  ? MaterialShapes.arrow
+                                                  : (isLessFocus
+                                                        ? MaterialShapes.gem
+                                                        : MaterialShapes
+                                                              .softBurst),
+                                              color: colorScheme.surface
+                                                  .withOpacity(0.7),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              // Day Name
-                              Text(
-                                DateFormat(
-                                  'E',
-                                ).format(date).substring(0, 1).toUpperCase(),
-                                style: textTheme.labelSmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  fontSize: 10,
-                                  fontWeight: isToday ? FontWeight.bold : null,
+                                const SizedBox(height: 8),
+                                // Day Name
+                                Text(
+                                  DateFormat(
+                                    'E',
+                                  ).format(date).substring(0, 1).toUpperCase(),
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontSize: 10,
+                                    fontWeight: isToday
+                                        ? FontWeight.bold
+                                        : null,
+                                  ),
                                 ),
-                              ),
-                              // Date Number
-                              Text(
-                                DateFormat('d MMM').format(date).toUpperCase(),
-                                style: textTheme.labelSmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant
-                                      .withOpacity(0.6),
-                                  fontSize: 8,
-                                  fontWeight: isToday ? FontWeight.bold : null,
+                                // Date Number
+                                Text(
+                                  DateFormat(
+                                    'd MMM',
+                                  ).format(date).toUpperCase(),
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant
+                                        .withOpacity(0.6),
+                                    fontSize: 8,
+                                    fontWeight: isToday
+                                        ? FontWeight.bold
+                                        : null,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            );
+
+                            if (needsScroll) {
+                              return SizedBox(
+                                width: minBarWidth,
+                                child: barChild,
+                              );
+                            }
+                            return Expanded(child: barChild);
+                          }),
                         );
-                      }),
+
+                        if (needsScroll) {
+                          return Scrollbar(
+                            controller: _barsScrollController,
+                            child: SingleChildScrollView(
+                              controller: _barsScrollController,
+                              scrollDirection: Axis.horizontal,
+                              child: SizedBox(
+                                width: totalMinWidth,
+                                child: barsRow,
+                              ),
+                            ),
+                          );
+                        }
+                        return barsRow;
+                      },
                     ),
                   ),
                 ),
@@ -480,23 +527,25 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                     icon: const Icon(
                       Icons.chevron_left_rounded,
                       weight: 800,
-                      size: 32,
+                      size: 40,
                     ),
                     onPressed: _goToPreviousWeek,
                     shape: ButtonM3EShape.round,
-                    width: 30,
+                    width: 50,
+                    height: 60,
                     contentPadding: EdgeInsets.zero,
                   ),
                   ButtonGroupM3EAction(
                     icon: const Icon(
                       Icons.chevron_right_rounded,
                       weight: 800,
-                      size: 32,
+                      size: 40,
                     ),
                     onPressed: _canGoNext ? _goToNextWeek : null,
                     enabled: _canGoNext,
                     shape: ButtonM3EShape.round,
-                    width: 30,
+                    width: 50,
+                    height: 60,
                     contentPadding: EdgeInsets.zero,
                   ),
                 ],
