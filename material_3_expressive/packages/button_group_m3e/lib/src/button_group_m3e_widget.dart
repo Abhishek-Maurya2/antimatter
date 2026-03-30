@@ -39,6 +39,7 @@ class ButtonGroupM3EAction {
     this.width,
     this.height,
     this.contentPadding,
+    this.cornerRadiusOverride,
   });
 
   final Widget? label;
@@ -55,6 +56,7 @@ class ButtonGroupM3EAction {
   final double? width;
   final double? height;
   final EdgeInsetsGeometry? contentPadding;
+  final BorderRadius? cornerRadiusOverride; // per-corner radius override
 
   ButtonGroupM3EAction copyWith({
     Widget? label,
@@ -71,6 +73,7 @@ class ButtonGroupM3EAction {
     double? width,
     double? height,
     EdgeInsetsGeometry? contentPadding,
+    BorderRadius? cornerRadiusOverride,
   }) =>
       ButtonGroupM3EAction(
         label: label ?? this.label,
@@ -87,6 +90,7 @@ class ButtonGroupM3EAction {
         width: width ?? this.width,
         height: height ?? this.height,
         contentPadding: contentPadding ?? this.contentPadding,
+        cornerRadiusOverride: cornerRadiusOverride ?? this.cornerRadiusOverride,
       );
 }
 
@@ -842,7 +846,7 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
         }
       },
       enabled: action.enabled,
-      cornerRadiusOverride: perCorner,
+      cornerRadiusOverride: action.cornerRadiusOverride ?? perCorner,
       backgroundColor: action.backgroundColor,
       foregroundColor: action.foregroundColor,
       contentPadding: action.contentPadding,

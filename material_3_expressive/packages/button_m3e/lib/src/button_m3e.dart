@@ -189,7 +189,7 @@ class _ButtonM3EState extends State<ButtonM3E> {
 
     final BorderRadius squareBaseRadius = widget.cornerRadiusOverride ??
         BorderRadius.circular(tokens.squareRadius(widget.size));
-    final BorderRadius pressedSquareRadius = widget.cornerRadiusOverride ??
+    final BorderRadius pressedSquareRadius =
         BorderRadius.circular(tokens.pressedRadius(widget.size));
 
     OutlinedBorder round = const StadiumBorder();
@@ -200,7 +200,14 @@ class _ButtonM3EState extends State<ButtonM3E> {
       borderRadius: pressedSquareRadius,
     );
 
-    OutlinedBorder base = widget.shape == ButtonM3EShape.round ? round : square;
+    // When cornerRadiusOverride is provided, use it as the resting shape
+    // regardless of the shape enum, so the custom radii are visible at rest.
+    OutlinedBorder base;
+    if (widget.cornerRadiusOverride != null) {
+      base = square; // custom radii in resting state
+    } else {
+      base = widget.shape == ButtonM3EShape.round ? round : square;
+    }
     OutlinedBorder alt = widget.shape == ButtonM3EShape.round ? square : round;
 
     if (selected && pressed) {

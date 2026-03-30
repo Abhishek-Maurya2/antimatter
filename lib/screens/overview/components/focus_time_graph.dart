@@ -26,8 +26,8 @@ class FocusTimeGraph extends StatelessWidget {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    // Initialize last 30 days with 0
-    for (int i = 29; i >= 0; i--) {
+    // Initialize last 365 days with 0
+    for (int i = 364; i >= 0; i--) {
       final date = today.subtract(Duration(days: i));
       map[date] = 0;
     }
@@ -56,62 +56,93 @@ class _FocusGraphCard extends StatefulWidget {
 }
 
 class _FocusGraphCardState extends State<_FocusGraphCard> {
-  final ScrollController _scrollController = ScrollController();
+  late DateTime _currentWeekStart;
   bool _isStatsExpanded = false;
-  bool _isHovering = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-      }
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    // Start with the week ending today
+    _currentWeekStart = today.subtract(const Duration(days: 6));
+  }
+
+  void _goToPreviousWeek() {
+    setState(() {
+      _currentWeekStart = _currentWeekStart.subtract(const Duration(days: 7));
     });
   }
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
+  void _goToNextWeek() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final nextWeekStart = _currentWeekStart.add(const Duration(days: 7));
+
+    if (nextWeekStart.isBefore(today)) {
+      setState(() {
+        _currentWeekStart = nextWeekStart;
+      });
+    }
+  }
+
+  bool get _canGoNext {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return _currentWeekStart.add(const Duration(days: 7)).isBefore(today);
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
 
-    final sortedDates = widget.dailyFocus.keys.toList()..sort();
-    final maxSeconds = widget.dailyFocus.values.fold<int>(
+    // Filter to current 7-day window
+    final List<DateTime> visibleDates = [];
+    for (int i = 0; i < 7; i++) {
+      visibleDates.add(_currentWeekStart.add(Duration(days: i)));
+    }
+
+    final maxSeconds = visibleDates.fold<int>(
       600, // min 10 mins for scale
-      (prev, curr) => curr > prev ? curr : prev,
+      (prev, date) {
+        final val = widget.dailyFocus[date] ?? 0;
+        return val > prev ? val : prev;
+      },
     );
 
-    // Calculate today's total and 7-day average
-    final now = DateTime.now();
-    int todayTotal = 0;
-    int sevenDayTotal = 0;
-    int activeDaysLast7 = 0;
+    // Calculate windowed stats
+    int windowedTotal = 0;
+    int activeDaysInWindow = 0;
+    DateTime? windowBestDay;
+    int windowBestSeconds = 0;
 
-    for (int i = 0; i < 7; i++) {
-      final targetDate = now.subtract(Duration(days: i));
-      for (final entry in widget.dailyFocus.entries) {
-        if (_isSameDay(entry.key, targetDate)) {
-          sevenDayTotal += entry.value;
-          if (i == 0) todayTotal = entry.value;
-          if (entry.value > 0) activeDaysLast7++;
-          break;
-        }
+    for (final date in visibleDates) {
+      final seconds = widget.dailyFocus[date] ?? 0;
+      windowedTotal += seconds;
+      if (seconds > 0) activeDaysInWindow++;
+      if (seconds >= windowBestSeconds) {
+        windowBestSeconds = seconds;
+        windowBestDay = date;
       }
     }
-    final int averageFocus = sevenDayTotal ~/ 7;
-    final bestDayEntry = widget.dailyFocus.entries.reduce(
-      (a, b) => a.value >= b.value ? a : b,
+
+    final int averageFocus = windowedTotal ~/ 7;
+    final String bestDayLabel = windowBestDay != null
+        ? DateFormat('d MMM').format(windowBestDay).toUpperCase()
+        : 'N/A';
+
+    final isCurrentWeek = _isSameDay(
+      _currentWeekStart.add(const Duration(days: 6)),
+      today,
     );
-    final int bestDaySeconds = bestDayEntry.value;
-    final String bestDayLabel = DateFormat(
-      'd MMM',
-    ).format(bestDayEntry.key).toUpperCase();
+
+    final weekFormat = DateFormat('d MMM');
+    final weekRangeText =
+        '${weekFormat.format(_currentWeekStart)} - ${weekFormat.format(visibleDates.last)}'
+            .toUpperCase();
 
     const double chartHeight = 320;
     const double xAxisBottomOffset = 34;
@@ -122,334 +153,357 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
 
     const barDefaultColor = Color(0xFF80DA88);
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovering = true),
-      onExit: (_) => setState(() => _isHovering = false),
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.analytics_rounded,
-                            color: colorScheme.primary,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Focus Time',
-                            style: TextStyle(
-                              fontFamily: 'GoogleSansFlex',
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurface,
-                              fontVariations: const [
-                                FontVariation('wght', 600),
-                                FontVariation('wdth', 100),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Today Focused',
-                                style: TextStyle(
-                                  fontFamily: 'GoogleSansFlex',
-                                  fontSize: 14,
-                                  fontVariations: const [
-                                    FontVariation('wght', 500),
-                                    FontVariation('wdth', 110),
-                                    FontVariation('wght', 600),
-                                    FontVariation('wdth', 100),
-                                    FontVariation('ROND', 100),
-                                    FontVariation('CNTR', 100),
-                                    FontVariation('XTRA', 100),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                _formatDuration(todayTotal).toUpperCase(),
-                                style: TextStyle(
-                                  fontFamily: 'GoogleSansFlex',
-                                  fontSize: 28,
-                                  fontVariations: const [
-                                    FontVariation('wght', 600),
-                                    FontVariation('wdth', 100),
-                                    FontVariation('ROND', 200),
-                                    FontVariation('CNTR', 100),
-                                    FontVariation('XTRA', 100),
-                                  ],
-                                ),
-                              ),
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.analytics_rounded,
+                          color: colorScheme.primary,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Focus Time',
+                          style: TextStyle(
+                            fontFamily: 'GoogleSansFlex',
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.onSurface,
+                            fontVariations: const [
+                              FontVariation('wght', 600),
+                              FontVariation('wdth', 100),
                             ],
                           ),
-                          IconButtonM3E(
-                            onPressed: () {
-                              setState(() {
-                                _isStatsExpanded = !_isStatsExpanded;
-                              });
-                            },
-                            icon: const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              weight: 800,
-                              size: 32,
-                            ),
-                            selectedIcon: const Icon(
-                              Icons.keyboard_arrow_up_rounded,
-                              weight: 800,
-                              size: 32,
-                            ),
-                            isSelected: _isStatsExpanded,
-                            variant: IconButtonM3EVariant.tonal,
-                            backgroundColor: colorScheme.surfaceContainer,
-                            width: IconButtonM3EWidth.narrow,
-                          ),
-                        ],
-                      ),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder:
-                            (Widget child, Animation<double> animation) {
-                              return FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              );
-                            },
-                        child: _isStatsExpanded
-                            ? Column(
-                                key: const ValueKey('expanded_stats'),
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 20),
-                                  Text(
-                                    'Average Focus',
-                                    style: TextStyle(
-                                      fontFamily: 'GoogleSansFlex',
-                                      fontSize: 14,
-                                      fontVariations: const [
-                                        FontVariation('wght', 500),
-                                        FontVariation('wdth', 110),
-                                        FontVariation('wght', 600),
-                                        FontVariation('wdth', 100),
-                                        FontVariation('ROND', 100),
-                                        FontVariation('CNTR', 100),
-                                        FontVariation('XTRA', 100),
-                                      ],
-                                    ),
-                                  ),
-                                  // const SizedBox(height: 1),
-                                  Text(
-                                    _formatDuration(averageFocus).toUpperCase(),
-                                    style: TextStyle(
-                                      fontFamily: 'GoogleSansFlex',
-                                      fontSize: 38,
-                                      fontVariations: const [
-                                        FontVariation('wght', 700),
-                                        FontVariation('wdth', 100),
-                                        FontVariation('ROND', 200),
-                                        FontVariation('CNTR', 100),
-                                        FontVariation('XTRA', 500),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '7D TOTAL: ${_formatDuration(sevenDayTotal).toUpperCase()}',
-                                    style: textTheme.labelMedium?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'ACTIVE DAYS: $activeDaysLast7/7',
-                                    style: textTheme.labelMedium?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'BEST DAY: ${_formatDuration(bestDaySeconds).toUpperCase()} · $bestDayLabel',
-                                    style: textTheme.labelMedium?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : const SizedBox.shrink(
-                                key: ValueKey('empty_stats'),
-                              ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: chartHeight,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // Y-Axis Labels
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: xAxisBottomOffset + scrollbarBottomInset,
+                        ),
+                      ],
                     ),
-                    child: Column(
+                    const SizedBox(height: 12),
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        _buildYLabel(_formatYLabel(maxSeconds)),
-                        _buildYLabel(_formatYLabel(maxSeconds ~/ 1.5)),
-                        _buildYLabel(_formatYLabel(maxSeconds ~/ 2)),
-                        _buildYLabel(_formatYLabel(maxSeconds ~/ 3)),
-                        _buildYLabel('0m'),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isCurrentWeek ? 'Today Focused' : 'Day Peak',
+                              style: TextStyle(
+                                fontFamily: 'GoogleSansFlex',
+                                fontSize: 18,
+                                fontVariations: const [
+                                  FontVariation('wght', 500),
+                                  FontVariation('wdth', 110),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              _formatDuration(
+                                isCurrentWeek
+                                    ? (widget.dailyFocus[today] ?? 0)
+                                    : windowBestSeconds,
+                              ).toUpperCase(),
+                              style: TextStyle(
+                                fontFamily: 'GoogleSansFlex',
+                                fontSize: 32,
+                                fontVariations: const [
+                                  FontVariation('wght', 600),
+                                  FontVariation('wdth', 80),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButtonM3E(
+                          onPressed: () {
+                            setState(() {
+                              _isStatsExpanded = !_isStatsExpanded;
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            weight: 800,
+                            size: 32,
+                          ),
+                          selectedIcon: const Icon(
+                            Icons.keyboard_arrow_up_rounded,
+                            weight: 800,
+                            size: 32,
+                          ),
+                          isSelected: _isStatsExpanded,
+                          variant: IconButtonM3EVariant.tonal,
+                          backgroundColor: colorScheme.surfaceContainer,
+                          width: IconButtonM3EWidth.narrow,
+                        ),
                       ],
                     ),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      transitionBuilder:
+                          (Widget child, Animation<double> animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            );
+                          },
+                      child: _isStatsExpanded
+                          ? Column(
+                              key: const ValueKey('expanded_stats'),
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 20),
+                                Text(
+                                  'Average Focus',
+                                  style: TextStyle(
+                                    fontFamily: 'GoogleSansFlex',
+                                    fontSize: 14,
+                                    fontVariations: const [
+                                      FontVariation('wght', 500),
+                                      FontVariation('wdth', 110),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  _formatDuration(averageFocus).toUpperCase(),
+                                  style: TextStyle(
+                                    fontFamily: 'GoogleSansFlex',
+                                    fontSize: 38,
+                                    fontVariations: const [
+                                      FontVariation('wght', 700),
+                                      FontVariation('wdth', 100),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'WINDOW TOTAL: ${_formatDuration(windowedTotal).toUpperCase()}',
+                                  style: textTheme.labelMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'ACTIVE DAYS: $activeDaysInWindow/7',
+                                  style: textTheme.labelMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'WINDOW BEST: ${_formatDuration(windowBestSeconds).toUpperCase()} · $bestDayLabel',
+                                  style: textTheme.labelMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : const SizedBox.shrink(key: ValueKey('empty_stats')),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: chartHeight,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Y-Axis Labels
+                Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: xAxisBottomOffset + scrollbarBottomInset,
                   ),
-                  const SizedBox(width: 12),
-                  // Scrollable Bars
-                  Expanded(
-                    child: Scrollbar(
-                      controller: _scrollController,
-                      thumbVisibility: _isHovering,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.only(
-                          bottom: scrollbarBottomInset,
-                        ),
-                        controller: _scrollController,
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: List.generate(sortedDates.length, (index) {
-                            final date = sortedDates[index];
-                            final seconds = widget.dailyFocus[date] ?? 0;
-                            final heightFactor = seconds / maxSeconds;
-                            final isToday = _isSameDay(date, DateTime.now());
-                            final isLowFocus =
-                                averageFocus > 0 &&
-                                seconds < (averageFocus / 2);
-                            final isLessFocus =
-                                averageFocus > 0 &&
-                                seconds < (averageFocus / 1.2);
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _buildYLabel(_formatYLabel(maxSeconds)),
+                      _buildYLabel(_formatYLabel(maxSeconds ~/ 1.5)),
+                      _buildYLabel(_formatYLabel(maxSeconds ~/ 2)),
+                      _buildYLabel(_formatYLabel(maxSeconds ~/ 3)),
+                      _buildYLabel('0m'),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Bars
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: scrollbarBottomInset,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: List.generate(visibleDates.length, (index) {
+                        final date = visibleDates[index];
+                        final seconds = widget.dailyFocus[date] ?? 0;
+                        final heightFactor = seconds / maxSeconds;
+                        final isToday = _isSameDay(date, today);
+                        final isLowFocus =
+                            averageFocus > 0 && seconds < (averageFocus / 2);
+                        final isLessFocus =
+                            averageFocus > 0 && seconds < (averageFocus / 1.2);
 
-                            return SizedBox(
-                              width: 48,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Tooltip(
-                                    message: _formatDuration(seconds),
-                                    triggerMode: TooltipTriggerMode.tap,
-                                    child: Container(
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 2,
-                                      ),
-                                      height:
-                                          (heightFactor * drawableMaxBarHeight)
-                                              .clamp(4.0, drawableMaxBarHeight),
-                                      decoration: BoxDecoration(
-                                        color: isLowFocus
-                                            ? colorScheme.error
-                                            : (isLessFocus
-                                                  ? colorScheme.primary
-                                                  : barDefaultColor),
-                                        borderRadius: BorderRadius.circular(50),
-                                      ),
-                                      alignment: Alignment.topCenter,
-                                      padding: const EdgeInsets.all(4),
-                                      child: AspectRatio(
-                                        aspectRatio: 1,
-                                        child: Center(
-                                          child: FractionallySizedBox(
-                                            widthFactor: 1,
-                                            heightFactor: 1,
-                                            child: CustomPaint(
-                                              painter: _ShapePainter(
-                                                polygon: isLowFocus
-                                                    ? MaterialShapes.arrow
-                                                    : (isLessFocus
-                                                          ? MaterialShapes.gem
-                                                          : MaterialShapes
-                                                                .softBurst),
-                                                color: colorScheme.surface
-                                                    .withOpacity(0.7),
-                                              ),
-                                            ),
+                        return Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Tooltip(
+                                message: _formatDuration(seconds),
+                                triggerMode: TooltipTriggerMode.tap,
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
+                                  height: (heightFactor * drawableMaxBarHeight)
+                                      .clamp(4.0, drawableMaxBarHeight),
+                                  decoration: BoxDecoration(
+                                    color: isLowFocus
+                                        ? colorScheme.error
+                                        : (isLessFocus
+                                              ? colorScheme.primary
+                                              : barDefaultColor),
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  alignment: Alignment.topCenter,
+                                  padding: const EdgeInsets.all(4),
+                                  child: AspectRatio(
+                                    aspectRatio: 1,
+                                    child: Center(
+                                      child: FractionallySizedBox(
+                                        widthFactor: 1,
+                                        heightFactor: 1,
+                                        child: CustomPaint(
+                                          painter: _ShapePainter(
+                                            polygon: isLowFocus
+                                                ? MaterialShapes.arrow
+                                                : (isLessFocus
+                                                      ? MaterialShapes.gem
+                                                      : MaterialShapes
+                                                            .softBurst),
+                                            color: colorScheme.surface
+                                                .withOpacity(0.7),
                                           ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  // Day Name
-                                  Text(
-                                    DateFormat('E')
-                                        .format(date)
-                                        .substring(0, 1)
-                                        .toUpperCase(),
-                                    style: textTheme.labelSmall?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                      fontSize: 10,
-                                      fontWeight: isToday
-                                          ? FontWeight.bold
-                                          : null,
-                                    ),
-                                  ),
-                                  // Date Number
-                                  Text(
-                                    DateFormat(
-                                      'd MMM',
-                                    ).format(date).toUpperCase(),
-                                    style: textTheme.labelSmall?.copyWith(
-                                      color: colorScheme.onSurfaceVariant
-                                          .withOpacity(0.6),
-                                      fontSize: 8,
-                                      fontWeight: isToday
-                                          ? FontWeight.bold
-                                          : null,
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
-                            );
-                          }),
-                        ),
-                      ),
+                              const SizedBox(height: 8),
+                              // Day Name
+                              Text(
+                                DateFormat(
+                                  'E',
+                                ).format(date).substring(0, 1).toUpperCase(),
+                                style: textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontSize: 10,
+                                  fontWeight: isToday ? FontWeight.bold : null,
+                                ),
+                              ),
+                              // Date Number
+                              Text(
+                                DateFormat('d MMM').format(date).toUpperCase(),
+                                style: textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant
+                                      .withOpacity(0.6),
+                                  fontSize: 8,
+                                  fontWeight: isToday ? FontWeight.bold : null,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Selection range',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant.withOpacity(0.5),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    weekRangeText,
+                    style: TextStyle(
+                      fontFamily: 'GoogleSansFlex',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.onSurfaceVariant,
+                      fontVariations: const [FontVariation('wght', 700)],
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
+              ButtonGroupM3E(
+                type: ButtonGroupM3EType.connected,
+                size: ButtonGroupM3ESize.sm,
+                style: ButtonM3EStyle.tonal,
+                actions: [
+                  ButtonGroupM3EAction(
+                    icon: const Icon(
+                      Icons.chevron_left_rounded,
+                      weight: 800,
+                      size: 32,
+                    ),
+                    onPressed: _goToPreviousWeek,
+                    shape: ButtonM3EShape.round,
+                    width: 30,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  ButtonGroupM3EAction(
+                    icon: const Icon(
+                      Icons.chevron_right_rounded,
+                      weight: 800,
+                      size: 32,
+                    ),
+                    onPressed: _canGoNext ? _goToNextWeek : null,
+                    enabled: _canGoNext,
+                    shape: ButtonM3EShape.round,
+                    width: 30,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
