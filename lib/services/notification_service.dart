@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -50,6 +51,35 @@ class NotificationService {
         debugPrint('Notification clicked: ${response.payload}');
       },
     );
+
+    // Create channels for Android
+    if (Platform.isAndroid) {
+      final androidPlugin =
+          _notificationsPlugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      
+      if (androidPlugin != null) {
+        // AI Coach Channel
+        const AndroidNotificationChannel aiCoachChannel = AndroidNotificationChannel(
+          'ai_coach_channel',
+          'AI Productivity Coach',
+          description: 'Notifications from the ruthless AI Coach',
+          importance: Importance.max,
+        );
+
+        // Distraction Blocker Channel
+        const AndroidNotificationChannel blocklistChannel = AndroidNotificationChannel(
+          'blocklist_channel',
+          'Distraction Blocker',
+          description: 'Notifications when an app is blocked',
+          importance: Importance.max,
+        );
+
+        await androidPlugin.createNotificationChannel(aiCoachChannel);
+        await androidPlugin.createNotificationChannel(blocklistChannel);
+        debugPrint('Notification channels created for Android.');
+      }
+    }
 
     _isInitialized = true;
   }
@@ -150,6 +180,54 @@ class NotificationService {
       notificationDetails: platformChannelSpecifics,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  Future<void> showCoachNotification(String message) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'ai_coach_channel',
+      'AI Productivity Coach',
+      channelDescription: 'Notifications from the ruthless AI Coach',
+      importance: Importance.max,
+      priority: Priority.high,
+      styleInformation: BigTextStyleInformation(''),
+    );
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: DarwinNotificationDetails(),
+    );
+
+    await _notificationsPlugin.show(
+      id: DateTime.now().millisecondsSinceEpoch % 100000,
+      title: 'Reality Check',
+      body: message,
+      notificationDetails: platformChannelSpecifics,
+    );
+  }
+
+  Future<void> showBlockerNotification(String appName) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'blocklist_channel',
+      'Distraction Blocker',
+      channelDescription: 'Notifications when an app is blocked',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: DarwinNotificationDetails(),
+      macOS: DarwinNotificationDetails(),
+    );
+
+    await _notificationsPlugin.show(
+      id: 8888, // Constant ID to avoid notification spam
+      title: 'Focus Restored',
+      body: '$appName is blocked. Get back to work!',
+      notificationDetails: platformChannelSpecifics,
     );
   }
 }

@@ -10,6 +10,7 @@ import 'settings/sessions_screen.dart';
 import 'settings/updates_screen.dart';
 import 'settings/about_screen.dart';
 import 'settings/wavy_demo_screen.dart';
+import 'settings/ai_coach_screen.dart';
 
 enum SettingsDetail {
   appearance,
@@ -20,6 +21,7 @@ enum SettingsDetail {
   updates,
   about,
   wavyDemo,
+  aiCoach,
 }
 
 class SettingsScreen extends StatefulWidget {
@@ -75,6 +77,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         break;
       case SettingsDetail.wavyDemo:
         detailScreen = const WavyDemoScreen(isEmbedded: true);
+        break;
+      case SettingsDetail.aiCoach:
+        detailScreen = const AiCoachScreen(isEmbedded: true);
         break;
       default:
         detailScreen = const Center(child: Text('Select a setting'));
@@ -157,7 +162,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
+              // AI Coach section
+              SettingSection(
+                title: Padding(
+                  padding: const EdgeInsets.only(left: 4, bottom: 8),
+                  child: Text(
+                    'AI Accountability',
+                    style: TextStyle(
+                      color: colorTheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                styleTile: true,
+                tiles: [
+                  SettingActionTile(
+                    icon: iconContainer(
+                      Symbols.smart_toy,
+                      isLight ? Color(0xffd6e2ff) : Color(0xff004a77),
+                      isLight ? Color(0xff004a77) : Color(0xffd6e2ff),
+                    ),
+                    title: Text('Ruthless AI Coach'),
+                    description: Text('Configure motivation & app limits'),
+                    onTap: () => _handleTap(
+                      SettingsDetail.aiCoach,
+                      () => const AiCoachScreen(),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
               // Task settings section
               SettingSection(
                 title: Padding(

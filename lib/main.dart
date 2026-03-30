@@ -19,6 +19,7 @@ import 'services/home_widget_service.dart';
 import 'services/supabase_sync_service.dart';
 import 'services/session_sync_service.dart';
 import 'services/notification_service.dart';
+import 'services/background_enforcer_service.dart';
 
 // Initialize Supabase details
 const String supaUrl = 'https://gztupoebzdjjdcttenkb.supabase.co';
@@ -57,6 +58,9 @@ void main() async {
   // Initialize and start Sync Service
   syncService = SupabaseSyncService(tasksBox);
   sessionSyncService = SessionSyncService(sessionsBox);
+
+  // Initialize Background Enforcer
+  await BackgroundEnforcerService().initialize();
 
   // Asynchronously pull latest tasks from the cloud
   syncService.pullTasks();
