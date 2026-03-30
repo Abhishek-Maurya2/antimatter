@@ -95,8 +95,8 @@ class ProgressCard extends StatelessWidget {
                       Text(
                         'No tasks for today',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: colorTheme.onSurfaceVariant,
-                            ),
+                          color: colorTheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -104,91 +104,91 @@ class ProgressCard extends StatelessWidget {
               )
             else
               // Circular wavy progress indicator + count
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 4),
-                    TweenAnimationBuilder<double>(
-                      tween: Tween<double>(begin: 0, end: progress),
-                      duration: const Duration(milliseconds: 800),
-                      curve: Curves.easeOutCubic,
-                      builder: (context, animatedProgress, _) {
-                        return SizedBox(
-                          width: 85,
-                          height: 85,
-                          child: CircularProgressIndicatorM3E(
-                            value: animatedProgress,
-                            shape: ProgressM3EShape.wavy,
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 4),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0, end: progress),
+                        duration: const Duration(milliseconds: 800),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, animatedProgress, _) {
+                          return SizedBox(
+                            width: 85,
+                            height: 85,
+                            child: CircularProgressIndicatorM3E(
+                              value: animatedProgress,
+                              shape: ProgressM3EShape.wavy,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorTheme.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '$completed / $total',
+                          style: TextStyle(
+                            fontFamily: 'GoogleSansFlex',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: colorTheme.primary,
+                            fontVariations: const [
+                              FontVariation('wght', 700),
+                              FontVariation('wdth', 100),
+                              FontVariation('ROND', 100),
+                              FontVariation('GRAD', 0),
+                              FontVariation('opsz', 14),
+                              FontVariation('slnt', 0),
+                            ],
                           ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorTheme.primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '$completed / $total',
-                        style: TextStyle(
-                          fontFamily: 'GoogleSansFlex',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: colorTheme.primary,
-                          fontVariations: const [
-                            FontVariation('wght', 700),
-                            FontVariation('wdth', 100),
-                            FontVariation('ROND', 100),
-                            FontVariation('GRAD', 0),
-                            FontVariation('opsz', 14),
-                            FontVariation('slnt', 0),
-                          ],
                         ),
                       ),
-                    ),
-                    if (progress == 1.0) ...[
-                      const SizedBox(height: 6),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Symbols.celebration,
-                            fill: 1,
-                            size: 16,
-                            color: colorTheme.primary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'All done!',
-                            style: TextStyle(
-                              fontFamily: 'GoogleSansFlex',
-                              fontSize: 12,
+                      if (progress == 1.0) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Symbols.celebration,
+                              fill: 1,
+                              size: 16,
                               color: colorTheme.primary,
-                              fontWeight: FontWeight.w600,
-                              fontVariations: const [
-                                FontVariation('wght', 600),
-                                FontVariation('wdth', 100),
-                                FontVariation('ROND', 100),
-                                FontVariation('GRAD', 0),
-                                FontVariation('opsz', 12),
-                                FontVariation('slnt', 0),
-                              ],
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'All done!',
+                              style: TextStyle(
+                                fontFamily: 'GoogleSansFlex',
+                                fontSize: 12,
+                                color: colorTheme.primary,
+                                fontWeight: FontWeight.w600,
+                                fontVariations: const [
+                                  FontVariation('wght', 600),
+                                  FontVariation('wdth', 100),
+                                  FontVariation('ROND', 100),
+                                  FontVariation('GRAD', 0),
+                                  FontVariation('opsz', 12),
+                                  FontVariation('slnt', 0),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),

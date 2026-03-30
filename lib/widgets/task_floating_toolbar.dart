@@ -29,7 +29,7 @@ class TaskFloatingToolbar extends StatelessWidget {
     required String tooltip,
     required VoidCallback onPressed,
     required Color color,
-    double weight = 800
+    double weight = 800,
   }) {
     return IconButton(
       onPressed: onPressed,

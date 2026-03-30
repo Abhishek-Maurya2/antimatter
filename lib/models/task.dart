@@ -69,12 +69,12 @@ class Task extends HiveObject {
           : null,
       categories:
           (json['categories'] as List<dynamic>?)
-                  ?.map((e) => e as String)
-                  .toList() ??
-              (json['labels'] as List<dynamic>?)
-                  ?.map((e) => e as String)
-                  .toList() ??
-              [],
+              ?.map((e) => e as String)
+              .toList() ??
+          (json['labels'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
     );
   }
 

@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:animations/animations.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
 import 'package:hive_flutter/hive_flutter.dart';
-import 'utils/theme_controller.dart';
+import 'providers/theme_provider.dart';
+import 'providers/settings_provider.dart';
 import 'utils/preferences_helper.dart';
 import 'utils/typography_helper.dart';
-import 'notifiers/settings_notifier.dart';
 
 import 'screens/home_screen.dart';
 import 'models/task.dart';
@@ -77,29 +77,17 @@ void main() async {
   // Sync any tasks completed from the widget
   await HomeWidgetService.syncWidgetCompletions(tasksBox);
 
-  final themeController = ThemeController();
-  await themeController.initialize();
-  await themeController.checkDynamicColorSupport();
-
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => themeController),
-        ChangeNotifierProvider(create: (_) => SettingsNotifier()),
-      ],
-      child: const OrchesApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: OrchesApp()));
 }
 
-class OrchesApp extends StatelessWidget {
+class OrchesApp extends ConsumerWidget {
   const OrchesApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final themeController = Provider.of<ThemeController>(context);
-    final useVibrantVariant = context
-        .watch<SettingsNotifier>()
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeState = ref.watch(themeControllerProvider);
+    final useVibrantVariant = ref
+        .watch(settingsControllerProvider)
         .useVibrantVariant;
 
     final isLight = Theme.of(context).brightness == Brightness.light;
@@ -117,37 +105,37 @@ class OrchesApp extends StatelessWidget {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     // Build color schemes first so we can reference their colors in appBarTheme
-    final lightColorScheme = isMonochrome(themeController.seedColor)
+    final lightColorScheme = isMonochrome(themeState.seedColor)
         ? ColorScheme.fromSeed(
-            seedColor: themeController.seedColor,
+            seedColor: themeState.seedColor,
             brightness: Brightness.light,
             dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
           )
         : useVibrantVariant
         ? ColorScheme.fromSeed(
-            seedColor: themeController.seedColor,
+            seedColor: themeState.seedColor,
             brightness: Brightness.light,
             dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
           )
         : ColorScheme.fromSeed(
-            seedColor: themeController.seedColor,
+            seedColor: themeState.seedColor,
             brightness: Brightness.light,
           );
 
-    final darkColorScheme = isMonochrome(themeController.seedColor)
+    final darkColorScheme = isMonochrome(themeState.seedColor)
         ? ColorScheme.fromSeed(
-            seedColor: themeController.seedColor,
+            seedColor: themeState.seedColor,
             brightness: Brightness.dark,
             dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
           )
         : useVibrantVariant
         ? ColorScheme.fromSeed(
-            seedColor: themeController.seedColor,
+            seedColor: themeState.seedColor,
             brightness: Brightness.dark,
             dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
           )
         : ColorScheme.fromSeed(
-            seedColor: themeController.seedColor,
+            seedColor: themeState.seedColor,
             brightness: Brightness.dark,
           );
 
@@ -214,7 +202,7 @@ class OrchesApp extends StatelessWidget {
               },
             ),
           ),
-      themeMode: themeController.themeMode,
+      themeMode: themeState.themeMode,
       home: const HomeScreen(),
     );
   }

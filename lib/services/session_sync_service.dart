@@ -48,7 +48,9 @@ class SessionSyncService {
           .timeout(const Duration(seconds: 15));
       debugPrint('Supabase Session Sync: Pushed session ${session.id}');
     } catch (e) {
-      debugPrint('Supabase Session Sync: Error pushing session ${session.id} - $e');
+      debugPrint(
+        'Supabase Session Sync: Error pushing session ${session.id} - $e',
+      );
     }
   }
 
@@ -56,7 +58,7 @@ class SessionSyncService {
   void startListening() {
     _sessionsBox.listenable().addListener(() {
       if (_isSyncingFromServer) return;
-      
+
       // Push all currently unsynced or newly added sessions
       // For simplicity, we just push all (Supabase upsert handles duplicates)
       for (final session in _sessionsBox.values) {

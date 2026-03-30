@@ -2,21 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:m3e_collection/m3e_collection.dart';
 import 'package:settings_tiles/settings_tiles.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:provider/provider.dart';
-import '../../utils/theme_controller.dart';
-import '../../notifiers/settings_notifier.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/theme_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../settings_screen.dart'; // For iconContainer helper if we keep it there, or better to duplicate/move. I'll duplicate for now to be self-contained or import if public.
 import '../../models/theme_preset.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 
-class AppearanceScreen extends StatelessWidget {
+class AppearanceScreen extends ConsumerWidget {
   final bool isEmbedded;
   const AppearanceScreen({super.key, this.isEmbedded = false});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorTheme = Theme.of(context).colorScheme;
-    final themeController = Provider.of<ThemeController>(context);
+    final themeState = ref.watch(themeControllerProvider);
+    final themeControllerNotifier = ref.read(themeControllerProvider.notifier);
     final isLight = Theme.of(context).brightness == Brightness.light;
 
     final Map<String, String> optionsTheme = {
@@ -24,7 +25,7 @@ class AppearanceScreen extends StatelessWidget {
       "Light": "Light",
       "Dark": "Dark",
     };
-    final currentMode = themeController.themeMode;
+    final currentMode = themeState.themeMode;
 
     return Scaffold(
       backgroundColor: isEmbedded
@@ -105,7 +106,7 @@ class AppearanceScreen extends StatelessWidget {
                         final selectedKey = optionsTheme.entries
                             .firstWhere((e) => e.value == value)
                             .key;
-                        themeController.setThemeMode(
+                        themeControllerNotifier.setThemeMode(
                           selectedKey == "Dark"
                               ? ThemeMode.dark
                               : selectedKey == "Auto"
@@ -143,10 +144,9 @@ class AppearanceScreen extends StatelessWidget {
                       ),
                       title: Text('Device colors'),
                       description: Text('Use device accent colors'),
-                      toggled: themeController.useDynamicColors,
-                      onChanged: (value) {
-                        themeController.setUseDynamicColors(value);
-                      },
+                      toggled: themeState.useDynamicColors,
+                      onChanged: (value) =>
+                          themeControllerNotifier.setUseDynamicColors(value),
                     ),
                     SettingSwitchTile(
                       icon: iconContainer(
@@ -156,19 +156,19 @@ class AppearanceScreen extends StatelessWidget {
                       ),
                       title: Text('Vibrant colors'),
                       description: Text('Use vibrant M3 variant'),
-                      toggled: context
-                          .watch<SettingsNotifier>()
+                      toggled: ref
+                          .watch(settingsControllerProvider)
                           .useVibrantVariant,
                       onChanged: (value) {
-                        context.read<SettingsNotifier>().updateColorVariant(
-                          value,
-                        );
+                        ref
+                            .read(settingsControllerProvider.notifier)
+                            .updateColorVariant(value);
                       },
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildThemePresetsSection(context, themeController, colorTheme),
+                _buildThemePresetsSection(context, ref, colorTheme),
                 const SizedBox(height: 16),
                 SettingSection(
                   styleTile: true,
@@ -196,13 +196,13 @@ class AppearanceScreen extends StatelessWidget {
                       ),
                       title: Text('Completed tasks sort'),
                       description: Text('Show newest completed first'),
-                      toggled: context
-                          .watch<SettingsNotifier>()
+                      toggled: ref
+                          .watch(settingsControllerProvider)
                           .sortCompletedNewest,
                       onChanged: (value) {
-                        context.read<SettingsNotifier>().setSortCompletedNewest(
-                          value,
-                        );
+                        ref
+                            .read(settingsControllerProvider.notifier)
+                            .setSortCompletedNewest(value);
                       },
                     ),
                   ],
@@ -218,10 +218,12 @@ class AppearanceScreen extends StatelessWidget {
 
   Widget _buildThemePresetsSection(
     BuildContext context,
-    ThemeController themeController,
+    WidgetRef ref,
     ColorScheme colorTheme,
   ) {
-    final allPresets = [...builtInPresets, ...themeController.customPresets];
+    final themeState = ref.watch(themeControllerProvider);
+    final themeControllerNotifier = ref.read(themeControllerProvider.notifier);
+    final allPresets = [...builtInPresets, ...themeState.customPresets];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,16 +251,17 @@ class AppearanceScreen extends StatelessWidget {
             children: [
               ...allPresets.map((preset) {
                 final isActive =
-                    themeController.activePresetId == preset.id &&
-                    !themeController.useDynamicColors;
+                    themeState.activePresetId == preset.id &&
+                    !themeState.useDynamicColors;
                 return _buildPresetChip(
                   context,
                   preset,
                   isActive,
-                  themeController,
+                  themeState,
+                  themeControllerNotifier,
                 );
               }),
-              _buildAddPresetButton(context, themeController),
+              _buildAddPresetButton(context, themeControllerNotifier),
             ],
           ),
         ),
@@ -270,14 +273,15 @@ class AppearanceScreen extends StatelessWidget {
     BuildContext context,
     ThemePreset preset,
     bool isActive,
-    ThemeController themeController,
+    ThemeState themeState,
+    ThemeController themeControllerNotifier,
   ) {
     final colorTheme = Theme.of(context).colorScheme;
-    final isCustom = themeController.customPresets.contains(preset);
+    final isCustom = themeState.customPresets.contains(preset);
 
     return GestureDetector(
       onTap: () {
-        themeController.applyPreset(preset);
+        themeControllerNotifier.applyPreset(preset);
       },
       onLongPress: isCustom
           ? () {
@@ -294,7 +298,7 @@ class AppearanceScreen extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () {
-                        themeController.deleteCustomPreset(preset);
+                        themeControllerNotifier.deleteCustomPreset(preset);
                         Navigator.pop(context);
                       },
                       child: const Text(
@@ -360,7 +364,7 @@ class AppearanceScreen extends StatelessWidget {
 
   Widget _buildAddPresetButton(
     BuildContext context,
-    ThemeController themeController,
+    ThemeController themeControllerNotifier,
   ) {
     final colorTheme = Theme.of(context).colorScheme;
     return GestureDetector(
@@ -430,8 +434,8 @@ class AppearanceScreen extends StatelessWidget {
               name: name.trim(),
               seedColor: pickedColor!,
             );
-            themeController.saveCustomPreset(newPreset);
-            themeController.applyPreset(newPreset);
+            themeControllerNotifier.saveCustomPreset(newPreset);
+            themeControllerNotifier.applyPreset(newPreset);
           }
         }
       },

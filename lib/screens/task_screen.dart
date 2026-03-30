@@ -13,12 +13,12 @@ import 'package:orches/utils/preferences_helper.dart';
 import 'package:orches/main.dart';
 import 'package:orches/services/notification_service.dart';
 import 'package:orches/services/audio_service.dart';
-import 'package:provider/provider.dart';
-import 'package:orches/notifiers/settings_notifier.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:orches/providers/settings_provider.dart';
 
 enum TaskSortOption { newest, oldest, dueDate }
 
-class TaskScreen extends StatefulWidget {
+class TaskScreen extends ConsumerStatefulWidget {
   final VoidCallback? onBack;
   final bool isExpanded;
   final ValueChanged<bool>? onSelectionChanged;
@@ -30,10 +30,10 @@ class TaskScreen extends StatefulWidget {
   });
 
   @override
-  State<TaskScreen> createState() => TaskScreenState();
+  ConsumerState<TaskScreen> createState() => TaskScreenState();
 }
 
-class TaskScreenState extends State<TaskScreen> {
+class TaskScreenState extends ConsumerState<TaskScreen> {
   static const Duration _completedRetention = Duration(days: 7);
 
   late Box<Task> _tasksBox;
@@ -519,8 +519,8 @@ class TaskScreenState extends State<TaskScreen> {
     ColorScheme colorTheme,
     bool isExpanded,
   ) {
-    final sortCompletedNewest = context
-        .watch<SettingsNotifier>()
+    final sortCompletedNewest = ref
+        .watch(settingsControllerProvider)
         .sortCompletedNewest;
 
     List<Task> completedTasks = _sortedTasks
