@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:usage_stats/usage_stats.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:installed_apps/installed_apps.dart';
 import '../utils/preferences_helper.dart';
 import 'notification_service.dart';
 
@@ -110,16 +111,34 @@ class BlockerService {
           await NotificationService().showBlockerNotification(currentPackage.split('.').last);
           
           // Force launch AntiMatter app to overwrite the blocked app!
-          // We can use the Deep Link mechanism or try to launch our own package.
-          // Fallback: This URL scheme requires updating AndroidManifest.xml for the app if custom scheme is used.
-          final url = Uri.parse('orches://blocker');
-          if (await canLaunchUrl(url)) {
-            await launchUrl(url, mode: LaunchMode.externalApplication);
+          // Use the direct startApp method from installed_apps for better reliability
+          try {
+            debugPrint("Attempting to bring AntiMatter to foreground...");
+            final success = await InstalledApps.startApp("com.example.orches");
+            if (success == true) {
+              debugPrint("Successfully launched AntiMatter.");
+            } else {
+              debugPrint("Failed to launch AntiMatter: startApp returned false.");
+            }
+          } catch (e) {
+            debugPrint("Error launching AntiMatter via startApp: $e");
+            // Fallback to URL scheme
+            try {
+              final url = Uri.parse('orches://blocker');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+                debugPrint("Launched AntiMatter via fallback URL scheme.");
+              } else {
+                debugPrint("Fallback URL scheme 'orches://' is not launchable.");
+              }
+            } catch (urlError) {
+              debugPrint("Error with fallback URL launch: $urlError");
+            }
           }
         }
       }
     } catch (e) {
-      debugPrint("Failed to enforce Android blocklist: \$e");
+      debugPrint("System error in Android blocklist enforcement: $e");
     }
   }
 }
