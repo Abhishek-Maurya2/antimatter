@@ -54,9 +54,6 @@ class SupabaseSyncService {
           // Put the remote task into the local box (upsert by ID)
           await _tasksBox.put(task.id, task);
         }
-        debugPrint(
-          'Supabase Sync: Successfully pulled ${response.length} tasks.',
-        );
       }
     } catch (e) {
       debugPrint('Supabase Sync: Error pulling tasks - $e');
@@ -100,7 +97,7 @@ class SupabaseSyncService {
         }
       }
 
-      debugPrint('Supabase Sync: Pushed task ${task.id}');
+      // debugPrint('Supabase Sync: Pushed task ${task.id}');
     } catch (e) {
       debugPrint('Supabase Sync: Error pushing task ${task.id} - $e');
     }

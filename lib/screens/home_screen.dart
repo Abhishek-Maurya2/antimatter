@@ -7,6 +7,8 @@ import 'package:orches/screens/session_screen.dart';
 import 'package:orches/screens/overview/overview_page.dart';
 import 'package:orches/screens/task_screen.dart';
 import 'package:orches/widgets/floating_nav_bar.dart';
+import '../services/ai_coach_service.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,6 +28,16 @@ class _HomeScreenState extends State<HomeScreen> {
   int _taskSubFilter = 0;
   bool _isSessionAmbient = false;
   bool _taskHasSelection = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Trigger AI Coach on app open
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AiCoachService().triggerCoach();
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
