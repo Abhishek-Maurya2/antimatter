@@ -67,6 +67,13 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
     final today = DateTime(now.year, now.month, now.day);
     // Start with the week ending today
     _currentWeekStart = today.subtract(const Duration(days: 6));
+    
+    // Auto-scroll to the end after the first frame to show the most recent day (today)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_barsScrollController.hasClients) {
+        _barsScrollController.jumpTo(_barsScrollController.position.maxScrollExtent);
+      }
+    });
   }
 
   @override

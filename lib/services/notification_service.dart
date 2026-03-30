@@ -48,7 +48,7 @@ class NotificationService {
     await _notificationsPlugin.initialize(
       settings: initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        debugPrint('Notification clicked: ${response.payload}');
+        // debugPrint('Notification clicked: ${response.payload}');
       },
     );
 
@@ -77,7 +77,7 @@ class NotificationService {
 
         await androidPlugin.createNotificationChannel(aiCoachChannel);
         await androidPlugin.createNotificationChannel(blocklistChannel);
-        debugPrint('Notification channels created for Android.');
+        // debugPrint('Notification channels created for Android.');
       }
     }
 

@@ -90,8 +90,6 @@ Be brutally honest, borderline rude. Do NOT use emojis. Do not give greetings. J
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("data:");
-        print("data: $data");
         final String? message = data['choices']?[0]?['message']?['content'];
         
         if (message == null || message.isEmpty) {
@@ -101,7 +99,7 @@ Be brutally honest, borderline rude. Do NOT use emojis. Do not give greetings. J
 
         // Clean up common AI artifacts like extra quotes
         String finalMessage = message.trim().replaceAll('"', '');
-        print("AI Response:\n$finalMessage");
+        // print("AI Response:\n$finalMessage");
         await NotificationService().showCoachNotification(finalMessage);
       } else {
         print("Groq API Error (\${response.statusCode}): \${response.body}");
