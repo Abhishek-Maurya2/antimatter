@@ -44,6 +44,7 @@ void main() async {
   // ]);
 
   await PreferencesHelper.init();
+  await ThemeController.prefetchDynamicColors();
 
   await Hive.initFlutter();
   Hive.registerAdapter(TaskAdapter());

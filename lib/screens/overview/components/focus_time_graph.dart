@@ -67,6 +67,15 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
     final today = DateTime(now.year, now.month, now.day);
     // Start with the week ending today
     _currentWeekStart = today.subtract(const Duration(days: 6));
+
+    // Auto-scroll to the end after the first frame to show the most recent day (today)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_barsScrollController.hasClients) {
+        _barsScrollController.jumpTo(
+          _barsScrollController.position.maxScrollExtent,
+        );
+      }
+    });
   }
 
   @override
@@ -225,7 +234,7 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                                 isCurrentWeek
                                     ? (widget.dailyFocus[today] ?? 0)
                                     : windowBestSeconds,
-                              ).toUpperCase(),
+                              ),
                               style: TextStyle(
                                 fontFamily: 'GoogleSansFlex',
                                 fontSize: 32,
@@ -287,7 +296,7 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                                   ),
                                 ),
                                 Text(
-                                  _formatDuration(averageFocus).toUpperCase(),
+                                  _formatDuration(averageFocus),
                                   style: TextStyle(
                                     fontFamily: 'GoogleSansFlex',
                                     fontSize: 38,
@@ -299,7 +308,7 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'WINDOW TOTAL: ${_formatDuration(windowedTotal).toUpperCase()}',
+                                  'WINDOW TOTAL: ${_formatDuration(windowedTotal)}',
                                   style: textTheme.labelMedium?.copyWith(
                                     color: colorScheme.onSurfaceVariant,
                                     fontWeight: FontWeight.w400,
@@ -315,7 +324,7 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'WINDOW BEST: ${_formatDuration(windowBestSeconds).toUpperCase()} · $bestDayLabel',
+                                  'WINDOW BEST: ${_formatDuration(windowBestSeconds)} · $bestDayLabel',
                                   style: textTheme.labelMedium?.copyWith(
                                     color: colorScheme.onSurfaceVariant,
                                     fontWeight: FontWeight.w400,

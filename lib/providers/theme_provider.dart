@@ -76,6 +76,15 @@ class ThemeState {
 
 @Riverpod(keepAlive: true)
 class ThemeController extends _$ThemeController {
+  static CorePalette? _initialCorePalette;
+  static Color? _initialAccentColor;
+
+  /// Fetch dynamic colors before the app starts to avoid theme loading lag.
+  static Future<void> prefetchDynamicColors() async {
+    _initialCorePalette = await DynamicColorPlugin.getCorePalette();
+    _initialAccentColor = await DynamicColorPlugin.getAccentColor();
+  }
+
   @override
   ThemeState build() {
     final initState = _initializeSync();
@@ -109,7 +118,21 @@ class ThemeController extends _$ThemeController {
     String? actId = PreferencesHelper.getString("ActivePresetId");
 
     Color initialSeed = fallbackColor;
-    if (!useDynC) {
+    bool isUsingDyn = false;
+
+    if (useDynC) {
+      if (_initialCorePalette != null) {
+        final brightness = _currentBrightnessSync(mode);
+        final primaryTone = brightness == Brightness.light ? 40 : 80;
+        initialSeed = Color(_initialCorePalette!.primary.get(primaryTone));
+        isUsingDyn = true;
+      } else if (_initialAccentColor != null) {
+        initialSeed = _initialAccentColor!;
+        isUsingDyn = true;
+      }
+    }
+
+    if (!isUsingDyn) {
       if (actId != null) {
         ThemePreset? match;
         try {
@@ -133,12 +156,26 @@ class ThemeController extends _$ThemeController {
 
     return ThemeState(
       seedColor: initialSeed,
+      corePalette: isUsingDyn ? _initialCorePalette : null,
       themeMode: mode,
       isCustom: isCstm,
+      isUsingDynamicColor: isUsingDyn,
       useDynamicColors: useDynC,
       customPresets: customP,
       activePresetId: actId,
+      isDynamicColorSupported: _initialCorePalette != null || _initialAccentColor != null,
     );
+  }
+
+  static Brightness _currentBrightnessSync(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return Brightness.light;
+      case ThemeMode.dark:
+        return Brightness.dark;
+      case ThemeMode.system:
+        return PlatformDispatcher.instance.platformBrightness;
+    }
   }
 
   Future<void> initializeAsync() async {
