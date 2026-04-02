@@ -305,7 +305,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
         ButtonGroupM3EAction(
           icon: const Icon(Symbols.refresh_rounded, weight: 800),
           width: 100,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 6),
+          contentPadding: EdgeInsets.zero,
           style: ButtonM3EStyle.tonal,
           shape: ButtonM3EShape.round,
           onPressed: _checkForUpdates,
@@ -325,12 +325,13 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
     if (actions.isEmpty) return null;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      padding: const EdgeInsets.fromLTRB(5, 0, 5, 24),
       child: SafeArea(
         child: ButtonGroupM3E(
           type: ButtonGroupM3EType.standard,
           size: ButtonGroupM3ESize.lg,
           style: ButtonM3EStyle.filled,
+          density: ButtonGroupM3EDensity.compact,
           expanded: true,
           linearMainAxisAlignment: MainAxisAlignment.center,
           equalizeWidths: actions.length == 1,

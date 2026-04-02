@@ -364,12 +364,13 @@ class _AboutScreenState extends State<AboutScreen> {
     final colorTheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(2, 0, 2, 24),
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 24),
       child: SafeArea(
         child: ButtonGroupM3E(
           type: ButtonGroupM3EType.standard,
           size: ButtonGroupM3ESize.lg,
           style: ButtonM3EStyle.filled,
+          density: ButtonGroupM3EDensity.compact,
           expanded: true,
           linearMainAxisAlignment: MainAxisAlignment.center,
           actions: [

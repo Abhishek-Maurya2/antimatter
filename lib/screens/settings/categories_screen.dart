@@ -167,7 +167,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ? colorTheme.surfaceContainerLow
           : colorTheme.surfaceContainer,
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(60, 0, 60, 24),
+        padding: const EdgeInsets.fromLTRB(40, 0, 40, 24),
         child: SafeArea(
           child: ButtonM3E(
             onPressed: _showAddCategorySheet,
