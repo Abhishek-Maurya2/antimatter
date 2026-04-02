@@ -46,7 +46,7 @@ class SessionSyncService {
           .from('sessions')
           .upsert(session.toJson())
           .timeout(const Duration(seconds: 15));
-      debugPrint('Supabase Session Sync: Pushed session ${session.id}');
+      // debugPrint('Supabase Session Sync: Pushed session ${session.id}');
     } catch (e) {
       debugPrint(
         'Supabase Session Sync: Error pushing session ${session.id} - $e',

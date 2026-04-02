@@ -364,18 +364,18 @@ class _AboutScreenState extends State<AboutScreen> {
     final colorTheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 0, 10, 24),
+      padding: const EdgeInsets.fromLTRB(2, 0, 2, 24),
       child: SafeArea(
         child: ButtonGroupM3E(
-          type: ButtonGroupM3EType.connected,
+          type: ButtonGroupM3EType.standard,
           size: ButtonGroupM3ESize.lg,
           style: ButtonM3EStyle.filled,
           expanded: true,
           linearMainAxisAlignment: MainAxisAlignment.center,
           actions: [
             ButtonGroupM3EAction(
-              icon: const Icon(Symbols.description_rounded, weight: 800),
-              label: const Text('Licenses'),
+              icon: Icon(Symbols.description_rounded, weight: 800),
+              label: Text('Licenses'),
               shape: ButtonM3EShape.round,
               onPressed: () {
                 showLicensePage(
@@ -404,10 +404,10 @@ class _AboutScreenState extends State<AboutScreen> {
             ),
             ButtonGroupM3EAction(
               icon: const Icon(Symbols.open_in_new_rounded, weight: 800),
-              // label: const Text('GitHub'),
-              // width: 110,
+              width: 100,
               style: ButtonM3EStyle.tonal,
               shape: ButtonM3EShape.round,
+              contentPadding: EdgeInsets.zero,
               onPressed: () async {
                 final uri = Uri.parse(_githubUrl);
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
