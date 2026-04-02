@@ -167,7 +167,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ? colorTheme.surfaceContainerLow
           : colorTheme.surfaceContainer,
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(68, 0, 68, 24),
+        padding: const EdgeInsets.fromLTRB(60, 0, 60, 24),
         child: SafeArea(
           child: ButtonM3E(
             onPressed: _showAddCategorySheet,
@@ -284,7 +284,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       onPressed: () => _removeCategory(index),
                       icon: const Icon(Symbols.delete),
                       variant: IconButtonM3EVariant.standard,
-                    foregroundColor: colorTheme.error,
+                      foregroundColor: colorTheme.error,
                       tooltip: 'Delete',
                     ),
                   );

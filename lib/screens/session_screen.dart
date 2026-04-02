@@ -251,6 +251,38 @@ class _SessionScreenState extends State<SessionScreen>
 
   Widget _buildTimerDisplay(TextStyle style) {
     final parts = _getTimeParts();
+    // If we have hours, minutes, and seconds, display hours and minutes side‑by‑side
+    // with a colon, and place seconds below the minutes count.
+    if (parts.length == 3) {
+      final hour = parts[0];
+      final minute = parts[1];
+      final second = parts[2];
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Horizontal line for hour and minute
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(hour, style: style),
+                const SizedBox(width: 4),
+                Text(':', style: style),
+                const SizedBox(width: 4),
+                Text(minute, style: style),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Seconds displayed below
+          Text(second, style: style),
+        ],
+      );
+    }
+    // Fallback for minutes & seconds only (no hours)
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
