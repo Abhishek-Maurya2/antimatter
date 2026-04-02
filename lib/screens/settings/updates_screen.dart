@@ -285,7 +285,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
             isWindows
                 ? Symbols.download_done_rounded
                 : Symbols.install_mobile_rounded,
-            weight: 800,
+            weight: 700,
           ),
           label: Text(isWindows ? 'Open Installer' : 'Install'),
           shape: ButtonM3EShape.round,
@@ -295,7 +295,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
     } else if (_isUpdateAvailable) {
       actions.add(
         ButtonGroupM3EAction(
-          icon: const Icon(Symbols.download_rounded),
+          icon: const Icon(Symbols.download_rounded, weight: 800),
           label: const Text('Download'),
           shape: ButtonM3EShape.round,
           onPressed: _downloadAndInstall,
