@@ -1,6 +1,6 @@
 #define MyAppName "AntiMatter"
 #define MyAppExeName "antimatter.exe"
-#define MyAppPublisher "Abhishek Maurya"
+#define MyAppPublisher "Abhishek Kumar Maurya"
 
 #ifndef MyAppVersion
 #define MyAppVersion "1.0.0"

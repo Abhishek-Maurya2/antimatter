@@ -3,7 +3,7 @@ import 'package:m3e_collection/m3e_collection.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:orches/utils/ui_utils.dart';
+import 'package:antimatter/utils/ui_utils.dart';
 
 const String _githubUrl = 'https://github.com/Abhishek-Maurya2/antimatter';
 

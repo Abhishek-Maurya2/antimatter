@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:orches/models/task.dart';
+import 'package:antimatter/models/task.dart';
 
 class TaskFloatingToolbar extends StatelessWidget {
   final List<Task> tasks;

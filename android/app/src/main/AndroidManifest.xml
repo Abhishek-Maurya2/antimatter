@@ -44,7 +44,7 @@
         <receiver android:name=".TasksWidgetReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.example.orches.ACTION_COMPLETE_TASK" />
+                <action android:name="com.example.antimatter.ACTION_COMPLETE_TASK" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

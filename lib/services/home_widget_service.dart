@@ -5,7 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/task.dart';
 
 class HomeWidgetService {
-  static const String appGroupId = 'com.example.orches';
+  static const String appGroupId = 'com.example.antimatter';
   static const String androidWidgetName = 'TasksWidgetReceiver';
 
   /// Returns true if home widgets are supported on this platform.

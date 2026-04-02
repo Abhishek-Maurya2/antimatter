@@ -1,4 +1,4 @@
-package com.example.orches
+package com.example.antimatter
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -14,7 +14,7 @@ import org.json.JSONArray
 class TasksWidgetReceiver : AppWidgetProvider() {
 
     companion object {
-        const val ACTION_COMPLETE_TASK = "com.example.orches.ACTION_COMPLETE_TASK"
+        const val ACTION_COMPLETE_TASK = "com.example.antimatter.ACTION_COMPLETE_TASK"
         const val EXTRA_TASK_ID = "extra_task_id"
     }
 

@@ -78,11 +78,11 @@ void main() async {
   // Sync any tasks completed from the widget
   await HomeWidgetService.syncWidgetCompletions(tasksBox);
 
-  runApp(const ProviderScope(child: OrchesApp()));
+  runApp(const ProviderScope(child: AntimatterApp()));
 }
 
-class OrchesApp extends ConsumerWidget {
-  const OrchesApp({super.key});
+class AntimatterApp extends ConsumerWidget {
+  const AntimatterApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

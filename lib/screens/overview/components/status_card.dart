@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_new_shapes/material_new_shapes.dart';
-import 'package:orches/utils/ui_utils.dart';
+import 'package:antimatter/utils/ui_utils.dart';
 
 class StatusCard extends StatefulWidget {
   final IconData icon;

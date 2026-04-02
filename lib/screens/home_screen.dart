@@ -3,10 +3,10 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'settings_screen.dart';
 import 'package:m3e_collection/m3e_collection.dart'
     hide ExpressiveLoadingIndicator;
-import 'package:orches/screens/session_screen.dart';
-import 'package:orches/screens/overview/overview_page.dart';
-import 'package:orches/screens/task_screen.dart';
-import 'package:orches/widgets/floating_nav_bar.dart';
+import 'package:antimatter/screens/session_screen.dart';
+import 'package:antimatter/screens/overview/overview_page.dart';
+import 'package:antimatter/screens/task_screen.dart';
+import 'package:antimatter/widgets/floating_nav_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

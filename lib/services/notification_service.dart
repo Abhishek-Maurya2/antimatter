@@ -38,8 +38,8 @@ class NotificationService {
             defaultActionName: 'Open notification',
           ),
           windows: WindowsInitializationSettings(
-            appName: 'Orches',
-            appUserModelId: 'com.example.orches',
+            appName: 'Antimatter',
+            appUserModelId: 'com.example.antimatter',
             guid: 'b4a1b0b5-1e35-430c-80a2-231a4df8342f',
           ),
         );
