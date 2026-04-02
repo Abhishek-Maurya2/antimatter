@@ -371,7 +371,7 @@ class _SessionScreenState extends State<SessionScreen>
                     children: [
                       const SizedBox(height: 98),
                       SizedBox(
-                        width: 270,
+                        width: 350,
                         height: 270,
                         child: AnimatedBuilder(
                           animation: _weightAnimation,
@@ -389,7 +389,7 @@ class _SessionScreenState extends State<SessionScreen>
                           },
                         ),
                       ),
-                      const SizedBox(height: 48),
+                      const SizedBox(height: 46),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10.0),
                         child: ButtonGroupM3E(
@@ -410,14 +410,12 @@ class _SessionScreenState extends State<SessionScreen>
                             ),
                             ButtonGroupM3EAction(
                               icon: const Icon(Icons.stop_rounded),
-                              label: const Text('Stop'),
+                              // label: const Text('Stop'),
                               onPressed: _resetTimer,
                               shape: ButtonM3EShape.round,
                               enabled: _isRunning || _seconds > 0,
-                              width: 134, // Custom width
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
+                              contentPadding: EdgeInsets.zero,
+                              width: 80,
                               backgroundColor: (_isRunning || _seconds > 0)
                                   ? colorTheme.errorContainer
                                   : null,

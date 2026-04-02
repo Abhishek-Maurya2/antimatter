@@ -1,5 +1,6 @@
 import 'package:button_m3e/button_m3e.dart';
 import 'package:flutter/material.dart';
+import 'package:m3e_design/m3e_design.dart';
 
 import '_tokens_adapter.dart';
 import 'button_group_m3e_enums.dart';
@@ -203,6 +204,9 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
   double? _lastMaxMainExtent;
 
   List<ButtonGroupM3EAction> get _effectiveActions => widget.actions;
+
+  int? _pressedIndex;
+  int? _hoveredIndex;
 
   @override
   void initState() {
@@ -745,96 +749,41 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
     bool isFirst = false,
     bool isLast = false,
   }) {
-    final selected = widget.selectedIndex != null
-        ? widget.selectedIndex == index
-        : action.selected;
+    final m3e = context.m3e;
+    final motion = m3e.motion;
+    final tokens = ButtonTokensAdapter(context);
+    final measurements = tokens.measurements(_mapGroupSize(widget.size));
 
-    ButtonM3EShape shapeOut;
-    BorderRadius? perCorner;
-    if (!widget.selection) {
-      shapeOut = action.shape ?? _mapGroupShape(widget.shape);
-    } else {
-      if (selected) {
-        shapeOut = ButtonM3EShape.round; // selected always fully round
-      } else {
-        if (widget._connected) {
-          // Connected + selection: interior corners should have square token radius; outer ends rounded.
-          shapeOut = ButtonM3EShape.square;
-          // Obtain square base radius from button tokens for inner corners.
-          final squareRadiusVal = ButtonTokensAdapter(
-            context,
-          ).squareRadius(_mapGroupSize(widget.size));
-          final innerRadius = Radius.circular(squareRadiusVal);
-          // Obtain round radius set for outer corners.
-          final roundSet = radiusFor(
-            context,
-            ButtonGroupM3EShape.round,
-            widget.size,
-          );
-          if (widget.direction == Axis.horizontal) {
-            if (isFirst) {
-              perCorner = BorderRadius.only(
-                topLeft: roundSet.topLeft,
-                bottomLeft: roundSet.bottomLeft,
-                topRight: innerRadius,
-                bottomRight: innerRadius,
-              );
-            } else if (isLast) {
-              perCorner = BorderRadius.only(
-                topLeft: innerRadius,
-                bottomLeft: innerRadius,
-                topRight: roundSet.topRight,
-                bottomRight: roundSet.bottomRight,
-              );
-            } else {
-              // Middle buttons: all corners square token radius
-              perCorner = BorderRadius.all(innerRadius);
-            }
-          } else {
-            // Vertical direction
-            if (isFirst) {
-              perCorner = BorderRadius.only(
-                topLeft: roundSet.topLeft,
-                topRight: roundSet.topRight,
-                bottomLeft: innerRadius,
-                bottomRight: innerRadius,
-              );
-            } else if (isLast) {
-              perCorner = BorderRadius.only(
-                topLeft: innerRadius,
-                topRight: innerRadius,
-                bottomLeft: roundSet.bottomLeft,
-                bottomRight: roundSet.bottomRight,
-              );
-            } else {
-              perCorner = BorderRadius.all(innerRadius);
-            }
+    return _ExpressiveButtonGroupItem(
+      index: index,
+      action: action,
+      isFirst: isFirst,
+      isLast: isLast,
+      count: widget.actions.length,
+      pressedIndex: _pressedIndex,
+      selectedIndex: widget.selectedIndex,
+      type: widget.type,
+      motion: motion,
+      measurements: measurements,
+      groupSize: widget.size,
+      groupShape: widget.shape,
+      groupStyle: widget.style,
+      selection: widget.selection,
+      onStatesChanged: (states) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          final isPressed = states.contains(WidgetState.pressed);
+          final isHovered = states.contains(WidgetState.hovered);
+          final newPressed = isPressed ? index : (_pressedIndex == index ? null : _pressedIndex);
+          final newHovered = isHovered ? index : (_hoveredIndex == index ? null : _hoveredIndex);
+          if (_pressedIndex != newPressed || _hoveredIndex != newHovered) {
+            setState(() {
+              _pressedIndex = newPressed;
+              _hoveredIndex = newHovered;
+            });
           }
-        } else {
-          // Non-connected selection: ends fully round, inner square token radius.
-          if (isFirst || isLast) {
-            shapeOut = ButtonM3EShape.round;
-            perCorner = null; // round shape handles corners
-          } else {
-            shapeOut = ButtonM3EShape.square;
-            final squareRadiusVal = ButtonTokensAdapter(
-              context,
-            ).squareRadius(_mapGroupSize(widget.size));
-            perCorner = BorderRadius.all(Radius.circular(squareRadiusVal));
-          }
-        }
-      }
-    }
-
-    final button = ButtonM3E(
-      onPressed: action.onPressed,
-      label: action.label,
-      icon: action.icon,
-      style: action.style ?? widget.style,
-      size: _mapGroupSize(widget.size),
-      shape: shapeOut,
-      selected: selected,
-      toggleable: action.toggleable || widget.selectedIndex != null,
+        });
+      },
       onSelectedChange: (val) {
         action.onSelectedChange?.call(val);
         if (widget.selectedIndex == null && action.onSelectedChange == null) {
@@ -845,21 +794,7 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
           setState(() {});
         }
       },
-      enabled: action.enabled,
-      cornerRadiusOverride: action.cornerRadiusOverride ?? perCorner,
-      backgroundColor: action.backgroundColor,
-      foregroundColor: action.foregroundColor,
-      contentPadding: action.contentPadding,
     );
-
-    if (action.width != null || action.height != null) {
-      return SizedBox(
-        width: action.width,
-        height: action.height,
-        child: button,
-      );
-    }
-    return button;
   }
 
   ButtonM3ESize _mapGroupSize(ButtonGroupM3ESize s) => switch (s) {
@@ -1160,4 +1095,163 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
       child: child,
     );
   }
+}
+
+class _ExpressiveButtonGroupItem extends StatelessWidget {
+  const _ExpressiveButtonGroupItem({
+    required this.index,
+    required this.action,
+    required this.isFirst,
+    required this.isLast,
+    required this.count,
+    required this.pressedIndex,
+    required this.selectedIndex,
+    required this.type,
+    required this.motion,
+    required this.measurements,
+    required this.groupSize,
+    required this.groupShape,
+    required this.groupStyle,
+    required this.selection,
+    required this.onStatesChanged,
+    required this.onSelectedChange,
+  });
+
+  final int index;
+  final ButtonGroupM3EAction action;
+  final bool isFirst;
+  final bool isLast;
+  final int count;
+  final int? pressedIndex;
+  final int? selectedIndex;
+  final ButtonGroupM3EType type;
+  final M3EMotion motion;
+  final ButtonMeasurements measurements;
+  final ButtonGroupM3ESize groupSize;
+  final ButtonGroupM3EShape groupShape;
+  final ButtonM3EStyle groupStyle;
+  final bool selection;
+  final ValueChanged<Set<WidgetState>> onStatesChanged;
+  final ValueChanged<bool> onSelectedChange;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool selected = selectedIndex != null ? selectedIndex == index : action.selected;
+
+    // Interaction states
+    final bool isPressed = pressedIndex == index;
+    final bool isNeighborOfPressed = pressedIndex != null && (pressedIndex == index - 1 || pressedIndex == index + 1);
+
+    // Expressive parameters
+    // Active (pressed/selected) buttons grow.
+    // Neighbors in standard groups shrink slightly.
+    double paddingMultiplier = 1.0;
+    if (type == ButtonGroupM3EType.standard) {
+      if (isPressed) {
+        paddingMultiplier = 1.35; // Expand significantly when pressed
+      } else if (isNeighborOfPressed) {
+        paddingMultiplier = 0.85; // Shrink neighbor safely
+      } else if (pressedIndex != null) {
+        paddingMultiplier = 0.95; // Other non-adjacent buttons shrink very slightly
+      }
+    }
+
+    // Shape logic
+    ButtonM3EShape shapeOut;
+    BorderRadius? perCorner;
+    
+    if (!selection) {
+      shapeOut = action.shape ?? (groupShape == ButtonGroupM3EShape.round ? ButtonM3EShape.round : ButtonM3EShape.square);
+    } else {
+      if (selected) {
+        shapeOut = ButtonM3EShape.round;
+      } else {
+        if (type == ButtonGroupM3EType.connected) {
+          shapeOut = ButtonM3EShape.square;
+          final tokens = ButtonTokensAdapter(context);
+          final squareRadiusVal = tokens.squareRadius(_mapGroupSize(groupSize));
+          final innerRadius = Radius.circular(squareRadiusVal);
+          final roundSet = radiusFor(context, ButtonGroupM3EShape.round, groupSize);
+          
+          if (isFirst) {
+            perCorner = BorderRadius.only(
+              topLeft: roundSet.topLeft,
+              bottomLeft: roundSet.bottomLeft,
+              topRight: innerRadius,
+              bottomRight: innerRadius,
+            );
+          } else if (isLast) {
+            perCorner = BorderRadius.only(
+              topLeft: innerRadius,
+              bottomLeft: innerRadius,
+              topRight: roundSet.topRight,
+              bottomRight: roundSet.bottomRight,
+            );
+          } else {
+            perCorner = BorderRadius.all(innerRadius);
+          }
+        } else {
+          if (isFirst || isLast) {
+            shapeOut = ButtonM3EShape.round;
+          } else {
+            final tokens = ButtonTokensAdapter(context);
+            shapeOut = ButtonM3EShape.square;
+            perCorner = BorderRadius.all(Radius.circular(tokens.squareRadius(_mapGroupSize(groupSize))));
+          }
+        }
+      }
+    }
+
+    // Wrap in animated layer for smooth transitions
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: paddingMultiplier, end: paddingMultiplier),
+      duration: motion.fast,
+      curve: Curves.easeOutCubic,
+      builder: (context, animatedMultiplier, _) {
+        final EdgeInsets resolvedPadding = (action.contentPadding ??
+                EdgeInsets.symmetric(horizontal: measurements.hPadding))
+            .resolve(Directionality.of(context));
+
+        final animatedPadding = resolvedPadding.copyWith(
+          left: resolvedPadding.left * animatedMultiplier,
+          right: resolvedPadding.right * animatedMultiplier,
+        );
+
+        final button = ButtonM3E(
+          onPressed: action.onPressed,
+          label: action.label,
+          icon: action.icon,
+          style: action.style ?? groupStyle,
+          size: _mapGroupSize(groupSize),
+          shape: shapeOut,
+          selected: selected,
+          toggleable: action.toggleable || selectedIndex != null,
+          onSelectedChange: onSelectedChange,
+          enabled: action.enabled,
+          cornerRadiusOverride: action.cornerRadiusOverride ?? perCorner,
+          backgroundColor: action.backgroundColor,
+          foregroundColor: action.foregroundColor,
+          contentPadding: animatedPadding,
+          onStatesChanged: onStatesChanged,
+        );
+
+        if (action.width != null || action.height != null) {
+          return SizedBox(
+            width: action.width != null ? action.width! * animatedMultiplier : null,
+            height: action.height,
+            child: button,
+          );
+        }
+        return button;
+      },
+    );
+  }
+
+  ButtonM3ESize _mapGroupSize(ButtonGroupM3ESize s) => switch (s) {
+    ButtonGroupM3ESize.xs => ButtonM3ESize.xs,
+    ButtonGroupM3ESize.sm => ButtonM3ESize.sm,
+    ButtonGroupM3ESize.md => ButtonM3ESize.md,
+    ButtonGroupM3ESize.lg => ButtonM3ESize.lg,
+    ButtonGroupM3ESize.xl => ButtonM3ESize.xl,
+  };
 }

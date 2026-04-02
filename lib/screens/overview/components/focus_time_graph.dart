@@ -528,7 +528,7 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                 ],
               ),
               ButtonGroupM3E(
-                type: ButtonGroupM3EType.connected,
+                type: ButtonGroupM3EType.standard,
                 size: ButtonGroupM3ESize.sm,
                 style: ButtonM3EStyle.tonal,
                 actions: [

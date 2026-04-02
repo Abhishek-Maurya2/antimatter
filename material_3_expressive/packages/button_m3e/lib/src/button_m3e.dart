@@ -23,6 +23,7 @@ class ButtonM3E extends StatefulWidget {
     this.backgroundColor,
     this.foregroundColor,
     this.contentPadding,
+    this.onStatesChanged,
   });
 
   final VoidCallback? onPressed;
@@ -41,6 +42,7 @@ class ButtonM3E extends StatefulWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
   final EdgeInsetsGeometry? contentPadding;
+  final ValueChanged<Set<WidgetState>>? onStatesChanged;
 
   @override
   State<ButtonM3E> createState() => _ButtonM3EState();
@@ -53,15 +55,39 @@ class _ButtonM3EState extends State<ButtonM3E> {
   void initState() {
     super.initState();
     _statesController = widget.statesController ?? WidgetStatesController();
+    _statesController.addListener(_handleStatesChanged);
     _syncSelectedToController();
+  }
+
+  void _handleStatesChanged() {
+    widget.onStatesChanged?.call(_statesController.value);
   }
 
   @override
   void didUpdateWidget(covariant ButtonM3E oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.statesController != widget.statesController) {
+      oldWidget.statesController?.removeListener(_handleStatesChanged);
+      if (widget.statesController == null) {
+        _statesController = WidgetStatesController();
+      } else {
+        _statesController = widget.statesController!;
+      }
+      _statesController.addListener(_handleStatesChanged);
+    }
+
     if (oldWidget.selected != widget.selected && widget.toggleable) {
       _syncSelectedToController();
     }
+  }
+
+  @override
+  void dispose() {
+    _statesController.removeListener(_handleStatesChanged);
+    if (widget.statesController == null) {
+      _statesController.dispose();
+    }
+    super.dispose();
   }
 
   void _syncSelectedToController() {

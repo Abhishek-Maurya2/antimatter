@@ -100,7 +100,7 @@ class SupabaseSyncService {
         }
       }
 
-      debugPrint('Supabase Sync: Pushed task ${task.id}');
+      // debugPrint('Supabase Sync: Pushed task ${task.id}');
     } catch (e) {
       debugPrint('Supabase Sync: Error pushing task ${task.id} - $e');
     }

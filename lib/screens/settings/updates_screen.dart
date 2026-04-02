@@ -328,7 +328,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       child: SafeArea(
         child: ButtonGroupM3E(
-          type: ButtonGroupM3EType.connected,
+          type: ButtonGroupM3EType.standard,
           size: ButtonGroupM3ESize.lg,
           style: ButtonM3EStyle.filled,
           expanded: true,
