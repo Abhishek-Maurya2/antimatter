@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
-import 'widgets/desktop_title_bar.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
@@ -34,20 +33,6 @@ void main() async {
 
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     await windowManager.ensureInitialized();
-    WindowOptions windowOptions = const WindowOptions(
-      size: Size(1280, 720),
-      center: true,
-      backgroundColor: Colors.transparent,
-      skipTaskbar: false,
-      titleBarStyle: TitleBarStyle.hidden,
-    );
-    windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.setAsFrameless();
-      await windowManager.setHasShadow(false);
-      await windowManager.setBackgroundColor(Colors.transparent);
-      await windowManager.show();
-      await windowManager.focus();
-    });
   }
 
   await Supabase.initialize(url: supaUrl, anonKey: supaAnonKey);
@@ -219,29 +204,6 @@ class AntimatterApp extends ConsumerWidget {
             ),
           ),
       themeMode: themeState.themeMode,
-      builder: (context, child) {
-        final colorScheme = Theme.of(context).colorScheme;
-        final bool isWindows =
-            !kIsWeb && Platform.isWindows; // Specific for Windows
-
-        if (!isWindows) return child!;
-
-        return Material(
-          color: Colors.transparent,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              color: colorScheme.surface,
-              child: Column(
-                children: [
-                  const DesktopTitleBar(),
-                  Expanded(child: child!),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
       home: const HomeScreen(),
     );
   }
