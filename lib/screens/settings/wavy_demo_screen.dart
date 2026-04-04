@@ -564,6 +564,8 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
                 onChanged: (v) => setState(() => _m3eProgress = v),
                 shape: SliderM3EShape.wavy,
                 size: SliderM3ESize.medium,
+                divisions: 10,
+                label: (_m3eProgress * 100).round().toString(),
                 startIcon: const Icon(Symbols.volume_mute, size: 20),
                 endIcon: const Icon(Symbols.volume_up, size: 20),
               ),

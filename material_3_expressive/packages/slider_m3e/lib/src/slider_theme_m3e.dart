@@ -75,6 +75,7 @@ SliderThemeData sliderThemeM3E(
         ? ShowValueIndicator.onDrag
         : ShowValueIndicator.onlyForDiscrete,
     thumbShape: thumbShape,
+    tickMarkShape: WavySliderTickMarkShapeM3E(isWavy: isWavy),
     overlayShape: RoundSliderOverlayShape(overlayRadius: m.overlayRadius),
     rangeThumbShape: shapeFamily == SliderM3EShapeFamily.round
         ? const RoundRangeSliderThumbShape()

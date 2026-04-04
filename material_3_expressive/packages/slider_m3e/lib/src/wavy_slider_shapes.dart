@@ -217,3 +217,51 @@ class WavySliderThumbShapeM3E extends SliderComponentShape {
     canvas.drawRRect(rrect, paint);
   }
 }
+
+class WavySliderTickMarkShapeM3E extends SliderTickMarkShape {
+  const WavySliderTickMarkShapeM3E({
+    this.tickMarkRadius,
+    required this.isWavy,
+  });
+
+  final double? tickMarkRadius;
+  final bool isWavy;
+
+  @override
+  Size getPreferredSize({
+    required SliderThemeData sliderTheme,
+    required bool isEnabled,
+  }) {
+    return Size.fromRadius(tickMarkRadius ?? (sliderTheme.trackHeight ?? 4.0) / 4);
+  }
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required Animation<double> enableAnimation,
+    required TextDirection textDirection,
+    required Offset thumbCenter,
+    required bool isEnabled,
+  }) {
+    // If it's wavy, only paint if it's on the right side of the thumb (inactive side)
+    // We add a tiny buffer to account for rounding/gap.
+    if (isWavy && center.dx < thumbCenter.dx - 2.0) {
+      return;
+    }
+
+    final double radius = tickMarkRadius ?? (sliderTheme.trackHeight ?? 4.0) / 4;
+    final Paint paint = Paint()
+      ..color = isEnabled
+          ? (center.dx <= thumbCenter.dx + 0.1
+              ? sliderTheme.activeTickMarkColor ?? Colors.blue
+              : sliderTheme.inactiveTickMarkColor ?? Colors.grey)
+          : (center.dx <= thumbCenter.dx + 0.1
+              ? sliderTheme.disabledActiveTickMarkColor ?? Colors.blue
+              : sliderTheme.disabledInactiveTickMarkColor ?? Colors.grey);
+
+    context.canvas.drawCircle(center, radius, paint);
+  }
+}
