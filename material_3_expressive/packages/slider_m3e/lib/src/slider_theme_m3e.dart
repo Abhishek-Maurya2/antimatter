@@ -47,15 +47,13 @@ SliderThemeData sliderThemeM3E(
     isWavy: isWavy, // Pass the same isWavy flag for tracking
   );
 
-  final SliderTrackShape trackShape = isWavy
-      ? WavySliderTrackShapeM3E(
-          gap: effectiveGap,
-          waveAmplitude: effectiveWaveAmplitude,
-          waveLength: effectiveWaveLength,
-          phase: effectivePhase,
-          isWavy: true,
-        )
-      : const RoundedRectSliderTrackShape();
+  final SliderTrackShape trackShape = WavySliderTrackShapeM3E(
+    gap: effectiveGap,
+    waveAmplitude: effectiveWaveAmplitude,
+    waveLength: effectiveWaveLength,
+    phase: effectivePhase,
+    isWavy: isWavy,
+  );
 
   return SliderTheme.of(context).copyWith(
     trackHeight: trackHeight,

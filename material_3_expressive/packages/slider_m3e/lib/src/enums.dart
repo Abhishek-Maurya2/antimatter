@@ -12,11 +12,11 @@ extension SliderM3ESizeExtension on SliderM3ESize {
   double get defaultGap {
     switch (this) {
       case SliderM3ESize.small:
-        return 4.0;
-      case SliderM3ESize.medium:
-        return 6.0; // matching demo
-      case SliderM3ESize.large:
         return 10.0;
+      case SliderM3ESize.medium:
+        return 12.0; // matching demo
+      case SliderM3ESize.large:
+        return 12.0;
     }
   }
 
@@ -56,9 +56,9 @@ extension SliderM3ESizeExtension on SliderM3ESize {
   double get defaultThumbWidth {
     switch (this) {
       case SliderM3ESize.small:
-        return 3.0;
+        return 4.0;
       case SliderM3ESize.medium:
-        return 4.0; // matching demo
+        return 6.0; // matching broken demo
       case SliderM3ESize.large:
         return 6.0;
     }
@@ -69,7 +69,7 @@ extension SliderM3ESizeExtension on SliderM3ESize {
       case SliderM3ESize.small:
         return 22.0;
       case SliderM3ESize.medium:
-        return 30.0; // matching demo
+        return 30.0; // matching broken demo
       case SliderM3ESize.large:
         return 40.0;
     }
@@ -78,11 +78,11 @@ extension SliderM3ESizeExtension on SliderM3ESize {
   double get defaultThumbRadius {
     switch (this) {
       case SliderM3ESize.small:
-        return 2.0;
+        return 55;
       case SliderM3ESize.medium:
-        return 4.0; // matching demo
+        return 55; // matching broken demo
       case SliderM3ESize.large:
-        return 6.0;
+        return 55;
     }
   }
 }

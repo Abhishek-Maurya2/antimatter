@@ -827,18 +827,16 @@ packages:
   m3e_collection:
     dependency: "direct main"
     description:
-      name: m3e_collection
-      sha256: "623079bd3fe39bac1a3a10656647cdef6a8b2aa8bb8ee5ff99779facd05b18f6"
-      url: "https://pub.dev"
-    source: hosted
+      path: "material_3_expressive/packages/m3e_collection"
+      relative: true
+    source: path
     version: "0.3.7"
   m3e_design:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: m3e_design
-      sha256: "15ff0ef4c43553d855c5e866a9aee8231d44919fe2bb354b1259337bdfd659b4"
-      url: "https://pub.dev"
-    source: hosted
+      path: "material_3_expressive/packages/m3e_design"
+      relative: true
+    source: path
     version: "0.2.1"
   matcher:
     dependency: transitive

@@ -87,43 +87,43 @@ class WavySliderTrackShapeM3E extends SliderTrackShape with BaseSliderTrackShape
 
     // We build a base path that is longer than the segment to allow for phase shifting
     // but here we can just use the sin logic or the cubicTo logic.
-    // The demo used cubicTo for smoothness.
-    
+    // Restoration: Using cubicTo logic with smoothness = 0.48 for premium aesthetics.
     final path = Path();
     const double smoothness = 0.48;
     final int cycleCount = math.max(1, (width / waveLength).round());
     final double adjWave = width / cycleCount;
-    final int totalPoints = (cycleCount + 1) * 2;
-    
-    // To make it animate, we shift the x coordinates or use a phase in the sin calculation.
-    // Let's use the cubicTo version for that premium look.
-    
-    final double phaseShift = phase * waveLength;
+    // Build one extra cycle for smooth phase scrolling.
+    final int totalHalves = (cycleCount + 1) * 2;
 
-    for (int i = 0; i <= totalPoints; i++) {
-        final double x = startX + i * adjWave / 2 - phaseShift;
-        final double py = (i % 2 == 1) ? centerY - waveAmplitude : centerY;
+    for (int i = 0; i <= totalHalves; i++) {
+        final double x = startX + i * adjWave / 2;
+        // Peak at i=0, Trough at i=1, etc.
+        final double py = centerY + ((i % 2 == 0) ? waveAmplitude : -waveAmplitude);
         
         if (i == 0) {
             path.moveTo(x, py);
         } else {
-            final double prevX = startX + (i - 1) * adjWave / 2 - phaseShift;
-            final double prevPy = ((i - 1) % 2 == 1) ? centerY - waveAmplitude : centerY;
-            final double ctrlX = adjWave / 2 * smoothness;
-            path.cubicTo(prevX + ctrlX, prevPy, x - ctrlX, py, x, py);
+            final double prevX = startX + (i - 1) * adjWave / 2;
+            final double prevY = centerY + (((i - 1) % 2 == 0) ? waveAmplitude : -waveAmplitude);
+            final double ctrlDx = adjWave / 2 * smoothness;
+            path.cubicTo(prevX + ctrlDx, prevY, x - ctrlDx, py, x, py);
         }
     }
 
-    // Extract the portion that fits within [startX, endX]
-    final metricsList = path.computeMetrics().toList();
-    if (metricsList.isEmpty) return;
+    final double phaseValue = phase.clamp(0.0, 1.0);
+    final metrics = path.computeMetrics().first;
+    final double totalLen = metrics.length;
+    final double oneCycleLen = totalLen / (cycleCount + 1);
+    final double baseLen = totalLen * cycleCount / (cycleCount + 1);
     
-    // We draw the path with a clipRect to keep it within [startX, endX].
-    
-    // Alternative: Just draw the path with a clipRect.
+    // Extract exact arc length for the required horizontal width
+    final double phaseShift = phaseValue * oneCycleLen;
+    final segment = metrics.extractPath(phaseShift, phaseShift + baseLen);
+
+    // Compensate for the shift horizontally to keep start and end points fixed
     canvas.save();
-    canvas.clipRect(Rect.fromLTRB(startX, centerY - waveAmplitude - (paint.strokeWidth / 2), endX, centerY + waveAmplitude + (paint.strokeWidth / 2)));
-    canvas.drawPath(path, paint);
+    canvas.translate(-phaseValue * adjWave, 0);
+    canvas.drawPath(segment, paint);
     canvas.restore();
   }
 

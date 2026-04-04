@@ -15,7 +15,8 @@ dependencies:
   animations: ^2.0.11
   material_symbols_icons: ^4.2815.1
   dynamic_color: ^1.7.0
-  m3e_collection: ^0.3.6
+  m3e_collection:
+    path: ./material_3_expressive/packages/m3e_collection
   button_m3e:
     path: ./material_3_expressive/packages/button_m3e
 
@@ -113,3 +114,7 @@ dependency_overrides:
     path: ./material_3_expressive/packages/slider_m3e
   progress_indicator_m3e:
     path: ./material_3_expressive/packages/progress_indicator_m3e
+  m3e_collection:
+    path: ./material_3_expressive/packages/m3e_collection
+  m3e_design:
+    path: ./material_3_expressive/packages/m3e_design
