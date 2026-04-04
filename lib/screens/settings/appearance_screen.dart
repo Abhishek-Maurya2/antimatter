@@ -231,8 +231,8 @@ class AppearanceScreen extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.only(
             left: 20,
-            right: 16,
-            bottom: 8,
+            right: 20,
+            bottom: 12,
             top: 24,
           ),
           child: Text(
@@ -240,36 +240,41 @@ class AppearanceScreen extends ConsumerWidget {
             style: TextStyle(
               color: colorTheme.primary,
               fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              ...allPresets.map((preset) {
+        SizedBox(
+          height: 180,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            scrollDirection: Axis.horizontal,
+            itemCount: allPresets.length + 1,
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              if (index < allPresets.length) {
+                final preset = allPresets[index];
                 final isActive =
                     themeState.activePresetId == preset.id &&
                     !themeState.useDynamicColors;
-                return _buildPresetChip(
+                return _buildPresetCard(
                   context,
                   preset,
                   isActive,
                   themeState,
                   themeControllerNotifier,
                 );
-              }),
-              _buildAddPresetButton(context, themeControllerNotifier),
-            ],
+              } else {
+                return _buildAddPresetButton(context, themeControllerNotifier);
+              }
+            },
           ),
         ),
       ],
     );
   }
 
-  Widget _buildPresetChip(
+  Widget _buildPresetCard(
     BuildContext context,
     ThemePreset preset,
     bool isActive,
@@ -311,49 +316,88 @@ class AppearanceScreen extends ConsumerWidget {
               );
             }
           : null,
-      child: Container(
-        width: 80,
-        padding: const EdgeInsets.all(8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        width: 120,
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isActive
-              ? colorTheme.primaryContainer
-              : colorTheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(16),
+              ? colorTheme.primaryContainer.withAlpha(200)
+              : colorTheme.surfaceContainerHighest.withAlpha(150),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isActive ? colorTheme.primary : Colors.transparent,
-            width: 2,
+            color: isActive ? colorTheme.primary : colorTheme.outlineVariant.withAlpha(100),
+            width: isActive ? 2 : 1,
           ),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: colorTheme.primary.withAlpha(40),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : null,
         ),
         child: Column(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: preset.seedColor,
-                shape: BoxShape.circle,
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      preset.seedColor,
+                      preset.seedColor.withAlpha(150),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: preset.seedColor.withAlpha(100),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: AnimatedScale(
+                    scale: isActive ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutBack,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(50),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(
+                        Symbols.check,
+                        color: Colors.white,
+                        size: 24,
+                        weight: 800,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              child: isActive
-                  ? Icon(
-                      Symbols.check,
-                      color: preset.seedColor.computeLuminance() > 0.5
-                          ? Colors.black
-                          : Colors.white,
-                    )
-                  : null,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               preset.name,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 13,
                 color: isActive
                     ? colorTheme.onPrimaryContainer
                     : colorTheme.onSurface,
-                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
               ),
               textAlign: TextAlign.center,
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ],
@@ -440,28 +484,43 @@ class AppearanceScreen extends ConsumerWidget {
         }
       },
       child: Container(
-        width: 80,
-        height: 100, // Matching roughly the height of the preset chips
-        padding: const EdgeInsets.all(8),
+        width: 120,
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: colorTheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(16),
+          color: colorTheme.surfaceContainerHighest.withAlpha(100),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: colorTheme.outlineVariant,
+            color: colorTheme.outlineVariant.withAlpha(80),
             width: 1,
             style: BorderStyle.solid,
           ),
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Symbols.add, size: 32, color: colorTheme.onSurfaceVariant),
-            const SizedBox(height: 8),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: colorTheme.surfaceContainerHigh.withAlpha(150),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: Icon(
+                    Symbols.add,
+                    size: 32,
+                    color: colorTheme.onSurfaceVariant,
+                    weight: 600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             Text(
               'Add New',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 13,
                 color: colorTheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
             ),
