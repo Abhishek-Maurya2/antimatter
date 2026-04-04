@@ -8,6 +8,7 @@ import 'package:antimatter/utils/date_utils.dart';
 import 'package:antimatter/models/task.dart';
 import 'package:antimatter/screens/task_editor_screen.dart';
 import 'package:m3e_collection/m3e_collection.dart';
+import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:antimatter/widgets/task_floating_toolbar.dart';
 import 'package:antimatter/utils/preferences_helper.dart';
 import 'package:antimatter/main.dart';
@@ -1112,7 +1113,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                                 const Padding(
                                   padding: EdgeInsets.symmetric(vertical: 24.0),
                                   child: Center(
-                                    child: ExpressiveLoadingIndicator(),
+                                    child: LoadingIndicatorM3E(),
                                   ),
                                 ),
                               const SizedBox(height: 125),

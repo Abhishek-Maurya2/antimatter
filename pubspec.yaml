@@ -16,12 +16,20 @@ dependencies:
   material_symbols_icons: ^4.2815.1
   dynamic_color: ^1.7.0
   m3e_collection: ^0.3.6
+  button_m3e:
+    path: ./material_3_expressive/packages/button_m3e
 
   settings_tiles:
     path: ./settings_tiles_custom
 
   expressive_loading_indicator:
     path: ./expressive_loading_indicator_modified
+  loading_indicator_m3e:
+    path: ./material_3_expressive/packages/loading_indicator_m3e
+  slider_m3e:
+    path: ./material_3_expressive/packages/slider_m3e
+  progress_indicator_m3e:
+    path: ./material_3_expressive/packages/progress_indicator_m3e
   material_new_shapes: ^1.0.0
   custom_refresh_indicator: ^4.0.1
   intl: ^0.20.2
@@ -101,3 +109,7 @@ dependency_overrides:
     path: ./material_3_expressive/packages/button_m3e
   button_group_m3e:
     path: ./material_3_expressive/packages/button_group_m3e
+  slider_m3e:
+    path: ./material_3_expressive/packages/slider_m3e
+  progress_indicator_m3e:
+    path: ./material_3_expressive/packages/progress_indicator_m3e

@@ -34,6 +34,9 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
   double _brokenWavelength = 30.0;
   double _brokenStrokeWidth = 4.0;
   double _brokenSpeed = 1.0;
+  
+  // Official M3E Demo State
+  double _m3eProgress = 0.5;
 
   Widget _buildSliderControl(
     String label,
@@ -79,7 +82,7 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
     final colorTheme = Theme.of(context).colorScheme;
 
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         backgroundColor: widget.isEmbedded
             ? colorTheme.surfaceContainerLow
@@ -115,6 +118,7 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
                 tabs: [
                   Tab(text: 'Determinate'),
                   Tab(text: 'Indeterminate'),
+                  Tab(text: 'Official M3E'),
                 ],
               ),
             ),
@@ -123,6 +127,7 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
             children: [
               _buildIndicatorsList(colorTheme, true),
               _buildIndicatorsList(colorTheme, false),
+              _buildOfficialM3EList(colorTheme),
             ],
           ),
         ),
@@ -311,6 +316,131 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
                 (v) => setState(() => _brokenSpeed = v),
               ),
               const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOfficialM3EList(ColorScheme colorTheme) {
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        Text(
+          'Slider M3E',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: colorTheme.primary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _DemoCard(
+          title: 'Official M3E Slider',
+          colorTheme: colorTheme,
+          child: Column(
+            children: [
+              SliderM3E(
+                value: _m3eProgress,
+                onChanged: (v) => setState(() => _m3eProgress = v),
+                label: '${(_m3eProgress * 100).round()}%',
+                startIcon: const Icon(Symbols.volume_down),
+                endIcon: const Icon(Symbols.volume_up),
+              ),
+              const SizedBox(height: 16),
+              SliderM3E(
+                value: _m3eProgress,
+                onChanged: (v) => setState(() => _m3eProgress = v),
+                emphasis: SliderM3EEmphasis.secondary,
+                size: SliderM3ESize.large,
+              ),
+              const SizedBox(height: 16),
+              _buildSliderControl(
+                'Value',
+                _m3eProgress,
+                0,
+                1,
+                (v) => setState(() => _m3eProgress = v),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 32),
+        Text(
+          'Progress Indicators M3E',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: colorTheme.primary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _DemoCard(
+          title: 'Linear Progress (Official)',
+          colorTheme: colorTheme,
+          child: Column(
+            children: [
+              const Text('Wavy Shape', style: TextStyle(fontSize: 12)),
+              const SizedBox(height: 8),
+              LinearProgressIndicatorM3E(
+                value: _m3eProgress,
+                shape: ProgressM3EShape.wavy,
+              ),
+              const SizedBox(height: 24),
+              const Text('Flat Shape', style: TextStyle(fontSize: 12)),
+              const SizedBox(height: 8),
+              LinearProgressIndicatorM3E(
+                value: _m3eProgress,
+                shape: ProgressM3EShape.flat,
+              ),
+              const SizedBox(height: 24),
+              const Text('Indeterminate', style: TextStyle(fontSize: 12)),
+              const SizedBox(height: 8),
+              const LinearProgressIndicatorM3E(
+                value: null,
+                shape: ProgressM3EShape.wavy,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        _DemoCard(
+          title: 'Circular Progress (Official)',
+          colorTheme: colorTheme,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                children: [
+                  CircularProgressIndicatorM3E(
+                    value: _m3eProgress,
+                    shape: ProgressM3EShape.wavy,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Wavy', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+              Column(
+                children: [
+                  CircularProgressIndicatorM3E(
+                    value: _m3eProgress,
+                    shape: ProgressM3EShape.flat,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Flat', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+              const Column(
+                children: [
+                  CircularProgressIndicatorM3E(
+                    value: null,
+                    shape: ProgressM3EShape.wavy,
+                  ),
+                  SizedBox(height: 8),
+                  Text('Indet.', style: TextStyle(fontSize: 10)),
+                ],
+              ),
             ],
           ),
         ),

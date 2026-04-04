@@ -2,9 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:m3e_collection/m3e_collection.dart'
-    hide ExpressiveLoadingIndicator;
-import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
+import 'package:m3e_collection/m3e_collection.dart';
+import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:button_m3e/button_m3e.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -396,7 +395,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                                 width:
                                     64, // Slightly larger for ExpressiveLoadingIndicator
                                 height: 64,
-                                child: ExpressiveLoadingIndicator(),
+                                child: LoadingIndicatorM3E(),
                               ),
                               const SizedBox(height: 16),
                               Text(

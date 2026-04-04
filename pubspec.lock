@@ -241,7 +241,7 @@ packages:
     source: path
     version: "0.3.1"
   button_m3e:
-    dependency: "direct overridden"
+    dependency: "direct main"
     description:
       path: "material_3_expressive/packages/button_m3e"
       relative: true
@@ -810,7 +810,7 @@ packages:
     source: hosted
     version: "6.1.0"
   loading_indicator_m3e:
-    dependency: "direct overridden"
+    dependency: "direct main"
     description:
       path: "material_3_expressive/packages/loading_indicator_m3e"
       relative: true
@@ -1065,12 +1065,11 @@ packages:
     source: hosted
     version: "2.6.0"
   progress_indicator_m3e:
-    dependency: transitive
+    dependency: "direct main"
     description:
-      name: progress_indicator_m3e
-      sha256: "1a2ca029d14427d31093552a0e916b453f58643b78ef805ce6f4669845ac8f70"
-      url: "https://pub.dev"
-    source: hosted
+      path: "material_3_expressive/packages/progress_indicator_m3e"
+      relative: true
+    source: path
     version: "0.1.1"
   pub_semver:
     dependency: transitive
@@ -1277,12 +1276,11 @@ packages:
     source: sdk
     version: "0.0.0"
   slider_m3e:
-    dependency: transitive
+    dependency: "direct main"
     description:
-      name: slider_m3e
-      sha256: e4c25e94b46ebf3164f407e9db6cce70aa51b92db5143d720f6e55a2a709aa67
-      url: "https://pub.dev"
-    source: hosted
+      path: "material_3_expressive/packages/slider_m3e"
+      relative: true
+    source: path
     version: "0.1.1"
   source_gen:
     dependency: transitive
