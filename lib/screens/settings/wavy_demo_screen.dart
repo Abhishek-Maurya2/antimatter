@@ -55,11 +55,18 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           ),
           Expanded(
-            child: Slider(
-              value: value,
-              min: min,
-              max: max,
-              onChanged: onChanged,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: WavySlider(
+                value: (value - min) / (max - min),
+                onChanged: (v) => onChanged(min + v * (max - min)),
+                thumbHeight: 22.0,
+                thumbWidth: 3.0,
+                trackHeight: 2.5,
+                gap: 6.0,
+                waveAmplitude: 3.0,
+                waveLength: 20.0,
+              ),
             ),
           ),
         ],
@@ -365,10 +372,10 @@ class WavySlider extends StatefulWidget {
     super.key,
     required this.value,
     required this.onChanged,
-    this.thumbWidth = 4.0,
+    this.thumbWidth = 8.0,
     this.thumbHeight = 30.0,
     this.thumbRadius = 2.0,
-    this.gap = 6.0,
+    this.gap = 6,
     this.trackHeight = 4.0,
     this.waveAmplitude = 5.0,
     this.waveLength = 28.0,
@@ -394,6 +401,7 @@ class _WavySliderState extends State<WavySlider> {
   @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
+    final effectiveAmplitude = widget.value >= 1.0 ? 0.0 : widget.waveAmplitude;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -478,7 +486,7 @@ class _WavySliderState extends State<WavySlider> {
                           minHeight: widget.trackHeight,
                           color: colorTheme.primary,
                           backgroundColor: Colors.transparent,
-                          waveAmplitude: widget.waveAmplitude,
+                          waveAmplitude: effectiveAmplitude,
                           waveLength: widget.waveLength,
                         ),
                       ),
@@ -586,6 +594,7 @@ class _BrokenWavyCircularProgressIndicatorState
     final activeColor = widget.color ?? colorTheme.primary;
     final trackColor =
         widget.backgroundColor ?? colorTheme.surfaceContainerHighest;
+    final effectiveAmplitude = (widget.value != null && widget.value! >= 1.0) ? 0.0 : widget.waveAmplitude;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -598,7 +607,7 @@ class _BrokenWavyCircularProgressIndicatorState
             trackColor: trackColor,
             strokeWidth: widget.strokeWidth,
             gap: widget.gap,
-            waveAmplitude: widget.waveAmplitude,
+            waveAmplitude: effectiveAmplitude,
             waveLength: widget.waveLength,
           ),
         );
@@ -923,7 +932,8 @@ class _BrokenWavyLinearIndicatorPainter extends CustomPainter {
     // Build the global immutable wave track spanning the entire width perfectly
     final int cycleCount = math.max(1, (size.width / waveLength).round());
     final double adjWave = size.width / cycleCount;
-    final int totalPoints = cycleCount * 2;
+    final int totalPoints = (cycleCount + 1) * 2;
+    final double extendedWidth = size.width + adjWave;
 
     final basePath = Path();
     for (int i = 0; i <= totalPoints; i++) {
@@ -945,20 +955,23 @@ class _BrokenWavyLinearIndicatorPainter extends CustomPainter {
     if (metricsList.isEmpty) return;
     final metrics = metricsList.first;
 
-    // Constant mapping ratio between Arc Length and Linear X globally
-    final double ratio = metrics.length / size.width;
+    final double ratio = metrics.length / extendedWidth;
+    final double phaseShift = t * adjWave;
 
     // The physical active wave logic: starts after the gap, ends before the gap
     final double activeWaveStartX = boundedStart + gap;
     final double activeWaveEndX = boundedEnd - gap;
 
     if (activeWaveEndX > activeWaveStartX) {
-      final double startL = activeWaveStartX * ratio;
-      final double endL = activeWaveEndX * ratio;
+      final double startL = (activeWaveStartX + phaseShift) * ratio;
+      final double endL = (activeWaveEndX + phaseShift) * ratio;
 
       final segment = metrics.extractPath(startL, endL);
-      // No translation needed! The path implicitly carries its global coordinates.
+      
+      canvas.save();
+      canvas.translate(-phaseShift, 0);
       canvas.drawPath(segment, activePaint);
+      canvas.restore();
     }
 
     // Draw Broken Inactive Rail perfectly respecting the exact bounded regions
@@ -1036,6 +1049,7 @@ class _BrokenWavyLinearProgressIndicatorState
     final activeColor = widget.color ?? colorTheme.primary;
     final trackColor =
         widget.backgroundColor ?? colorTheme.surfaceContainerHighest;
+    final effectiveAmplitude = (widget.value != null && widget.value! >= 1.0) ? 0.0 : widget.waveAmplitude;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -1049,7 +1063,7 @@ class _BrokenWavyLinearProgressIndicatorState
             trackColor: trackColor,
             strokeWidth: widget.strokeWidth,
             gap: widget.gap,
-            waveAmplitude: widget.waveAmplitude,
+            waveAmplitude: effectiveAmplitude,
             waveLength: widget.waveLength,
           ),
         );
