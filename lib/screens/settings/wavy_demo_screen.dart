@@ -408,14 +408,51 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
         _DemoCard(
           title: 'Circular Progress (Official)',
           colorTheme: colorTheme,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          child: Wrap(
+            alignment: WrapAlignment.spaceEvenly,
+            crossAxisAlignment: WrapCrossAlignment.end,
+            spacing: 16,
+            runSpacing: 16,
             children: [
               Column(
                 children: [
                   CircularProgressIndicatorM3E(
                     value: _m3eProgress,
                     shape: ProgressM3EShape.wavy,
+                    size: CircularProgressM3ESize.sm,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Wavy', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+              Column(
+                children: [
+                  CircularProgressIndicatorM3E(
+                    value: _m3eProgress,
+                    shape: ProgressM3EShape.wavy,
+                    size: CircularProgressM3ESize.md,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Wavy', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+              Column(
+                children: [
+                  CircularProgressIndicatorM3E(
+                    value: _m3eProgress,
+                    shape: ProgressM3EShape.wavy,
+                    size: CircularProgressM3ESize.lg,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Wavy', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+              Column(
+                children: [
+                  CircularProgressIndicatorM3E(
+                    value: _m3eProgress,
+                    shape: ProgressM3EShape.wavy,
+                    size: CircularProgressM3ESize.xl,
                   ),
                   const SizedBox(height: 8),
                   const Text('Wavy', style: TextStyle(fontSize: 10)),
@@ -426,16 +463,84 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
                   CircularProgressIndicatorM3E(
                     value: _m3eProgress,
                     shape: ProgressM3EShape.flat,
+                    size: CircularProgressM3ESize.sm,
                   ),
                   const SizedBox(height: 8),
                   const Text('Flat', style: TextStyle(fontSize: 10)),
                 ],
               ),
-              const Column(
+              Column(
+                children: [
+                  CircularProgressIndicatorM3E(
+                    value: _m3eProgress,
+                    shape: ProgressM3EShape.flat,
+                    size: CircularProgressM3ESize.md,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Flat', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+              Column(
+                children: [
+                  CircularProgressIndicatorM3E(
+                    value: _m3eProgress,
+                    shape: ProgressM3EShape.flat,
+                    size: CircularProgressM3ESize.lg,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Flat', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+              Column(
+                children: [
+                  CircularProgressIndicatorM3E(
+                    value: _m3eProgress,
+                    shape: ProgressM3EShape.flat,
+                    size: CircularProgressM3ESize.xl,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Flat', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+              Column(
                 children: [
                   CircularProgressIndicatorM3E(
                     value: null,
                     shape: ProgressM3EShape.wavy,
+                    size: CircularProgressM3ESize.sm,
+                  ),
+                  SizedBox(height: 8),
+                  Text('Indet.', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+              Column(
+                children: [
+                  CircularProgressIndicatorM3E(
+                    value: null,
+                    shape: ProgressM3EShape.wavy,
+                    size: CircularProgressM3ESize.md,
+                  ),
+                  SizedBox(height: 8),
+                  Text('Indet.', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+              Column(
+                children: [
+                  CircularProgressIndicatorM3E(
+                    value: null,
+                    shape: ProgressM3EShape.wavy,
+                    size: CircularProgressM3ESize.lg,
+                  ),
+                  SizedBox(height: 8),
+                  Text('Indet.', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+              Column(
+                children: [
+                  CircularProgressIndicatorM3E(
+                    value: null,
+                    shape: ProgressM3EShape.wavy,
+                    size: CircularProgressM3ESize.xl,
                   ),
                   SizedBox(height: 8),
                   Text('Indet.', style: TextStyle(fontSize: 10)),

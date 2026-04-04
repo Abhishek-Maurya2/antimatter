@@ -13,7 +13,7 @@ Widget buildCircularProgressIndicatorM3EIndeterminateUseCase(
     BuildContext context) {
   final CircularProgressM3ESize size = context.knobs.object.dropdown(
     label: 'size',
-    initialOption: CircularProgressM3ESize.m,
+    initialOption: CircularProgressM3ESize.md,
     options: CircularProgressM3ESize.values,
     labelBuilder: (v) => v.name,
   );
@@ -53,7 +53,7 @@ Widget buildCircularProgressIndicatorM3EDeterminateUseCase(
   );
   final CircularProgressM3ESize size = context.knobs.object.dropdown(
     label: 'size',
-    initialOption: CircularProgressM3ESize.m,
+    initialOption: CircularProgressM3ESize.md,
     options: CircularProgressM3ESize.values,
     labelBuilder: (v) => v.name,
   );
@@ -89,7 +89,7 @@ Widget buildCircularProgressIndicatorM3EFlatUseCase(BuildContext context) {
       : null;
   final CircularProgressM3ESize size = context.knobs.object.dropdown(
     label: 'size',
-    initialOption: CircularProgressM3ESize.m,
+    initialOption: CircularProgressM3ESize.md,
     options: CircularProgressM3ESize.values,
     labelBuilder: (v) => v.name,
   );
@@ -119,7 +119,7 @@ Widget buildCircularProgressIndicatorM3EWavyUseCase(BuildContext context) {
       : null;
   final CircularProgressM3ESize size = context.knobs.object.dropdown(
     label: 'size',
-    initialOption: CircularProgressM3ESize.m,
+    initialOption: CircularProgressM3ESize.md,
     options: CircularProgressM3ESize.values,
     labelBuilder: (v) => v.name,
   );
@@ -165,7 +165,7 @@ Widget buildCircularProgressIndicatorM3ESizeSUseCase(BuildContext context) {
   return Center(
     child: CircularProgressIndicatorM3E(
       value: valueOrNull,
-      size: CircularProgressM3ESize.s,
+      size: CircularProgressM3ESize.sm,
       shape: shape,
     ),
   );
@@ -195,7 +195,7 @@ Widget buildCircularProgressIndicatorM3ESizeMUseCase(BuildContext context) {
   return Center(
     child: CircularProgressIndicatorM3E(
       value: valueOrNull,
-      size: CircularProgressM3ESize.m,
+      size: CircularProgressM3ESize.md,
       shape: shape,
     ),
   );

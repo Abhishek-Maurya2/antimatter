@@ -18,7 +18,7 @@ Widget buildProgressWithLabelM3EDefaultUseCase(BuildContext context) {
   );
   final CircularProgressM3ESize size = context.knobs.object.dropdown(
     label: 'size',
-    initialOption: CircularProgressM3ESize.m,
+    initialOption: CircularProgressM3ESize.md,
     options: CircularProgressM3ESize.values,
     labelBuilder: (v) => v.name,
   );
@@ -43,7 +43,7 @@ Widget buildProgressWithLabelM3EDeterminateWithLabelUseCase(
   );
   final CircularProgressM3ESize size = context.knobs.object.dropdown(
     label: 'size',
-    initialOption: CircularProgressM3ESize.m,
+    initialOption: CircularProgressM3ESize.md,
     options: CircularProgressM3ESize.values,
     labelBuilder: (v) => v.name,
   );
@@ -75,7 +75,7 @@ Widget buildProgressWithLabelM3ELongLabelTextUseCase(BuildContext context) {
   );
   final CircularProgressM3ESize size = context.knobs.object.dropdown(
     label: 'size',
-    initialOption: CircularProgressM3ESize.m,
+    initialOption: CircularProgressM3ESize.md,
     options: CircularProgressM3ESize.values,
     labelBuilder: (v) => v.name,
   );

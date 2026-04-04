@@ -7,7 +7,7 @@ class ProgressWithLabelM3E extends StatelessWidget {
   const ProgressWithLabelM3E({
     super.key,
     required this.value,
-    this.size = CircularProgressM3ESize.m,
+    this.size = CircularProgressM3ESize.md,
     this.textStyle,
   });
 

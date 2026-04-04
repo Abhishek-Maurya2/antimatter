@@ -41,7 +41,7 @@ LinearSpec specForLinear({
   required ProgressM3EShape shape,
 }) =>
     switch ((shape, size)) {
-      (ProgressM3EShape.flat, LinearProgressM3ESize.s) => const LinearSpec(
+      (ProgressM3EShape.flat, LinearProgressM3ESize.sm) => const LinearSpec(
           trackHeight: 4,
           gap: 4,
           dotDiameter: 4,
@@ -49,7 +49,7 @@ LinearSpec specForLinear({
           trailingMargin: 4,
           isWavy: false,
         ),
-      (ProgressM3EShape.flat, LinearProgressM3ESize.m) => const LinearSpec(
+      (ProgressM3EShape.flat, LinearProgressM3ESize.md) => const LinearSpec(
           trackHeight: 8,
           gap: 4,
           dotDiameter: 4,
@@ -57,7 +57,7 @@ LinearSpec specForLinear({
           trailingMargin: 8,
           isWavy: false,
         ),
-      (ProgressM3EShape.wavy, LinearProgressM3ESize.s) => const LinearSpec(
+      (ProgressM3EShape.wavy, LinearProgressM3ESize.sm) => const LinearSpec(
           trackHeight: 4,
           gap: 4,
           dotDiameter: 4,
@@ -67,7 +67,7 @@ LinearSpec specForLinear({
           waveAmplitude: 3,
           wavePeriod: 40,
         ),
-      (ProgressM3EShape.wavy, LinearProgressM3ESize.m) => const LinearSpec(
+      (ProgressM3EShape.wavy, LinearProgressM3ESize.md) => const LinearSpec(
           trackHeight: 8,
           gap: 4,
           dotDiameter: 4,

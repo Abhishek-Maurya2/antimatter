@@ -12,7 +12,7 @@ class LinearProgressIndicatorM3E extends StatefulWidget {
   const LinearProgressIndicatorM3E({
     super.key,
     this.value, // null => indeterminate
-    this.size = LinearProgressM3ESize.m,
+    this.size = LinearProgressM3ESize.md,
     this.shape = ProgressM3EShape.wavy,
     this.activeColor,
     this.trackColor,
