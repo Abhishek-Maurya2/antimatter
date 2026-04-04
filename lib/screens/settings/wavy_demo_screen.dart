@@ -15,6 +15,9 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
   double _sliderValue = 0.5;
   bool _isToggleSelected = false;
 
+  // Wavy Slider Demo state
+  double _wavySliderValue = 0.5;
+
   @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
@@ -167,6 +170,35 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
             ),
           ),
         ),
+        const SizedBox(height: 32),
+        if (isDeterminate) ...[
+          Text(
+            'Custom Wavy Slider',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: colorTheme.primary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _DemoCard(
+            title: 'Wavy Slider (Locked to 30x4)',
+            colorTheme: colorTheme,
+            child: Column(
+              children: [
+                WavySlider(
+                  value: _wavySliderValue,
+                  onChanged: (v) => setState(() => _wavySliderValue = v),
+                  thumbHeight: 30.0,
+                  thumbWidth: 4.0,
+                  thumbRadius: 4,
+                  gap: 6.0,
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -436,6 +468,148 @@ class _DemoCard extends StatelessWidget {
           child,
         ],
       ),
+    );
+  }
+}
+
+class WavySlider extends StatefulWidget {
+  final double value;
+  final ValueChanged<double> onChanged;
+  final double thumbWidth;
+  final double thumbHeight;
+  final double thumbRadius;
+  final double gap;
+  final double trackHeight;
+
+  const WavySlider({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.thumbWidth = 4.0,
+    this.thumbHeight = 30.0,
+    this.thumbRadius = 2.0,
+    this.gap = 6.0,
+    this.trackHeight = 4.0,
+  });
+
+  @override
+  State<WavySlider> createState() => _WavySliderState();
+}
+
+class _WavySliderState extends State<WavySlider> {
+  bool _isPressed = false;
+
+  void _handleDragUpdate(DragUpdateDetails details, double width) {
+    double newValue = details.localPosition.dx / width;
+    widget.onChanged(newValue.clamp(0.0, 1.0));
+  }
+
+  void _handleTap(TapDownDetails details, double width) {
+    double newValue = details.localPosition.dx / width;
+    widget.onChanged(newValue.clamp(0.0, 1.0));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorTheme = Theme.of(context).colorScheme;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
+        final thumbPosition = widget.value * totalWidth;
+
+        // Calculate available space for tracks
+        final leftTrackWidth = (thumbPosition - widget.gap).clamp(0.0, totalWidth);
+        final rightTrackStart = (thumbPosition + widget.gap).clamp(0.0, totalWidth);
+        final rightTrackWidth = (totalWidth - rightTrackStart).clamp(0.0, totalWidth);
+
+        // Animation offsets
+        final currentThumbWidth = _isPressed ? widget.thumbWidth - 1 : widget.thumbWidth;
+        final currentThumbHeight = _isPressed ? widget.thumbHeight + 4 : widget.thumbHeight;
+        final currentThumbRadius = _isPressed ? widget.thumbRadius + 2 : widget.thumbRadius;
+
+        return GestureDetector(
+          onHorizontalDragStart: (_) => setState(() => _isPressed = true),
+          onHorizontalDragUpdate: (details) =>
+              _handleDragUpdate(details, totalWidth),
+          onHorizontalDragEnd: (_) => setState(() => _isPressed = false),
+          onHorizontalDragCancel: () => setState(() => _isPressed = false),
+          onTapDown: (details) {
+            setState(() => _isPressed = true);
+            _handleTap(details, totalWidth);
+          },
+          onTapUp: (_) => setState(() => _isPressed = false),
+          onTapCancel: () => setState(() => _isPressed = false),
+          behavior: HitTestBehavior.opaque,
+          child: SizedBox(
+            height: widget.thumbHeight + 10, // constant height to avoid layout shift
+            width: double.infinity,
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              clipBehavior: Clip.none,
+              children: [
+                // Right side - Flat Rail
+                if (rightTrackWidth > 0)
+                  Positioned(
+                    left: rightTrackStart,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        height: widget.trackHeight,
+                        decoration: BoxDecoration(
+                          color: colorTheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(widget.trackHeight),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // Left side - Wavy Track
+                if (leftTrackWidth > 0)
+                  Positioned(
+                    left: 0,
+                    width: leftTrackWidth,
+                    child: Center(
+                      child: SizedBox(
+                        height: widget.trackHeight + 10,
+                        child: WavyLinearProgressIndicator(
+                          value: 1.0,
+                          minHeight: widget.trackHeight,
+                          color: colorTheme.primary,
+                          backgroundColor: Colors.transparent,
+                          waveAmplitude: 5,
+                          waveLength: 28.0,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // Thin & Long Thumb (Animated)
+                Positioned(
+                  left: thumbPosition - (currentThumbWidth / 2),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    curve: Curves.easeOutCubic,
+                    width: currentThumbWidth,
+                    height: currentThumbHeight,
+                    decoration: BoxDecoration(
+                      color: colorTheme.primary,
+                      borderRadius: BorderRadius.circular(currentThumbRadius),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorTheme.primary.withAlpha(_isPressed ? 80 : 50),
+                          blurRadius: _isPressed ? 12 : 8,
+                          offset: Offset(0, _isPressed ? 4 : 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
