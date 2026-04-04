@@ -123,11 +123,6 @@ class _WavyCircularPainter extends CustomPainter {
     final double adjWave = circumference / cycleCount;
     final int halfCycles = cycleCount * 2; // per copy
 
-    // For each half-cycle anchor:
-    //   even index → on the circle (no shift)
-    //   odd index  → shifted inward by amplitude
-    // Then connected with cubic beziers using _kSmoothness.
-
     final path = Path();
 
     // We build 2 copies (like Android) for seamless wrapping.
@@ -136,6 +131,7 @@ class _WavyCircularPainter extends CustomPainter {
         // arc distance from start of this copy
         final double dist = i * adjWave / 2;
         final double theta = (copy * circumference + dist) / radius;
+        
         // Shift: odd half-cycle anchors are pushed inward
         final double shift = (i % 2 == 1) ? -waveAmplitude : 0.0;
         final double r = radius + shift;
@@ -162,8 +158,7 @@ class _WavyCircularPainter extends CustomPainter {
 
           final double prevPx =
               center.dx + prevR * math.cos(prevTheta - math.pi / 2);
-          final double prevPy =
-              center.dy + prevR * math.sin(prevTheta - math.pi / 2);
+          final double prevPy = center.dy + prevR * math.sin(prevTheta - math.pi / 2);
 
           // Tangent at prev point (perpendicular to radius, clockwise)
           final double prevTx = -math.sin(prevTheta - math.pi / 2);
@@ -193,6 +188,9 @@ class _WavyCircularPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius =
         (math.min(size.width, size.height) / 2) - strokeWidth - waveAmplitude;
+    final double circumference = 2 * math.pi * radius;
+    final int cycleCount = math.max(3, (circumference / waveLength).round());
+    final double adjWave = circumference / cycleCount;
 
     final trackPaint = Paint()
       ..color = trackColor
@@ -211,35 +209,67 @@ class _WavyCircularPainter extends CustomPainter {
       canvas.drawCircle(center, radius, trackPaint);
     }
 
-    // Build the full wavy path (2 copies for wrapping)
+    // Build the STATIC full wavy path
     final wavyPath = _buildFullWavyCirclePath(radius, center);
-    final metrics = wavyPath.computeMetrics().first;
+    final metricsList = wavyPath.computeMetrics().toList();
+    if (metricsList.isEmpty) return;
+    final metrics = metricsList.first;
     final totalLen = metrics.length; // ~2x circumference
     final halfLen = totalLen / 2; // ~1x circumference
 
-    // Phase: smoothly shift where we start extracting from.
-    // t goes 0→1 continuously, so phase scrolls the wave smoothly.
-    final double phaseShift = t * halfLen;
+    // Extract shift based on true path length
+    final double oneCycleLen = halfLen / cycleCount;
+    final double phaseShiftPathLen = t * oneCycleLen;
+    // Rotation shift based on geometric arc
+    final double phaseShiftAngular = (t * adjWave) / radius;
+
+    // Convert visual gap to path metric gap
+    final double pathGapLen = (strokeWidth / circumference) * halfLen;
 
     if (value != null) {
-      // Determinate: extract an arc of length proportional to value
+      // Determinate: extract a FIXED arc starting from the top.
+      // Double-Broken Design: gap at start and end.
       final double arcLen = halfLen * value!.clamp(0.0, 1.0);
-      if (arcLen > 0) {
-        final start = phaseShift;
-        final end = phaseShift + arcLen;
-        final segment = metrics.extractPath(start, math.min(end, totalLen));
+      final double startExtract = pathGapLen;
+      final double endExtract = math.max(startExtract, arcLen - pathGapLen);
+
+      if (endExtract > startExtract) {
+        final segment = metrics.extractPath(
+          phaseShiftPathLen + startExtract, 
+          phaseShiftPathLen + endExtract
+        );
+        
+        canvas.save();
+        canvas.translate(center.dx, center.dy);
+        canvas.rotate(-phaseShiftAngular);
+        canvas.translate(-center.dx, -center.dy);
+        
         canvas.drawPath(segment, activePaint);
+        
+        canvas.restore();
       }
     } else {
       // Indeterminate: pulsing arc that spins
-      final double spinPhase = t * halfLen * 2; // spins faster
+      final double spinPhase = t * halfLen;
       final double pulseFraction =
           0.2 + 0.15 * math.sin(t * 2 * math.pi); // 20-35% of circumference
       final double arcLen = halfLen * pulseFraction;
-      final start = (spinPhase + phaseShift) % halfLen;
+      
+      final start = spinPhase;
       final end = start + arcLen;
-      final segment = metrics.extractPath(start, math.min(end, totalLen));
+      final segment = metrics.extractPath(
+        phaseShiftPathLen + start, 
+        phaseShiftPathLen + math.min(end, totalLen)
+      );
+      
+      canvas.save();
+      canvas.translate(center.dx, center.dy);
+      canvas.rotate(-phaseShiftAngular);
+      canvas.translate(-center.dx, -center.dy);
+      
       canvas.drawPath(segment, activePaint);
+      
+      canvas.restore();
     }
   }
 
