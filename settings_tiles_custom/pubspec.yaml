@@ -14,6 +14,7 @@ dependencies:
   expressive_loading_indicator:
     path: ../expressive_loading_indicator_modified
   flex_color_picker: ^3.7.1
+  m3e_collection: ^0.3.6
 
   flutter:
     sdk: flutter

@@ -23,14 +23,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _taskCompletionSound = true;
   bool _deadlineReminders = true;
   bool _dailySummary = false;
-  String _reminderTime = '30 min before';
-
-  final Map<String, String> _reminderOptions = {
-    '15min': '15 minutes before',
-    '30min': '30 minutes before',
-    '1hr': '1 hour before',
-    '1day': '1 day before',
-  };
+  int _reminderMinutes = 30;
 
   @override
   void initState() {
@@ -45,8 +38,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         PreferencesHelper.getBool('taskCompletionSound') ?? true;
     _deadlineReminders = PreferencesHelper.getBool('deadlineReminders') ?? true;
     _dailySummary = PreferencesHelper.getBool('dailySummary') ?? false;
-    final savedKey = PreferencesHelper.getString('reminderTime') ?? '30min';
-    _reminderTime = _reminderOptions[savedKey] ?? '30 minutes before';
+    
+    // Migration logic for reminder time
+    final savedKey = PreferencesHelper.getString('reminderTime');
+    if (savedKey != null) {
+      if (savedKey == '15min') _reminderMinutes = 15;
+      else if (savedKey == '30min') _reminderMinutes = 30;
+      else if (savedKey == '1hr') _reminderMinutes = 60;
+      else if (savedKey == '1day') _reminderMinutes = 1440;
+      
+      // Save as NEW format and remove OLD format
+      PreferencesHelper.setInt('reminderMinutes', _reminderMinutes);
+      PreferencesHelper.remove('reminderTime');
+    } else {
+      _reminderMinutes = PreferencesHelper.getInt('reminderMinutes') ?? 30;
+    }
     setState(() {});
   }
 
@@ -64,19 +70,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       final tasks = tasksBox.values
           .where((t) => !t.isCompleted && !t.isDeleted)
           .toList();
-      final key = _reminderOptions.entries
-          .firstWhere((e) => e.value == _reminderTime)
-          .key;
-      int minutes = 30;
-      if (key == '15min')
-        minutes = 15;
-      else if (key == '1hr')
-        minutes = 60;
-      else if (key == '1day')
-        minutes = 1440;
 
       for (var task in tasks) {
-        await NotificationService().scheduleDeadlineReminder(task, minutes);
+        await NotificationService()
+            .scheduleDeadlineReminder(task, _reminderMinutes);
       }
     }
 
@@ -292,23 +289,37 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             }
                           : null,
                     ),
-                    SettingSingleOptionTile(
+                    SettingInlineSliderTile(
+                      enabled: _notificationsEnabled && _deadlineReminders,
                       icon: iconContainer(
                         Symbols.schedule,
-                        isLight ? Color(0xffd6e3ff) : Color(0xff284777),
-                        isLight ? Color(0xff284777) : Color(0xffd6e3ff),
+                        isLight ? const Color(0xffd6e3ff) : const Color(0xff284777),
+                        isLight ? const Color(0xff284777) : const Color(0xffd6e3ff),
                       ),
-                      title: Text('Reminder Time'),
-                      dialogTitle: 'Remind me',
-                      value: SettingTileValue(_reminderTime),
-                      options: _reminderOptions.values.toList(),
-                      initialOption: _reminderTime,
-                      onSubmitted: (value) {
-                        setState(() => _reminderTime = value);
-                        final key = _reminderOptions.entries
-                            .firstWhere((e) => e.value == value)
-                            .key;
-                        PreferencesHelper.setString('reminderTime', key);
+                      title: const Text('Reminder Time'),
+                      description: const Text(
+                        'How long before the deadline to notify',
+                      ),
+                      sliderValue: _reminderMinutes.toDouble(),
+                      min: 5,
+                      max: 120, // 2 hours
+                      divisions: 23, // (120 - 5) / 5 = 23 steps
+                      label: (val) {
+                        final mins = val.round();
+                        if (mins < 60) return '$mins min before';
+                        final hrs = mins ~/ 60;
+                        final remaining = mins % 60;
+                        if (remaining == 0) return '$hrs hr before';
+                        return '$hrs hr $remaining min before';
+                      },
+                      onChanged: (val) {
+                        setState(() => _reminderMinutes = val.round());
+                      },
+                      onChangeEnd: (val) {
+                        PreferencesHelper.setInt(
+                          'reminderMinutes',
+                          val.round(),
+                        );
                         if (_notificationsEnabled && _deadlineReminders) {
                           _rescheduleAll();
                         }
