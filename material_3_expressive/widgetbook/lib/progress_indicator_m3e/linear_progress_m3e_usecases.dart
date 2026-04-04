@@ -13,7 +13,7 @@ Widget buildLinearProgressIndicatorM3EIndeterminateUseCase(
     BuildContext context) {
   final LinearProgressM3ESize size = context.knobs.object.dropdown(
     label: 'size',
-    initialOption: LinearProgressM3ESize.m,
+    initialOption: LinearProgressM3ESize.md,
     options: LinearProgressM3ESize.values,
     labelBuilder: (v) => v.name,
   );
@@ -61,7 +61,7 @@ Widget buildLinearProgressIndicatorM3EDeterminateUseCase(BuildContext context) {
   );
   final LinearProgressM3ESize size = context.knobs.object.dropdown(
     label: 'size',
-    initialOption: LinearProgressM3ESize.m,
+    initialOption: LinearProgressM3ESize.md,
     options: LinearProgressM3ESize.values,
     labelBuilder: (v) => v.name,
   );
@@ -98,8 +98,8 @@ Widget buildLinearProgressIndicatorM3EDeterminateUseCase(BuildContext context) {
   );
 }
 
-@UseCase(name: 'size_s', type: LinearProgressIndicatorM3E)
-Widget buildLinearProgressIndicatorM3ESizeSUseCase(BuildContext context) {
+@UseCase(name: 'size_sm', type: LinearProgressIndicatorM3E)
+Widget buildLinearProgressIndicatorM3ESizeSmUseCase(BuildContext context) {
   final double? valueOrNull = context.knobs.boolean(
     label: 'determinate',
     initialValue: true,
@@ -130,15 +130,15 @@ Widget buildLinearProgressIndicatorM3ESizeSUseCase(BuildContext context) {
     padding: const EdgeInsets.all(16),
     child: LinearProgressIndicatorM3E(
       value: valueOrNull,
-      size: LinearProgressM3ESize.s,
+      size: LinearProgressM3ESize.sm,
       shape: shape,
       inset: inset,
     ),
   );
 }
 
-@UseCase(name: 'size_m', type: LinearProgressIndicatorM3E)
-Widget buildLinearProgressIndicatorM3ESizeMUseCase(BuildContext context) {
+@UseCase(name: 'size_md', type: LinearProgressIndicatorM3E)
+Widget buildLinearProgressIndicatorM3ESizeMdUseCase(BuildContext context) {
   final double? valueOrNull = context.knobs.boolean(
     label: 'determinate',
     initialValue: true,
@@ -176,7 +176,7 @@ Widget buildLinearProgressIndicatorM3ESizeMUseCase(BuildContext context) {
     padding: const EdgeInsets.all(16),
     child: LinearProgressIndicatorM3E(
       value: valueOrNull,
-      size: LinearProgressM3ESize.m,
+      size: LinearProgressM3ESize.md,
       shape: shape,
       phase: phase,
       inset: inset,

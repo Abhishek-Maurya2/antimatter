@@ -5,9 +5,9 @@ extension CircularM3ESizeExtension on CircularProgressM3ESize {
   double get diameterWavy {
     switch (this) {
       case CircularProgressM3ESize.sm:
-        return 52.0;
+        return 48.0; // matched to turn 3
       case CircularProgressM3ESize.md:
-        return 68.0;
+        return 52.0; // matched to turn 3
       case CircularProgressM3ESize.lg:
         return 84.0;
       case CircularProgressM3ESize.xl:
@@ -31,9 +31,9 @@ extension CircularM3ESizeExtension on CircularProgressM3ESize {
   double get defaultStrokeWidth {
     switch (this) {
       case CircularProgressM3ESize.sm:
-        return 4.0;
+        return 4.0; // width-4
       case CircularProgressM3ESize.md:
-        return 6.0;
+        return 8.0; // width-8
       case CircularProgressM3ESize.lg:
         return 10.0;
       case CircularProgressM3ESize.xl:
@@ -44,9 +44,9 @@ extension CircularM3ESizeExtension on CircularProgressM3ESize {
   double get defaultWaveAmplitude {
     switch (this) {
       case CircularProgressM3ESize.sm:
-        return 4.0;
+        return 4.0; // amplitude-4
       case CircularProgressM3ESize.md:
-        return 4.0;
+        return 4.0; // amplitude-4
       case CircularProgressM3ESize.lg:
         return 5.0;
       case CircularProgressM3ESize.xl:
@@ -57,9 +57,9 @@ extension CircularM3ESizeExtension on CircularProgressM3ESize {
   double get defaultWaveLength {
     switch (this) {
       case CircularProgressM3ESize.sm:
-        return 15.0;
+        return 15.0; // length-15
       case CircularProgressM3ESize.md:
-        return 15.0;
+        return 15.0; // length-15
       case CircularProgressM3ESize.lg:
         return 20.0;
       case CircularProgressM3ESize.xl:
@@ -98,7 +98,7 @@ extension CircularM3ESizeExtension on CircularProgressM3ESize {
 
   /// Default animation speed multiplier for indeterminate state.
   double defaultIndeterminateSpeed(ProgressM3EShape shape) {
-    return shape == ProgressM3EShape.wavy ? 0.7 : 0.5;
+    return shape == ProgressM3EShape.wavy ? 0.7 : 0.5; // flat circular 0.5 confirmed in turn 8
   }
 
   /// Default stroke width for indeterminate state.

@@ -102,40 +102,15 @@ class SettingInlineSliderTile extends SettingTile {
                 children: [
                   if (icon != null) const SizedBox(width: 56),
                   Expanded(
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                          child: ExcludeSemantics(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: SizedBox(
-                                height: 16,
-                                child: LinearProgressIndicatorM3E(
-                                  value: (sliderValue - min) / (max - min),
-                                  shape: ProgressM3EShape.wavy,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SliderTheme(
-                          data: SliderTheme.of(context).copyWith(
-                            activeTrackColor: Colors.transparent,
-                            inactiveTrackColor: Colors.transparent,
-                          ),
-                          child: Slider(
-                            value: sliderValue,
-                            min: min,
-                            max: max,
-                            divisions: divisions,
-                            label: label(sliderValue),
-                            onChanged: enabled ? onChanged : null,
-                            onChangeEnd: enabled ? onChangeEnd : null,
-                          ),
-                        ),
-                      ],
+                    child: SliderM3E(
+                      value: sliderValue,
+                      min: min,
+                      max: max,
+                      divisions: divisions,
+                      label: label(sliderValue),
+                      onChanged: enabled ? onChanged : null,
+                      onChangeEnd: enabled ? onChangeEnd : null,
+                      shape: SliderM3EShape.wavy,
                     ),
                   ),
                 ],

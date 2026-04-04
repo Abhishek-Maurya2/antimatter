@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'enums.dart';
 import 'slider_tokens_adapter.dart';
+import 'wavy_slider_shapes.dart';
 
 SliderThemeData sliderThemeM3E(
   BuildContext context, {
@@ -9,10 +10,27 @@ SliderThemeData sliderThemeM3E(
   SliderM3EEmphasis emphasis = SliderM3EEmphasis.primary,
   SliderM3EShapeFamily shapeFamily = SliderM3EShapeFamily.round,
   SliderM3EDensity density = SliderM3EDensity.regular,
+  SliderM3EShape shape = SliderM3EShape.flat,
   bool showValueIndicator = false,
+  double? gap,
+  double? waveAmplitude,
+  double? waveLength,
+  double? phase,
+  double? thumbWidth,
+  double? thumbHeight,
+  double? thumbRadius,
 }) {
   final t = SliderTokensAdapter(context);
   final m = t.metrics(density);
+  final isWavy = shape == SliderM3EShape.wavy;
+
+  final effectiveGap = gap ?? size.defaultGap;
+  final effectiveWaveAmplitude = waveAmplitude ?? size.defaultWaveAmplitude;
+  final effectiveWaveLength = waveLength ?? size.defaultWaveLength;
+  final effectivePhase = phase ?? 0.0;
+  final effectiveThumbWidth = thumbWidth ?? size.defaultThumbWidth;
+  final effectiveThumbHeight = thumbHeight ?? size.defaultThumbHeight;
+  final effectiveThumbRadius = thumbRadius ?? size.defaultThumbRadius;
 
   final trackHeight = switch (size) {
     SliderM3ESize.small => m.trackSmall,
@@ -20,18 +38,28 @@ SliderThemeData sliderThemeM3E(
     SliderM3ESize.large => m.trackLarge,
   };
 
-  final thumbRadius = switch (size) {
-    SliderM3ESize.small => m.thumbSmall,
-    SliderM3ESize.medium => m.thumbMedium,
-    SliderM3ESize.large => m.thumbLarge,
-  };
 
-  final thumbShape = shapeFamily == SliderM3EShapeFamily.round
-      ? RoundSliderThumbShape(enabledThumbRadius: thumbRadius)
-      : _SquareThumbShape(side: thumbRadius * 2);
+
+  final SliderComponentShape thumbShape = WavySliderThumbShapeM3E(
+    width: effectiveThumbWidth,
+    height: effectiveThumbHeight,
+    radius: effectiveThumbRadius,
+    isWavy: isWavy, // Pass the same isWavy flag for tracking
+  );
+
+  final SliderTrackShape trackShape = isWavy
+      ? WavySliderTrackShapeM3E(
+          gap: effectiveGap,
+          waveAmplitude: effectiveWaveAmplitude,
+          waveLength: effectiveWaveLength,
+          phase: effectivePhase,
+          isWavy: true,
+        )
+      : const RoundedRectSliderTrackShape();
 
   return SliderTheme.of(context).copyWith(
     trackHeight: trackHeight,
+    trackShape: trackShape,
     activeTrackColor: t.activeColor(emphasis),
     inactiveTrackColor: t.inactiveColor(),
     disabledActiveTrackColor: t.inactiveColor(),
@@ -57,35 +85,6 @@ SliderThemeData sliderThemeM3E(
   );
 }
 
-class _SquareThumbShape extends SliderComponentShape {
-  const _SquareThumbShape({required this.side});
-  final double side;
-
-  @override
-  Size getPreferredSize(bool isEnabled, bool isDiscrete) => Size.square(side);
-
-  @override
-  void paint(
-    PaintingContext context,
-    Offset center, {
-    required Animation<double> activationAnimation,
-    required Animation<double> enableAnimation,
-    required bool isDiscrete,
-    required TextPainter? labelPainter,
-    required RenderBox parentBox,
-    required SliderThemeData sliderTheme,
-    required TextDirection textDirection,
-    required double value,
-    required double textScaleFactor,
-    required Size sizeWithOverflow,
-  }) {
-    final canvas = context.canvas;
-    final rect = Rect.fromCenter(center: center, width: side, height: side);
-    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(4));
-    final paint = Paint()..color = sliderTheme.thumbColor ?? Colors.blue;
-    canvas.drawRRect(rrect, paint);
-  }
-}
 
 class _SquareRangeThumbShape extends RangeSliderThumbShape {
   const _SquareRangeThumbShape();

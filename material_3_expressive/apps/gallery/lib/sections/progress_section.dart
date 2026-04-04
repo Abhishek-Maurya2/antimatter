@@ -107,7 +107,7 @@ class _ProgressSectionState extends State<ProgressSection>
                 width: 250,
                 child: LinearProgressIndicatorM3E(
                   value: _value,
-                  size: LinearProgressM3ESize.s,
+                  size: LinearProgressM3ESize.sm,
                   shape: ProgressM3EShape.wavy,
                 ),
               ),
@@ -115,7 +115,7 @@ class _ProgressSectionState extends State<ProgressSection>
                 width: 250,
                 child: LinearProgressIndicatorM3E(
                   value: _value,
-                  size: LinearProgressM3ESize.m,
+                  size: LinearProgressM3ESize.md,
                   shape: ProgressM3EShape.wavy,
                 ),
               ),
@@ -135,7 +135,7 @@ class _ProgressSectionState extends State<ProgressSection>
                 width: 250,
                 child: LinearProgressIndicatorM3E(
                   value: _value,
-                  size: LinearProgressM3ESize.s,
+                  size: LinearProgressM3ESize.sm,
                   shape: ProgressM3EShape.flat,
                 ),
               ),
@@ -143,7 +143,7 @@ class _ProgressSectionState extends State<ProgressSection>
                 width: 250,
                 child: LinearProgressIndicatorM3E(
                   value: _value,
-                  size: LinearProgressM3ESize.m,
+                  size: LinearProgressM3ESize.md,
                   shape: ProgressM3EShape.flat,
                 ),
               ),
