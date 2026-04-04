@@ -60,32 +60,26 @@ class RailItemButtonM3E extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme =
-        Theme.of(context).extension<NavigationRailM3ETheme>() ??
+    final theme = Theme.of(context).extension<NavigationRailM3ETheme>() ??
         const NavigationRailM3ETheme();
     final tokens = NavigationRailTokensAdapter(context);
 
-    final double defaultHeight = expanded
-        ? theme.itemExpandedHeight
-        : theme.itemCollapsedHeight;
+    final double defaultHeight =
+        expanded ? theme.itemExpandedHeight : theme.itemCollapsedHeight;
     final double height = heightOverride ?? defaultHeight;
 
     final bool selected = isSelected;
     // Colors and shape per state.
-    final Color fg = selected
-        ? tokens.activeIconAndLabel
-        : tokens.inactiveIconAndLabel;
-    final Color bg = expanded && selected
-        ? tokens.activeIndicatorColor
-        : Colors.transparent;
-    final ShapeBorder shape = expanded
-        ? tokens.indicatorShapeFull
-        : const RoundedRectangleBorder();
+    final Color fg =
+        selected ? tokens.activeIconAndLabel : tokens.inactiveIconAndLabel;
+    final Color bg =
+        expanded && selected ? tokens.activeIndicatorColor : Colors.transparent;
+    final ShapeBorder shape =
+        expanded ? tokens.indicatorShapeFull : const RoundedRectangleBorder();
 
     // Content
-    final Widget effectiveIcon = selected && selectedIcon != null
-        ? selectedIcon!
-        : icon;
+    final Widget effectiveIcon =
+        selected && selectedIcon != null ? selectedIcon! : icon;
 
     Widget content;
     if (expanded) {

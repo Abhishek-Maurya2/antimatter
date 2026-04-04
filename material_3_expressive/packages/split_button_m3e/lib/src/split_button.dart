@@ -28,9 +28,9 @@ class SplitButtonM3E<T> extends StatefulWidget {
     this.enabled = true,
     this.menuBuilder,
   }) : assert(
-          items != null || menuBuilder != null,
-          'Provide either `items` or `menuBuilder`.',
-        );
+         items != null || menuBuilder != null,
+         'Provide either `items` or `menuBuilder`.',
+       );
 
   /// Size row (XS→XL).
   final SplitButtonM3ESize size;
@@ -103,10 +103,11 @@ class _SplitButtonM3EState<T> extends State<SplitButtonM3E<T>> {
     // Elevated style needs larger perceived separation between segments.
     final double effectiveInnerGap =
         widget.emphasis == SplitButtonM3EEmphasis.elevated
-            ? innerGap * 2
-            : innerGap;
-    final chevronTurns =
-        _menuOpen ? SplitButtonM3ETokens.chevronOpenTurns : 0.0;
+        ? innerGap * 2
+        : innerGap;
+    final chevronTurns = _menuOpen
+        ? SplitButtonM3ETokens.chevronOpenTurns
+        : 0.0;
 
     // Build segments
     final leading = _SegmentContainer(
@@ -139,26 +140,30 @@ class _SplitButtonM3EState<T> extends State<SplitButtonM3E<T>> {
 
     final trailingIconOffsetBase = 0.0;
 
-    final trailingWidthUnselected = widget.size.trailingLeftInnerPadding +
+    final trailingWidthUnselected =
+        widget.size.trailingLeftInnerPadding +
         (widget.size.trailingWidthCentered + 8) +
         widget.size.rightOuterPadding;
-    final trailingWidthSelected = widget.size.sidePaddingSelected * 2 +
+    final trailingWidthSelected =
+        widget.size.sidePaddingSelected * 2 +
         (widget.size.trailingWidthCentered + 8);
 
     // When round + pressed/open, morph trailing into a perfect circle
-    final bool allowCircle = widget.size == SplitButtonM3ESize.md ||
+    final bool allowCircle =
+        widget.size == SplitButtonM3ESize.md ||
         widget.size == SplitButtonM3ESize.lg ||
         widget.size == SplitButtonM3ESize.xl;
-    final bool circleTrailing = widget.shape == SplitButtonM3EShape.round &&
+    final bool circleTrailing =
+        widget.shape == SplitButtonM3EShape.round &&
         allowCircle &&
         (_trailingPressed || _menuOpen);
 
     // XS/SM selected: fully rounded (capsule), not a circle
     final bool smallSelectedCapsule =
         widget.shape == SplitButtonM3EShape.round &&
-            (widget.size == SplitButtonM3ESize.xs ||
-                widget.size == SplitButtonM3ESize.sm) &&
-            _menuOpen;
+        (widget.size == SplitButtonM3ESize.xs ||
+            widget.size == SplitButtonM3ESize.sm) &&
+        _menuOpen;
 
     final trailingFixedWidth = circleTrailing
         ? height
@@ -167,13 +172,13 @@ class _SplitButtonM3EState<T> extends State<SplitButtonM3E<T>> {
     final trailingLeftPad = circleTrailing
         ? 0.0
         : (_menuOpen
-            ? widget.size.sidePaddingSelected
-            : widget.size.trailingLeftInnerPadding);
+              ? widget.size.sidePaddingSelected
+              : widget.size.trailingLeftInnerPadding);
     final trailingRightPad = circleTrailing
         ? 0.0
         : (_menuOpen
-            ? widget.size.sidePaddingSelected
-            : widget.size.rightOuterPadding);
+              ? widget.size.sidePaddingSelected
+              : widget.size.rightOuterPadding);
 
     final trailingChevronDx = circleTrailing ? 0.0 : trailingIconOffsetBase;
 
@@ -185,18 +190,18 @@ class _SplitButtonM3EState<T> extends State<SplitButtonM3E<T>> {
             bottomEnd: height / 2,
           )
         : smallSelectedCapsule
-            ? _CornerRadii(
-                topStart: height / 2,
-                bottomStart: height / 2,
-                topEnd: height / 2,
-                bottomEnd: height / 2,
-              )
-            : _trailingRadii(
-                dir: dir,
-                outer: outerRadius,
-                inner: innerRadius,
-                pressed: (_trailingPressed || _menuOpen) ? pressedRadius : null,
-              );
+        ? _CornerRadii(
+            topStart: height / 2,
+            bottomStart: height / 2,
+            topEnd: height / 2,
+            bottomEnd: height / 2,
+          )
+        : _trailingRadii(
+            dir: dir,
+            outer: outerRadius,
+            inner: innerRadius,
+            pressed: (_trailingPressed || _menuOpen) ? pressedRadius : null,
+          );
 
     final trailing = KeyedSubtree(
       key: _trailingKey,
@@ -244,8 +249,9 @@ class _SplitButtonM3EState<T> extends State<SplitButtonM3E<T>> {
     final theme = Theme.of(context);
     final m3e = context.m3e;
     final bool contIsTransparent = cont.a == 0.0;
-    final Color menuColor =
-        contIsTransparent ? theme.colorScheme.surfaceContainerHigh : cont;
+    final Color menuColor = contIsTransparent
+        ? theme.colorScheme.surfaceContainerHigh
+        : cont;
     final TextStyle? menuTextStyle = m3e.typography.base.labelLarge?.copyWith(
       color: contIsTransparent ? theme.colorScheme.onSurface : onCont,
     );
@@ -384,10 +390,12 @@ class _SplitButtonM3EState<T> extends State<SplitButtonM3E<T>> {
       position: _menuPosition(context),
       constraints: BoxConstraints(minWidth: _minMenuWidth2),
       items: items.map((e) {
-        final Color effective =
-            e.enabled ? onCont : onCont.withValues(alpha: 0.38);
-        final Widget baseChild =
-            e.child is Widget ? e.child as Widget : Text('${e.child}');
+        final Color effective = e.enabled
+            ? onCont
+            : onCont.withValues(alpha: 0.38);
+        final Widget baseChild = e.child is Widget
+            ? e.child as Widget
+            : Text('${e.child}');
         final Widget styledChild = IconTheme.merge(
           data: IconThemeData(color: effective, size: widget.size.iconPx),
           child: DefaultTextStyle.merge(
@@ -615,8 +623,12 @@ class _TrailingChevron extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final icon = Icon(Icons.keyboard_arrow_down_rounded,
-        weight: 800, size: size + 8, color: color);
+    final icon = Icon(
+      Icons.keyboard_arrow_down_rounded,
+      weight: 800,
+      size: size + 8,
+      color: color,
+    );
 
     return AnimatedRotation(
       duration: SplitButtonM3ETokens.chevronDuration,

@@ -4,7 +4,7 @@ import 'package:settings_tiles/src/tiles/setting_tile.dart';
 
 /// Inline Slider setting tile.
 class SettingInlineSliderTile extends SettingTile {
-  /// A setting tile with an inline slider to choose a value between a [min] 
+  /// A setting tile with an inline slider to choose a value between a [min]
   /// value and a [max] value with a number of [divisions].
   const SettingInlineSliderTile({
     super.key,

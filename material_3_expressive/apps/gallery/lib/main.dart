@@ -80,9 +80,8 @@ class _GalleryHomeState extends State<GalleryHome> {
         titleText: 'M3E Gallery',
         actions: [
           IconButton(
-            tooltip: widget.isDark
-                ? 'Switch to light mode'
-                : 'Switch to dark mode',
+            tooltip:
+                widget.isDark ? 'Switch to light mode' : 'Switch to dark mode',
             onPressed: widget.onToggleBrightness,
             icon: Icon(widget.isDark ? Icons.dark_mode : Icons.light_mode),
           ),

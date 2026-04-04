@@ -55,9 +55,7 @@ class _SettingSliderDialogState extends State<SettingSliderDialog> {
       content: SingleChildScrollView(
         child: Slider(
           value: _value,
-          label: widget.label != null
-              ? widget.label!(_value)
-              : _value.toStringAsFixed(2),
+          label: widget.label != null ? widget.label!(_value) : _value.toStringAsFixed(2),
           min: widget.min,
           max: widget.max,
           divisions: widget.divisions,

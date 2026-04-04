@@ -44,13 +44,12 @@ class _LinearProgressIndicatorM3EState extends State<LinearProgressIndicatorM3E>
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(
-          vsync: this,
-          duration: const Duration(milliseconds: 1200),
-        )..addListener(() {
-          if (mounted && _shouldAnimate) setState(() {});
-        });
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..addListener(() {
+        if (mounted && _shouldAnimate) setState(() {});
+      });
     if (_shouldAnimate) {
       _controller.repeat();
     }
@@ -159,9 +158,8 @@ class _LinearPainter extends CustomPainter {
     // Track occupies the remaining segment to the right of the active,
     // leaving a fixed inter-stroke gap. For indeterminate, fill full width.
     final double activeEndX = value == null ? right : (left + width * p);
-    final double trackStartX = value == null
-        ? left
-        : math.min(right, activeEndX + spec.gap);
+    final double trackStartX =
+        value == null ? left : math.min(right, activeEndX + spec.gap);
 
     if (!waveOnly) {
       canvas.drawLine(

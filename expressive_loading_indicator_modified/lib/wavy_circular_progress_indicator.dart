@@ -131,7 +131,7 @@ class _WavyCircularPainter extends CustomPainter {
         // arc distance from start of this copy
         final double dist = i * adjWave / 2;
         final double theta = (copy * circumference + dist) / radius;
-        
+
         // Shift: odd half-cycle anchors are pushed inward
         final double shift = (i % 2 == 1) ? -waveAmplitude : 0.0;
         final double r = radius + shift;
@@ -158,7 +158,8 @@ class _WavyCircularPainter extends CustomPainter {
 
           final double prevPx =
               center.dx + prevR * math.cos(prevTheta - math.pi / 2);
-          final double prevPy = center.dy + prevR * math.sin(prevTheta - math.pi / 2);
+          final double prevPy =
+              center.dy + prevR * math.sin(prevTheta - math.pi / 2);
 
           // Tangent at prev point (perpendicular to radius, clockwise)
           final double prevTx = -math.sin(prevTheta - math.pi / 2);
@@ -235,17 +236,17 @@ class _WavyCircularPainter extends CustomPainter {
 
       if (endExtract > startExtract) {
         final segment = metrics.extractPath(
-          phaseShiftPathLen + startExtract, 
-          phaseShiftPathLen + endExtract
+          phaseShiftPathLen + startExtract,
+          phaseShiftPathLen + endExtract,
         );
-        
+
         canvas.save();
         canvas.translate(center.dx, center.dy);
         canvas.rotate(-phaseShiftAngular);
         canvas.translate(-center.dx, -center.dy);
-        
+
         canvas.drawPath(segment, activePaint);
-        
+
         canvas.restore();
       }
     } else {
@@ -254,21 +255,21 @@ class _WavyCircularPainter extends CustomPainter {
       final double pulseFraction =
           0.2 + 0.15 * math.sin(t * 2 * math.pi); // 20-35% of circumference
       final double arcLen = halfLen * pulseFraction;
-      
+
       final start = spinPhase;
       final end = start + arcLen;
       final segment = metrics.extractPath(
-        phaseShiftPathLen + start, 
-        phaseShiftPathLen + math.min(end, totalLen)
+        phaseShiftPathLen + start,
+        phaseShiftPathLen + math.min(end, totalLen),
       );
-      
+
       canvas.save();
       canvas.translate(center.dx, center.dy);
       canvas.rotate(-phaseShiftAngular);
       canvas.translate(-center.dx, -center.dy);
-      
+
       canvas.drawPath(segment, activePaint);
-      
+
       canvas.restore();
     }
   }

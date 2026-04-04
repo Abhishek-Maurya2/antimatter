@@ -774,8 +774,12 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
           if (!mounted) return;
           final isPressed = states.contains(WidgetState.pressed);
           final isHovered = states.contains(WidgetState.hovered);
-          final newPressed = isPressed ? index : (_pressedIndex == index ? null : _pressedIndex);
-          final newHovered = isHovered ? index : (_hoveredIndex == index ? null : _hoveredIndex);
+          final newPressed = isPressed
+              ? index
+              : (_pressedIndex == index ? null : _pressedIndex);
+          final newHovered = isHovered
+              ? index
+              : (_hoveredIndex == index ? null : _hoveredIndex);
           if (_pressedIndex != newPressed || _hoveredIndex != newHovered) {
             setState(() {
               _pressedIndex = newPressed;
@@ -1136,11 +1140,13 @@ class _ExpressiveButtonGroupItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool selected = selectedIndex != null ? selectedIndex == index : action.selected;
+    final bool selected =
+        selectedIndex != null ? selectedIndex == index : action.selected;
 
     // Interaction states
     final bool isPressed = pressedIndex == index;
-    final bool isNeighborOfPressed = pressedIndex != null && (pressedIndex == index - 1 || pressedIndex == index + 1);
+    final bool isNeighborOfPressed = pressedIndex != null &&
+        (pressedIndex == index - 1 || pressedIndex == index + 1);
 
     // Expressive parameters
     // Active (pressed/selected) buttons grow.
@@ -1152,16 +1158,20 @@ class _ExpressiveButtonGroupItem extends StatelessWidget {
       } else if (isNeighborOfPressed) {
         paddingMultiplier = 0.85; // Shrink neighbor safely
       } else if (pressedIndex != null) {
-        paddingMultiplier = 0.95; // Other non-adjacent buttons shrink very slightly
+        paddingMultiplier =
+            0.95; // Other non-adjacent buttons shrink very slightly
       }
     }
 
     // Shape logic
     ButtonM3EShape shapeOut;
     BorderRadius? perCorner;
-    
+
     if (!selection) {
-      shapeOut = action.shape ?? (groupShape == ButtonGroupM3EShape.round ? ButtonM3EShape.round : ButtonM3EShape.square);
+      shapeOut = action.shape ??
+          (groupShape == ButtonGroupM3EShape.round
+              ? ButtonM3EShape.round
+              : ButtonM3EShape.square);
     } else {
       if (selected) {
         shapeOut = ButtonM3EShape.round;
@@ -1171,8 +1181,9 @@ class _ExpressiveButtonGroupItem extends StatelessWidget {
           final tokens = ButtonTokensAdapter(context);
           final squareRadiusVal = tokens.squareRadius(_mapGroupSize(groupSize));
           final innerRadius = Radius.circular(squareRadiusVal);
-          final roundSet = radiusFor(context, ButtonGroupM3EShape.round, groupSize);
-          
+          final roundSet =
+              radiusFor(context, ButtonGroupM3EShape.round, groupSize);
+
           if (isFirst) {
             perCorner = BorderRadius.only(
               topLeft: roundSet.topLeft,
@@ -1196,7 +1207,8 @@ class _ExpressiveButtonGroupItem extends StatelessWidget {
           } else {
             final tokens = ButtonTokensAdapter(context);
             shapeOut = ButtonM3EShape.square;
-            perCorner = BorderRadius.all(Radius.circular(tokens.squareRadius(_mapGroupSize(groupSize))));
+            perCorner = BorderRadius.all(
+                Radius.circular(tokens.squareRadius(_mapGroupSize(groupSize))));
           }
         }
       }
@@ -1237,7 +1249,9 @@ class _ExpressiveButtonGroupItem extends StatelessWidget {
 
         if (action.width != null || action.height != null) {
           return SizedBox(
-            width: action.width != null ? action.width! * animatedMultiplier : null,
+            width: action.width != null
+                ? action.width! * animatedMultiplier
+                : null,
             height: action.height,
             child: button,
           );
@@ -1248,10 +1262,10 @@ class _ExpressiveButtonGroupItem extends StatelessWidget {
   }
 
   ButtonM3ESize _mapGroupSize(ButtonGroupM3ESize s) => switch (s) {
-    ButtonGroupM3ESize.xs => ButtonM3ESize.xs,
-    ButtonGroupM3ESize.sm => ButtonM3ESize.sm,
-    ButtonGroupM3ESize.md => ButtonM3ESize.md,
-    ButtonGroupM3ESize.lg => ButtonM3ESize.lg,
-    ButtonGroupM3ESize.xl => ButtonM3ESize.xl,
-  };
+        ButtonGroupM3ESize.xs => ButtonM3ESize.xs,
+        ButtonGroupM3ESize.sm => ButtonM3ESize.sm,
+        ButtonGroupM3ESize.md => ButtonM3ESize.md,
+        ButtonGroupM3ESize.lg => ButtonM3ESize.lg,
+        ButtonGroupM3ESize.xl => ButtonM3ESize.xl,
+      };
 }

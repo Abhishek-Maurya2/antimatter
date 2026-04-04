@@ -1,5 +1,4 @@
-import 'package:settings_tiles/settings_tiles.dart'
-    show SettingMultipleOptionsTile;
+import 'package:settings_tiles/settings_tiles.dart' show SettingMultipleOptionsTile;
 import 'package:settings_tiles/src/tiles/setting_multiple_options/setting_multiple_options_tile.dart'
     show SettingMultipleOptionsTile;
 

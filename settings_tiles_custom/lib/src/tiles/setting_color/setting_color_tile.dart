@@ -54,8 +54,7 @@ class SettingColorTile extends SettingTile {
 
   Future<void> _openDialog(BuildContext context) async {
     final colorPickersMap = {
-      for (final colorPickerType in ColorPickerType.values)
-        colorPickerType: colorPickers.contains(colorPickerType),
+      for (final colorPickerType in ColorPickerType.values) colorPickerType: colorPickers.contains(colorPickerType),
     };
 
     await ColorPicker(

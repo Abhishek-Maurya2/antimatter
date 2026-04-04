@@ -26,8 +26,7 @@ class SettingSingleOptionTile<T extends Object> extends SettingTile {
     this.onCanceled,
   }) : options = options
             .map(
-              (option) =>
-                  (value: option, title: option.toString(), subtitle: null),
+              (option) => (value: option, title: option.toString(), subtitle: null),
             )
             .toList();
 

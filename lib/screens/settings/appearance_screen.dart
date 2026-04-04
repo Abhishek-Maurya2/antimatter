@@ -327,7 +327,9 @@ class AppearanceScreen extends ConsumerWidget {
               : colorTheme.surfaceContainerHighest.withAlpha(150),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isActive ? colorTheme.primary : colorTheme.outlineVariant.withAlpha(100),
+            color: isActive
+                ? colorTheme.primary
+                : colorTheme.outlineVariant.withAlpha(100),
             width: isActive ? 2 : 1,
           ),
           boxShadow: isActive
@@ -336,7 +338,7 @@ class AppearanceScreen extends ConsumerWidget {
                     color: colorTheme.primary.withAlpha(40),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : null,
         ),
@@ -347,10 +349,7 @@ class AppearanceScreen extends ConsumerWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      preset.seedColor,
-                      preset.seedColor.withAlpha(150),
-                    ],
+                    colors: [preset.seedColor, preset.seedColor.withAlpha(150)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),

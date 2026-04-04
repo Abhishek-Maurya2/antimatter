@@ -34,12 +34,10 @@ class RailItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme =
-        Theme.of(context).extension<NavigationRailM3ETheme>() ??
+    final theme = Theme.of(context).extension<NavigationRailM3ETheme>() ??
         const NavigationRailM3ETheme();
-    final height = expanded
-        ? theme.itemExpandedHeight
-        : theme.itemCollapsedHeight;
+    final height =
+        expanded ? theme.itemExpandedHeight : theme.itemCollapsedHeight;
 
     final Widget button = RailItemButtonM3E(
       icon: destination.icon,

@@ -38,15 +38,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         PreferencesHelper.getBool('taskCompletionSound') ?? true;
     _deadlineReminders = PreferencesHelper.getBool('deadlineReminders') ?? true;
     _dailySummary = PreferencesHelper.getBool('dailySummary') ?? false;
-    
+
     // Migration logic for reminder time
     final savedKey = PreferencesHelper.getString('reminderTime');
     if (savedKey != null) {
-      if (savedKey == '15min') _reminderMinutes = 15;
-      else if (savedKey == '30min') _reminderMinutes = 30;
-      else if (savedKey == '1hr') _reminderMinutes = 60;
-      else if (savedKey == '1day') _reminderMinutes = 1440;
-      
+      if (savedKey == '15min')
+        _reminderMinutes = 15;
+      else if (savedKey == '30min')
+        _reminderMinutes = 30;
+      else if (savedKey == '1hr')
+        _reminderMinutes = 60;
+      else if (savedKey == '1day')
+        _reminderMinutes = 1440;
+
       // Save as NEW format and remove OLD format
       PreferencesHelper.setInt('reminderMinutes', _reminderMinutes);
       PreferencesHelper.remove('reminderTime');
@@ -72,8 +76,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           .toList();
 
       for (var task in tasks) {
-        await NotificationService()
-            .scheduleDeadlineReminder(task, _reminderMinutes);
+        await NotificationService().scheduleDeadlineReminder(
+          task,
+          _reminderMinutes,
+        );
       }
     }
 
@@ -293,8 +299,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       enabled: _notificationsEnabled && _deadlineReminders,
                       icon: iconContainer(
                         Symbols.schedule,
-                        isLight ? const Color(0xffd6e3ff) : const Color(0xff284777),
-                        isLight ? const Color(0xff284777) : const Color(0xffd6e3ff),
+                        isLight
+                            ? const Color(0xffd6e3ff)
+                            : const Color(0xff284777),
+                        isLight
+                            ? const Color(0xff284777)
+                            : const Color(0xffd6e3ff),
                       ),
                       title: const Text('Reminder Time'),
                       description: const Text(

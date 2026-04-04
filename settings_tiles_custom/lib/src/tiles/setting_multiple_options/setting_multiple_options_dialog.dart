@@ -21,12 +21,10 @@ class SettingMultipleOptionsDialog<T extends Object> extends StatefulWidget {
   final int minOptions;
 
   @override
-  State<SettingMultipleOptionsDialog<T>> createState() =>
-      _SettingMultipleOptionsDialogState<T>();
+  State<SettingMultipleOptionsDialog<T>> createState() => _SettingMultipleOptionsDialogState<T>();
 }
 
-class _SettingMultipleOptionsDialogState<T extends Object>
-    extends State<SettingMultipleOptionsDialog<T>> {
+class _SettingMultipleOptionsDialogState<T extends Object> extends State<SettingMultipleOptionsDialog<T>> {
   late List<T> _selectedOptions;
 
   @override
@@ -78,8 +76,7 @@ class _SettingMultipleOptionsDialogState<T extends Object>
       actions: [
         const CancelButton(),
         OkButton(
-          onPressed:
-              canSubmit ? () => Navigator.pop(context, _selectedOptions) : null,
+          onPressed: canSubmit ? () => Navigator.pop(context, _selectedOptions) : null,
         ),
       ],
     );

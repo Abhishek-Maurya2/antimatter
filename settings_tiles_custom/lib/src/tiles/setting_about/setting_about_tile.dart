@@ -15,8 +15,7 @@ class SettingAboutTile extends SettingTile {
     this.dialogChildren,
   }) : super(
           title: applicationName != null ? Text(applicationName) : null,
-          description:
-              applicationVersion != null ? Text(applicationVersion) : null,
+          description: applicationVersion != null ? Text(applicationVersion) : null,
           icon: const SettingTileIcon(Icons.info),
         );
 

@@ -3,8 +3,7 @@ import 'package:settings_tiles/src/tiles/setting_tile.dart';
 
 /// Switch setting tile.
 class SettingSwitchTile extends SettingTile {
-
-static const WidgetStateProperty<Icon> thumbIcon = WidgetStateProperty<Icon>.fromMap(
+  static const WidgetStateProperty<Icon> thumbIcon = WidgetStateProperty<Icon>.fromMap(
     <WidgetStatesConstraint, Icon>{
       WidgetState.selected: Icon(Icons.check),
       WidgetState.any: Icon(Icons.close),
@@ -25,7 +24,7 @@ static const WidgetStateProperty<Icon> thumbIcon = WidgetStateProperty<Icon>.fro
   }) : super(
           trailing: Switch(
             value: toggled,
-            thumbIcon:  thumbIcon,
+            thumbIcon: thumbIcon,
             onChanged: enabled ? onChanged : null,
           ),
         );

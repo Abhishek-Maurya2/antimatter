@@ -163,7 +163,8 @@ class ThemeController extends _$ThemeController {
       useDynamicColors: useDynC,
       customPresets: customP,
       activePresetId: actId,
-      isDynamicColorSupported: _initialCorePalette != null || _initialAccentColor != null,
+      isDynamicColorSupported:
+          _initialCorePalette != null || _initialAccentColor != null,
     );
   }
 

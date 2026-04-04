@@ -18,6 +18,17 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
 
   // Wavy Slider Demo state
   double _wavySliderValue = 0.5;
+  double _wavySliderGap = 6.0;
+  double _wavySliderAmplitude = 5.0;
+  double _wavySliderWavelength = 30.0;
+  double _wavySliderWidth = 4.0;
+
+  // Broken Wavy Linear Controls State
+  double _brokenLinearGap = 10.0;
+  double _brokenLinearAmplitude = 4.0;
+  double _brokenLinearWavelength = 30.0;
+  double _brokenLinearStrokeWidth = 4.0;
+  double _brokenLinearSpeed = 1.0;
 
   // Broken Wavy Circular Controls State
   double _brokenGap = 10.0;
@@ -26,13 +37,25 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
   double _brokenStrokeWidth = 4.0;
   double _brokenSpeed = 1.0;
 
-  Widget _buildSliderControl(String label, double value, double min, double max, ValueChanged<double> onChanged) {
+  Widget _buildSliderControl(
+    String label,
+    double value,
+    double min,
+    double max,
+    ValueChanged<double> onChanged,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Row(
         children: [
-          SizedBox(width: 90, child: Text('$label:', style: const TextStyle(fontSize: 12))),
-          Text(value.toStringAsFixed(1), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          SizedBox(
+            width: 90,
+            child: Text('$label:', style: const TextStyle(fontSize: 12)),
+          ),
+          Text(
+            value.toStringAsFixed(1),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
           Expanded(
             child: Slider(
               value: value,
@@ -210,7 +233,7 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
           ),
           const SizedBox(height: 12),
           _DemoCard(
-            title: 'Wavy Slider (Locked to 30x4)',
+            title: 'Broken Wavy Slider',
             colorTheme: colorTheme,
             child: Column(
               children: [
@@ -220,41 +243,165 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
                   thumbHeight: 30.0,
                   thumbWidth: 4.0,
                   thumbRadius: 4,
-                  gap: 6.0,
+                  gap: _wavySliderGap,
+                  waveAmplitude: _wavySliderAmplitude,
+                  waveLength: _wavySliderWavelength,
+                  trackHeight: _wavySliderWidth,
                 ),
                 const SizedBox(height: 16),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          _DemoCard(
-            title: 'Broken Wavy Circular Indicator',
-            colorTheme: colorTheme,
-            child: Column(
-              children: [
-                SizedBox(
-                  width: 140,
-                  height: 140,
-                  child: BrokenWavyCircularProgressIndicator(
-                    value: _wavySliderValue,
-                    strokeWidth: _brokenStrokeWidth,
-                    gap: _brokenGap,
-                    waveAmplitude: _brokenAmplitude,
-                    waveLength: _brokenWavelength,
-                    animationSpeed: _brokenSpeed,
-                  ),
+                _buildSliderControl(
+                  'Gap',
+                  _wavySliderGap,
+                  0,
+                  30,
+                  (v) => setState(() => _wavySliderGap = v),
                 ),
-                const SizedBox(height: 16),
-                _buildSliderControl('Gap', _brokenGap, 0, 30, (v) => setState(() => _brokenGap = v)),
-                _buildSliderControl('Amplitude', _brokenAmplitude, 0, 15, (v) => setState(() => _brokenAmplitude = v)),
-                _buildSliderControl('Wavelength', _brokenWavelength, 10, 80, (v) => setState(() => _brokenWavelength = v)),
-                _buildSliderControl('Width', _brokenStrokeWidth, 1, 15, (v) => setState(() => _brokenStrokeWidth = v)),
-                _buildSliderControl('Speed', _brokenSpeed, 0, 5, (v) => setState(() => _brokenSpeed = v)),
+                _buildSliderControl(
+                  'Amplitude',
+                  _wavySliderAmplitude,
+                  0,
+                  15,
+                  (v) => setState(() => _wavySliderAmplitude = v),
+                ),
+                _buildSliderControl(
+                  'Wavelength',
+                  _wavySliderWavelength,
+                  10,
+                  80,
+                  (v) => setState(() => _wavySliderWavelength = v),
+                ),
+                _buildSliderControl(
+                  'Width',
+                  _wavySliderWidth,
+                  1,
+                  15,
+                  (v) => setState(() => _wavySliderWidth = v),
+                ),
                 const SizedBox(height: 16),
               ],
             ),
           ),
         ],
+        const SizedBox(height: 20),
+        _DemoCard(
+          title: isDeterminate
+              ? 'Broken Wavy Linear (Determinate)'
+              : 'Broken Wavy Linear (Indeterminate)',
+          colorTheme: colorTheme,
+          child: Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                height: 30,
+                child: BrokenWavyLinearProgressIndicator(
+                  value: isDeterminate ? _wavySliderValue : null,
+                  strokeWidth: _brokenLinearStrokeWidth,
+                  gap: _brokenLinearGap,
+                  waveAmplitude: _brokenLinearAmplitude,
+                  waveLength: _brokenLinearWavelength,
+                  animationSpeed: _brokenLinearSpeed,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildSliderControl(
+                'Gap',
+                _brokenLinearGap,
+                0,
+                30,
+                (v) => setState(() => _brokenLinearGap = v),
+              ),
+              _buildSliderControl(
+                'Amplitude',
+                _brokenLinearAmplitude,
+                0,
+                15,
+                (v) => setState(() => _brokenLinearAmplitude = v),
+              ),
+              _buildSliderControl(
+                'Wavelength',
+                _brokenLinearWavelength,
+                10,
+                80,
+                (v) => setState(() => _brokenLinearWavelength = v),
+              ),
+              _buildSliderControl(
+                'Width',
+                _brokenLinearStrokeWidth,
+                1,
+                15,
+                (v) => setState(() => _brokenLinearStrokeWidth = v),
+              ),
+              _buildSliderControl(
+                'Speed',
+                _brokenLinearSpeed,
+                0,
+                5,
+                (v) => setState(() => _brokenLinearSpeed = v),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        _DemoCard(
+          title: isDeterminate
+              ? 'Broken Wavy Circular (Determinate)'
+              : 'Broken Wavy Circular (Indeterminate)',
+          colorTheme: colorTheme,
+          child: Column(
+            children: [
+              SizedBox(
+                width: 140,
+                height: 140,
+                child: BrokenWavyCircularProgressIndicator(
+                  value: isDeterminate ? _wavySliderValue : null,
+                  strokeWidth: _brokenStrokeWidth,
+                  gap: _brokenGap,
+                  waveAmplitude: _brokenAmplitude,
+                  waveLength: _brokenWavelength,
+                  animationSpeed: _brokenSpeed,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildSliderControl(
+                'Gap',
+                _brokenGap,
+                0,
+                30,
+                (v) => setState(() => _brokenGap = v),
+              ),
+              _buildSliderControl(
+                'Amplitude',
+                _brokenAmplitude,
+                0,
+                15,
+                (v) => setState(() => _brokenAmplitude = v),
+              ),
+              _buildSliderControl(
+                'Wavelength',
+                _brokenWavelength,
+                10,
+                80,
+                (v) => setState(() => _brokenWavelength = v),
+              ),
+              _buildSliderControl(
+                'Width',
+                _brokenStrokeWidth,
+                1,
+                15,
+                (v) => setState(() => _brokenStrokeWidth = v),
+              ),
+              _buildSliderControl(
+                'Speed',
+                _brokenSpeed,
+                0,
+                5,
+                (v) => setState(() => _brokenSpeed = v),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -536,6 +683,8 @@ class WavySlider extends StatefulWidget {
   final double thumbRadius;
   final double gap;
   final double trackHeight;
+  final double waveAmplitude;
+  final double waveLength;
 
   const WavySlider({
     super.key,
@@ -546,6 +695,8 @@ class WavySlider extends StatefulWidget {
     this.thumbRadius = 2.0,
     this.gap = 6.0,
     this.trackHeight = 4.0,
+    this.waveAmplitude = 5.0,
+    this.waveLength = 28.0,
   });
 
   @override
@@ -575,14 +726,29 @@ class _WavySliderState extends State<WavySlider> {
         final thumbPosition = widget.value * totalWidth;
 
         // Calculate available space for tracks
-        final leftTrackWidth = (thumbPosition - widget.gap).clamp(0.0, totalWidth);
-        final rightTrackStart = (thumbPosition + widget.gap).clamp(0.0, totalWidth);
-        final rightTrackWidth = (totalWidth - rightTrackStart).clamp(0.0, totalWidth);
+        final leftTrackWidth = (thumbPosition - widget.gap).clamp(
+          0.0,
+          totalWidth,
+        );
+        final rightTrackStart = (thumbPosition + widget.gap).clamp(
+          0.0,
+          totalWidth,
+        );
+        final rightTrackWidth = (totalWidth - rightTrackStart).clamp(
+          0.0,
+          totalWidth,
+        );
 
         // Animation offsets
-        final currentThumbWidth = _isPressed ? widget.thumbWidth - 1 : widget.thumbWidth;
-        final currentThumbHeight = _isPressed ? widget.thumbHeight + 4 : widget.thumbHeight;
-        final currentThumbRadius = _isPressed ? widget.thumbRadius + 2 : widget.thumbRadius;
+        final currentThumbWidth = _isPressed
+            ? widget.thumbWidth - 1
+            : widget.thumbWidth;
+        final currentThumbHeight = _isPressed
+            ? widget.thumbHeight + 4
+            : widget.thumbHeight;
+        final currentThumbRadius = _isPressed
+            ? widget.thumbRadius + 2
+            : widget.thumbRadius;
 
         return GestureDetector(
           onHorizontalDragStart: (_) => setState(() => _isPressed = true),
@@ -598,7 +764,9 @@ class _WavySliderState extends State<WavySlider> {
           onTapCancel: () => setState(() => _isPressed = false),
           behavior: HitTestBehavior.opaque,
           child: SizedBox(
-            height: widget.thumbHeight + 10, // constant height to avoid layout shift
+            height:
+                widget.thumbHeight +
+                10, // constant height to avoid layout shift
             width: double.infinity,
             child: Stack(
               alignment: Alignment.centerLeft,
@@ -614,7 +782,9 @@ class _WavySliderState extends State<WavySlider> {
                         height: widget.trackHeight,
                         decoration: BoxDecoration(
                           color: colorTheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(widget.trackHeight),
+                          borderRadius: BorderRadius.circular(
+                            widget.trackHeight,
+                          ),
                         ),
                       ),
                     ),
@@ -633,8 +803,8 @@ class _WavySliderState extends State<WavySlider> {
                           minHeight: widget.trackHeight,
                           color: colorTheme.primary,
                           backgroundColor: Colors.transparent,
-                          waveAmplitude: 5,
-                          waveLength: 28.0,
+                          waveAmplitude: widget.waveAmplitude,
+                          waveLength: widget.waveLength,
                         ),
                       ),
                     ),
@@ -653,7 +823,9 @@ class _WavySliderState extends State<WavySlider> {
                       borderRadius: BorderRadius.circular(currentThumbRadius),
                       boxShadow: [
                         BoxShadow(
-                          color: colorTheme.primary.withAlpha(_isPressed ? 80 : 50),
+                          color: colorTheme.primary.withAlpha(
+                            _isPressed ? 80 : 50,
+                          ),
                           blurRadius: _isPressed ? 12 : 8,
                           offset: Offset(0, _isPressed ? 4 : 2),
                         ),
@@ -671,7 +843,7 @@ class _WavySliderState extends State<WavySlider> {
 }
 
 class BrokenWavyCircularProgressIndicator extends StatefulWidget {
-  final double value;
+  final double? value;
   final double strokeWidth;
   final double gap;
   final double waveAmplitude;
@@ -693,10 +865,12 @@ class BrokenWavyCircularProgressIndicator extends StatefulWidget {
   });
 
   @override
-  State<BrokenWavyCircularProgressIndicator> createState() => _BrokenWavyCircularProgressIndicatorState();
+  State<BrokenWavyCircularProgressIndicator> createState() =>
+      _BrokenWavyCircularProgressIndicatorState();
 }
 
-class _BrokenWavyCircularProgressIndicatorState extends State<BrokenWavyCircularProgressIndicator>
+class _BrokenWavyCircularProgressIndicatorState
+    extends State<BrokenWavyCircularProgressIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
@@ -735,7 +909,8 @@ class _BrokenWavyCircularProgressIndicatorState extends State<BrokenWavyCircular
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
     final activeColor = widget.color ?? colorTheme.primary;
-    final trackColor = widget.backgroundColor ?? colorTheme.surfaceContainerHighest;
+    final trackColor =
+        widget.backgroundColor ?? colorTheme.surfaceContainerHighest;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -758,7 +933,7 @@ class _BrokenWavyCircularProgressIndicatorState extends State<BrokenWavyCircular
 }
 
 class _BrokenWavyCircularIndicatorPainter extends CustomPainter {
-  final double value;
+  final double? value;
   final double t; // animation value 0..1
   final Color activeColor;
   final Color trackColor;
@@ -798,12 +973,22 @@ class _BrokenWavyCircularIndicatorPainter extends CustomPainter {
         if (copy == 0 && i == 0) {
           path.moveTo(px, py);
         } else {
-          final double prevDist = (copy == 0 && i == 0) ? 0 : (i > 0 ? (i - 1) * adjWave / 2 : halfCycles * adjWave / 2);
-          final double prevTheta = (i > 0 ? (copy * circumference + prevDist) : ((copy - 1) * circumference + (halfCycles * adjWave / 2))) / radius;
-          final double prevShift = ((i > 0 ? i - 1 : halfCycles) % 2 == 1) ? -waveAmplitude : 0.0;
+          final double prevDist = (copy == 0 && i == 0)
+              ? 0
+              : (i > 0 ? (i - 1) * adjWave / 2 : halfCycles * adjWave / 2);
+          final double prevTheta =
+              (i > 0
+                  ? (copy * circumference + prevDist)
+                  : ((copy - 1) * circumference + (halfCycles * adjWave / 2))) /
+              radius;
+          final double prevShift = ((i > 0 ? i - 1 : halfCycles) % 2 == 1)
+              ? -waveAmplitude
+              : 0.0;
           final double prevR = radius + prevShift;
-          final double prevPx = center.dx + prevR * math.cos(prevTheta - math.pi / 2);
-          final double prevPy = center.dy + prevR * math.sin(prevTheta - math.pi / 2);
+          final double prevPx =
+              center.dx + prevR * math.cos(prevTheta - math.pi / 2);
+          final double prevPy =
+              center.dy + prevR * math.sin(prevTheta - math.pi / 2);
 
           final double prevTx = -math.sin(prevTheta - math.pi / 2);
           final double prevTy = math.cos(prevTheta - math.pi / 2);
@@ -811,7 +996,14 @@ class _BrokenWavyCircularIndicatorPainter extends CustomPainter {
           final double ty = math.cos(theta - math.pi / 2);
           final double ctrlLen = (adjWave / 2) * _kSmoothness;
 
-          path.cubicTo(prevPx + ctrlLen * prevTx, prevPy + ctrlLen * prevTy, px - ctrlLen * tx, py - ctrlLen * ty, px, py);
+          path.cubicTo(
+            prevPx + ctrlLen * prevTx,
+            prevPy + ctrlLen * prevTy,
+            px - ctrlLen * tx,
+            py - ctrlLen * ty,
+            px,
+            py,
+          );
         }
       }
     }
@@ -821,7 +1013,8 @@ class _BrokenWavyCircularIndicatorPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = (math.min(size.width, size.height) / 2) - strokeWidth - waveAmplitude;
+    final radius =
+        (math.min(size.width, size.height) / 2) - strokeWidth - waveAmplitude;
     final circumference = 2 * math.pi * radius;
 
     final int cycleCount = math.max(3, (circumference / waveLength).round());
@@ -829,7 +1022,6 @@ class _BrokenWavyCircularIndicatorPainter extends CustomPainter {
 
     final gapAngle = gap / radius;
     final totalSweep = 2 * math.pi;
-    final progressSweep = (value * totalSweep).clamp(0.0, totalSweep);
 
     final activePaint = Paint()
       ..color = activeColor
@@ -846,62 +1038,113 @@ class _BrokenWavyCircularIndicatorPainter extends CustomPainter {
     // Build the STATIC wavy path
     final wavyPath = _buildWavyCirclePath(radius, center);
     final metricsList = wavyPath.computeMetrics().toList();
-    
-    if (metricsList.isNotEmpty) {
-      final metrics = metricsList.first;
-      final totalLen = metrics.length;
-      final halfLen = totalLen / 2;
+    if (metricsList.isEmpty) return;
 
-      // Extract shift based on true path length
-      final double oneCycleLen = halfLen / cycleCount;
-      final double phaseShiftPathLen = t * oneCycleLen;
-      // Rotation shift based on geometric arc
-      final double phaseShiftAngular = (t * adjWave) / radius;
+    final metrics = metricsList.first;
+    final totalLen = metrics.length;
+    final halfLen = totalLen / 2;
 
-      // Convert visual gap to path metric gap approximating scale
-      final double pathGapLen = (gap / circumference) * halfLen;
+    final double oneCycleLen = halfLen / cycleCount;
+    final double pathGapLen = (gap / circumference) * halfLen;
 
-      // Active Wavy Arc (Double-Broken: gap at start and end)
-      final arcLen = (progressSweep / totalSweep) * halfLen;
+    if (value != null) {
+      // Determinate mode (uses 'value')
+      final double progressSweep = (value! * totalSweep).clamp(0.0, totalSweep);
+
+      final double arcLen = (progressSweep / totalSweep) * halfLen;
       final double startExtract = pathGapLen;
       final double endExtract = math.max(startExtract, arcLen - pathGapLen);
 
       if (endExtract > startExtract) {
+        final double phaseShiftPathLen = t * oneCycleLen;
+        final double phaseShiftAngular = (t * adjWave) / radius;
+
         final segment = metrics.extractPath(
-          phaseShiftPathLen + startExtract, 
-          phaseShiftPathLen + endExtract
+          phaseShiftPathLen + startExtract,
+          phaseShiftPathLen + endExtract,
         );
-        
-        // Temporarily rotate the canvas so the first extracted point lands exactly at its fixed visual spot.
+
         canvas.save();
         canvas.translate(center.dx, center.dy);
         canvas.rotate(-phaseShiftAngular);
         canvas.translate(-center.dx, -center.dy);
-        
+
         canvas.drawPath(segment, activePaint);
-        
         canvas.restore();
       }
-    }
 
-    // Inactive Flat Rail (value+gap up to 2pi - gap)
-    final startRail = progressSweep + gapAngle;
-    final endRail = totalSweep - gapAngle;
-    final sweepRail = endRail - startRail;
+      // Inactive track
+      final double startRail = progressSweep + gapAngle;
+      final double endRail = totalSweep - gapAngle;
+      final double sweepRail = endRail - startRail;
 
-    if (sweepRail > 0) {
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startRail - (math.pi / 2),
-        sweepRail,
-        false,
-        trackPaint,
-      );
+      if (sweepRail > 0) {
+        canvas.drawArc(
+          Rect.fromCircle(center: center, radius: radius),
+          startRail - (math.pi / 2),
+          sweepRail,
+          false,
+          trackPaint,
+        );
+      }
+    } else {
+      // Indeterminate mode (sweeping and expanding)
+      final double baseRotation =
+          t * math.pi * 6; // Spins 3 times completely across the 3s period
+
+      // Sweep angle smoothly expands and shrinks: 15% to 80% coverage
+      final double sweepFraction =
+          0.15 + 0.65 * (0.5 * (1 - math.cos(t * math.pi * 4)));
+      final double currentSweepAngle = sweepFraction * totalSweep;
+
+      // Draw the Active Sweeping Arc
+      final double arcLen = sweepFraction * halfLen;
+      final double startExtract = pathGapLen;
+      final double endExtract = math.max(startExtract, arcLen - pathGapLen);
+
+      if (endExtract > startExtract) {
+        // We directly extract from the start (0), effectively anchoring the waves to the arc itself
+        // So no phaseShift is internally applied, and waves don't "shimmy", they just sweep.
+        final segment = metrics.extractPath(startExtract, endExtract);
+
+        canvas.save();
+        canvas.translate(center.dx, center.dy);
+        canvas.rotate(baseRotation);
+        canvas.translate(-center.dx, -center.dy);
+
+        canvas.drawPath(segment, activePaint);
+        canvas.restore();
+      }
+
+      // Draw the Broken Tracking Inactive Rail
+      final double startRail = currentSweepAngle + gapAngle;
+      final double endRail = totalSweep - gapAngle;
+      final double sweepRail = endRail - startRail;
+
+      if (sweepRail > 0) {
+        canvas.save();
+        canvas.translate(center.dx, center.dy);
+        canvas.rotate(
+          baseRotation,
+        ); // Spin it exactly identically to the active arc!
+        canvas.translate(-center.dx, -center.dy);
+
+        canvas.drawArc(
+          Rect.fromCircle(center: center, radius: radius),
+          startRail - (math.pi / 2),
+          sweepRail,
+          false,
+          trackPaint,
+        );
+        canvas.restore();
+      }
     }
   }
 
   @override
-  bool shouldRepaint(covariant _BrokenWavyCircularIndicatorPainter oldDelegate) {
+  bool shouldRepaint(
+    covariant _BrokenWavyCircularIndicatorPainter oldDelegate,
+  ) {
     return oldDelegate.value != value ||
         oldDelegate.t != t ||
         oldDelegate.activeColor != activeColor ||
@@ -915,3 +1158,225 @@ class _BrokenWavyCircularIndicatorPainter extends CustomPainter {
 
 const double _kSmoothness = 0.48;
 
+class BrokenWavyLinearProgressIndicator extends StatefulWidget {
+  final double? value;
+  final double strokeWidth;
+  final double gap;
+  final double waveAmplitude;
+  final double waveLength;
+  final double animationSpeed;
+  final Color? color;
+  final Color? backgroundColor;
+
+  const BrokenWavyLinearProgressIndicator({
+    super.key,
+    required this.value,
+    this.strokeWidth = 4.0,
+    this.gap = 8.0,
+    this.waveAmplitude = 4.0,
+    this.waveLength = 22.0,
+    this.animationSpeed = 1.0,
+    this.color,
+    this.backgroundColor,
+  });
+
+  @override
+  State<BrokenWavyLinearProgressIndicator> createState() =>
+      _BrokenWavyLinearProgressIndicatorState();
+}
+
+class _BrokenWavyLinearIndicatorPainter extends CustomPainter {
+  final double? value;
+  final double t; // animation value 0..1
+  final Color activeColor;
+  final Color trackColor;
+  final double strokeWidth;
+  final double gap;
+  final double waveAmplitude;
+  final double waveLength;
+
+  _BrokenWavyLinearIndicatorPainter({
+    required this.value,
+    required this.t,
+    required this.activeColor,
+    required this.trackColor,
+    required this.strokeWidth,
+    required this.gap,
+    required this.waveAmplitude,
+    required this.waveLength,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0) return;
+    final centerY = size.height / 2;
+
+    final activePaint = Paint()
+      ..color = activeColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    final trackPaint = Paint()
+      ..color = trackColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    double startX = 0;
+    double endX = 0;
+
+    if (value != null) {
+      // Determinate
+      startX = 0;
+      endX = (value! * size.width).clamp(0.0, size.width);
+    } else {
+      // Indeterminate
+      final double progress = t; 
+      final double pulse = 0.5 * (1 - math.cos(progress * math.pi * 6)); 
+      final double currentWidth = (0.15 + 0.3 * pulse) * size.width;
+
+      final double travelTotal = size.width + currentWidth;
+      endX = progress * travelTotal; // sweeps linearly from 0 to bounds!
+      startX = endX - currentWidth;
+    }
+
+    // Adjust render bounds to firmly define active area within visual component
+    final double boundedStart = startX.clamp(0.0, size.width);
+    final double boundedEnd = endX.clamp(0.0, size.width);
+
+    // Build the global immutable wave track spanning the entire width perfectly
+    final int cycleCount = math.max(1, (size.width / waveLength).round());
+    final double adjWave = size.width / cycleCount;
+    final int totalPoints = cycleCount * 2;
+
+    final basePath = Path();
+    for (int i = 0; i <= totalPoints; i++) {
+        final double x = i * adjWave / 2;
+        final double py = (i % 2 == 1) ? centerY - waveAmplitude : centerY;
+        if (i == 0) {
+          basePath.moveTo(x, py);
+        } else {
+          final double prevX = (i - 1) * adjWave / 2;
+          final double prevPy = ((i - 1) % 2 == 1) ? centerY - waveAmplitude : centerY;
+          final double ctrlX = adjWave / 2 * _kSmoothness;
+          basePath.cubicTo(prevX + ctrlX, prevPy, x - ctrlX, py, x, py);
+        }
+    }
+
+    final metricsList = basePath.computeMetrics().toList();
+    if (metricsList.isEmpty) return;
+    final metrics = metricsList.first;
+    
+    // Constant mapping ratio between Arc Length and Linear X globally
+    final double ratio = metrics.length / size.width;
+
+    // The physical active wave logic: starts after the gap, ends before the gap
+    final double activeWaveStartX = boundedStart + gap;
+    final double activeWaveEndX = boundedEnd - gap;
+
+    if (activeWaveEndX > activeWaveStartX) {
+       final double startL = activeWaveStartX * ratio;
+       final double endL = activeWaveEndX * ratio;
+       
+       final segment = metrics.extractPath(startL, endL);
+       // No translation needed! The path implicitly carries its global coordinates.
+       canvas.drawPath(segment, activePaint);
+    }
+
+    // Draw Broken Inactive Rail perfectly respecting the exact bounded regions
+    // Back track from 0 to boundedStart
+    if (boundedStart > 0) {
+      canvas.drawLine(
+        Offset(0, centerY),
+        Offset(boundedStart, centerY),
+        trackPaint,
+      );
+    }
+    
+    // Front track from boundedEnd to size.width
+    if (boundedEnd < size.width) {
+      canvas.drawLine(
+        Offset(boundedEnd, centerY),
+        Offset(size.width, centerY),
+        trackPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BrokenWavyLinearIndicatorPainter oldDelegate) {
+    return oldDelegate.value != value ||
+        oldDelegate.t != t ||
+        oldDelegate.activeColor != activeColor ||
+        oldDelegate.trackColor != trackColor ||
+        oldDelegate.strokeWidth != strokeWidth ||
+        oldDelegate.gap != gap ||
+        oldDelegate.waveAmplitude != waveAmplitude ||
+        oldDelegate.waveLength != waveLength;
+  }
+}
+
+class _BrokenWavyLinearProgressIndicatorState
+    extends State<BrokenWavyLinearProgressIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this);
+    _applySpeed();
+  }
+
+  @override
+  void didUpdateWidget(BrokenWavyLinearProgressIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.animationSpeed != widget.animationSpeed) {
+      _applySpeed();
+    }
+  }
+
+  void _applySpeed() {
+    if (widget.animationSpeed <= 0) {
+      _controller.stop();
+    } else {
+      final int durationMs = (3000 / widget.animationSpeed).round();
+      _controller.duration = Duration(milliseconds: durationMs);
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorTheme = Theme.of(context).colorScheme;
+    final activeColor = widget.color ?? colorTheme.primary;
+    final trackColor =
+        widget.backgroundColor ?? colorTheme.surfaceContainerHighest;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return CustomPaint(
+          // Remove manual size so it automatically adopts parent SizedBox scale
+          painter: _BrokenWavyLinearIndicatorPainter(
+            value: widget.value,
+            t: _controller.value,
+            activeColor: activeColor,
+            trackColor: trackColor,
+            strokeWidth: widget.strokeWidth,
+            gap: widget.gap,
+            waveAmplitude: widget.waveAmplitude,
+            waveLength: widget.waveLength,
+          ),
+        );
+      },
+    );
+  }
+}

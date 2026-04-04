@@ -19,12 +19,10 @@ class SettingSingleOptionDialog<T extends Object> extends StatefulWidget {
   final T? initialOption;
 
   @override
-  State<SettingSingleOptionDialog<T>> createState() =>
-      _SettingSingleOptionDialogState<T>();
+  State<SettingSingleOptionDialog<T>> createState() => _SettingSingleOptionDialogState<T>();
 }
 
-class _SettingSingleOptionDialogState<T extends Object>
-    extends State<SettingSingleOptionDialog<T>> {
+class _SettingSingleOptionDialogState<T extends Object> extends State<SettingSingleOptionDialog<T>> {
   late T? _selectedOption;
 
   @override
@@ -61,7 +59,12 @@ class _SettingSingleOptionDialogState<T extends Object>
               dense: true,
               value: value,
               groupValue: _selectedOption,
-              title: Text(title, style:  TextStyle(fontSize: 15, color: _isSelected(value) ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface)),
+              title: Text(title,
+                  style: TextStyle(
+                      fontSize: 15,
+                      color: _isSelected(value)
+                          ? Theme.of(context).colorScheme.onSurface
+                          : Theme.of(context).colorScheme.onSurface)),
               subtitle: subtitle != null ? Text(subtitle) : null,
               selected: _isSelected(value),
               onChanged: (selected) => _onChanged(value),

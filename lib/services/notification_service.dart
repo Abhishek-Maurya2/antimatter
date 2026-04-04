@@ -62,10 +62,12 @@ class NotificationService {
       try {
         // Use MethodChannel directly to avoid using platform-specific types
         // that fail to compile on Windows.
-        const MethodChannel channel =
-            MethodChannel('dexterous.com/flutter_local_notifications');
-        final bool? result =
-            await channel.invokeMethod<bool>('requestNotificationsPermission');
+        const MethodChannel channel = MethodChannel(
+          'dexterous.com/flutter_local_notifications',
+        );
+        final bool? result = await channel.invokeMethod<bool>(
+          'requestNotificationsPermission',
+        );
         return result ?? false;
       } catch (e) {
         debugPrint('Error requesting notification permission: $e');
@@ -86,10 +88,12 @@ class NotificationService {
 
     if (defaultTargetPlatform == TargetPlatform.android) {
       try {
-        const MethodChannel channel =
-            MethodChannel('dexterous.com/flutter_local_notifications');
-        final bool? result =
-            await channel.invokeMethod<bool>('areNotificationsEnabled');
+        const MethodChannel channel = MethodChannel(
+          'dexterous.com/flutter_local_notifications',
+        );
+        final bool? result = await channel.invokeMethod<bool>(
+          'areNotificationsEnabled',
+        );
         return result ?? false;
       } catch (e) {
         return true;
