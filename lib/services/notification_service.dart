@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import '../models/task.dart';
 
 class NotificationService {
@@ -24,9 +25,9 @@ class NotificationService {
 
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
-          requestAlertPermission: false,
-          requestBadgePermission: false,
-          requestSoundPermission: false,
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
         );
 
     const InitializationSettings initializationSettings =
@@ -52,6 +53,50 @@ class NotificationService {
     );
 
     _isInitialized = true;
+  }
+
+  Future<bool> requestPermission() async {
+    if (kIsWeb) return true;
+
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        // Use MethodChannel directly to avoid using platform-specific types
+        // that fail to compile on Windows.
+        const MethodChannel channel =
+            MethodChannel('dexterous.com/flutter_local_notifications');
+        final bool? result =
+            await channel.invokeMethod<bool>('requestNotificationsPermission');
+        return result ?? false;
+      } catch (e) {
+        debugPrint('Error requesting notification permission: $e');
+        return false;
+      }
+    } else if (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
+      // For iOS/macOS, we request permission during initialize/re-initialize
+      // or we can just return true here since we handle it in init().
+      return true;
+    }
+
+    return true;
+  }
+
+  Future<bool> isPermissionGranted() async {
+    if (kIsWeb) return true;
+
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        const MethodChannel channel =
+            MethodChannel('dexterous.com/flutter_local_notifications');
+        final bool? result =
+            await channel.invokeMethod<bool>('areNotificationsEnabled');
+        return result ?? false;
+      } catch (e) {
+        return true;
+      }
+    }
+
+    return true;
   }
 
   Future<void> cancelNotification(int id) async {

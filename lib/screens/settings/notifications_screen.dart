@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:m3e_collection/m3e_collection.dart';
 import 'package:settings_tiles/settings_tiles.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:permission_handler/permission_handler.dart';
+// import 'package:permission_handler/permission_handler.dart'; // Removed to avoid location usage on Windows
 import 'package:hive/hive.dart';
 import '../../models/task.dart';
 import '../../utils/preferences_helper.dart';
@@ -92,24 +92,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Future<void> _handleNotificationToggle(bool value) async {
     if (value) {
       // Requesting to enable — check permission first
-      final status = await Permission.notification.status;
+      final isGranted = await NotificationService().isPermissionGranted();
 
-      if (status.isGranted) {
+      if (isGranted) {
         _enableNotifications();
       } else {
-        final result = await Permission.notification.request();
-        if (result.isGranted) {
+        final result = await NotificationService().requestPermission();
+        if (result) {
           _enableNotifications();
-        } else if (result.isPermanentlyDenied) {
-          if (mounted) {
-            _showPermissionDeniedDialog();
-          }
         } else {
-          // Denied but not permanently — show a snackbar
+          // Denied — show a snackbar
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(
+                content: const Text(
                   'Notification permission is required to enable this feature',
                 ),
                 behavior: SnackBarBehavior.floating,
@@ -139,24 +135,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Permission Required'),
-        content: Text(
-          'Notification permission was permanently denied. '
-          'Please enable it from your device Settings to use this feature.',
+        title: const Text('Permission Required'),
+        content: const Text(
+          'Notification permission was denied. '
+          'Please enable it from your device settings to use this feature.',
         ),
         actions: [
           ButtonM3E(
             onPressed: () => Navigator.of(ctx).pop(),
             style: ButtonM3EStyle.text,
-            label: const Text('Cancel'),
-          ),
-          ButtonM3E(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              openAppSettings();
-            },
-            style: ButtonM3EStyle.text,
-            label: const Text('Open Settings'),
+            label: const Text('OK'),
           ),
         ],
       ),
