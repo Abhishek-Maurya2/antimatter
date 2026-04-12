@@ -307,81 +307,77 @@ class _SessionScreenState extends State<SessionScreen>
 
     // Compute positioning based on preference
     double? top, bottom, left, right;
-    CrossAxisAlignment crossAxis = CrossAxisAlignment.start;
-    Alignment alignment = Alignment.bottomRight;
 
     switch (_ambientTaskPosition) {
       case 'top-left':
         top = 32; left = 32;
-        alignment = Alignment.topLeft;
-        crossAxis = CrossAxisAlignment.start;
         break;
       case 'top-center':
         top = 32; left = 0; right = 0;
-        alignment = Alignment.topCenter;
-        crossAxis = CrossAxisAlignment.center;
         break;
       case 'top-right':
         top = 32; right = 32;
-        alignment = Alignment.topRight;
-        crossAxis = CrossAxisAlignment.end;
         break;
       case 'bottom-left':
         bottom = 32; left = 32;
-        alignment = Alignment.bottomLeft;
-        crossAxis = CrossAxisAlignment.start;
         break;
       case 'bottom-center':
         bottom = 32; left = 0; right = 0;
-        alignment = Alignment.bottomCenter;
-        crossAxis = CrossAxisAlignment.center;
         break;
       case 'bottom-right':
       default:
         bottom = 32; right = 32;
-        alignment = Alignment.bottomRight;
-        crossAxis = CrossAxisAlignment.end;
         break;
     }
+
+    final bool isCenter = _ambientTaskPosition.contains('center');
 
     return Positioned(
       top: top,
       bottom: bottom,
       left: left,
       right: right,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 320),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: crossAxis,
-          children: [
-            // Main task row
-            _buildAmbientTaskRow(
-              title: task.title,
-              isCompleted: task.isCompleted,
-              onTap: () => _toggleAmbientTaskCompletion(task),
-              isParent: true,
-            ),
-            // Subtasks
-            if (task.subTasks.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(left: 28),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: crossAxis,
-                  children: task.subTasks.map((subTask) {
-                    return _buildAmbientTaskRow(
-                      title: subTask.title,
-                      isCompleted: subTask.isCompleted,
-                      onTap: () =>
-                          _toggleAmbientSubTaskCompletion(task, subTask),
-                      isParent: false,
-                    );
-                  }).toList(),
-                ),
+      child: isCenter
+          ? Center(
+              child: _buildAmbientTaskContent(task),
+            )
+          : _buildAmbientTaskContent(task),
+    );
+  }
+
+  Widget _buildAmbientTaskContent(Task task) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 320),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Main task row
+          _buildAmbientTaskRow(
+            title: task.title,
+            isCompleted: task.isCompleted,
+            onTap: () => _toggleAmbientTaskCompletion(task),
+            isParent: true,
+          ),
+          // Subtasks
+          if (task.subTasks.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: task.subTasks.map((subTask) {
+                  return _buildAmbientTaskRow(
+                    title: subTask.title,
+                    isCompleted: subTask.isCompleted,
+                    onTap: () =>
+                        _toggleAmbientSubTaskCompletion(task, subTask),
+                    isParent: false,
+                  );
+                }).toList(),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
