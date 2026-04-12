@@ -141,6 +141,10 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                       _collapsedSubTaskTaskIds.add(task.id);
                     }
                   });
+                  PreferencesHelper.setStringList(
+                    'collapsed_subtask_ids',
+                    _collapsedSubTaskTaskIds.toList(),
+                  );
                 },
                 icon: Icon(
                   isCollapsed
@@ -431,6 +435,11 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
         (e) => e.name == savedSort,
         orElse: () => TaskSortOption.oldest,
       );
+    }
+
+    final savedCollapsed = PreferencesHelper.getStringList('collapsed_subtask_ids');
+    if (savedCollapsed != null) {
+      _collapsedSubTaskTaskIds.addAll(savedCollapsed);
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
