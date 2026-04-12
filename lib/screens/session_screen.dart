@@ -426,7 +426,7 @@ class _SessionScreenState extends State<SessionScreen>
                       ),
                       const SizedBox(height: 46),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: ButtonGroupM3E(
                           size: ButtonGroupM3ESize.lg,
                           style: ButtonM3EStyle.filled,
@@ -451,7 +451,7 @@ class _SessionScreenState extends State<SessionScreen>
                               shape: ButtonM3EShape.round,
                               enabled: _isRunning || _seconds > 0,
                               contentPadding: EdgeInsets.zero,
-                              width: isExpanded ? 170 : 80,
+                              width: isExpanded ? 170 : 75,
                               backgroundColor: (_isRunning || _seconds > 0)
                                   ? colorTheme.errorContainer
                                   : null,
@@ -466,13 +466,15 @@ class _SessionScreenState extends State<SessionScreen>
                                     : Icons.play_arrow_rounded,
                                   size: 35,
                               ),
+                              width: isExpanded ? 230 : 75,
+                              contentPadding: EdgeInsets.zero,
                               label: Text(_isRunning ? 'Pause' : 'Start',
                                 style: TextStyle(
                                   fontFamily: 'GoogleSansFlex',
                                   fontStyle: !_isRunning ? FontStyle.italic : FontStyle.normal,
-                                  fontSize: 35,
+                                  fontSize: _isRunning ? 35 : 40,
                                   fontVariations: <FontVariation>[
-                                    FontVariation('wght', l(600.0, 850.0)),
+                                    FontVariation('wght', l(800.0, 850.0)),
                                     FontVariation('wdth', l(50.0, 100.0)),
                                     FontVariation('ROND', l(-10.0, 80.0)),
                                   ],

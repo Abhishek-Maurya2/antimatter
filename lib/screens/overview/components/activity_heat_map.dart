@@ -237,7 +237,39 @@ class _HeatMapContentState extends State<_HeatMapContent> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Today Done',
+                      style: textTheme.labelLarge?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$todayCompleted ${_taskWord(todayCompleted)}',
+                      style: TextStyle(
+                        fontFamily: 'GoogleSansFlex',
+                        fontSize: 30,
+                        color: colorScheme.onSurface,
+                        fontVariations: const [
+                          FontVariation('wght', 700),
+                          FontVariation('wdth', 100),
+                          FontVariation('ROND', 180),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
                 IconButtonM3E(
                   onPressed: () {
                     setState(() {
@@ -260,28 +292,6 @@ class _HeatMapContentState extends State<_HeatMapContent> {
                   width: IconButtonM3EWidth.narrow,
                 ),
               ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Today Done',
-              style: textTheme.labelLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '$todayCompleted ${_taskWord(todayCompleted)}',
-              style: TextStyle(
-                fontFamily: 'GoogleSansFlex',
-                fontSize: 30,
-                color: colorScheme.onSurface,
-                fontVariations: const [
-                  FontVariation('wght', 700),
-                  FontVariation('wdth', 100),
-                  FontVariation('ROND', 180),
-                ],
-              ),
             ),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
@@ -339,8 +349,7 @@ class _HeatMapContentState extends State<_HeatMapContent> {
                       key: ValueKey('collapsed_activity_stats'),
                     ),
             ),
-            const SizedBox(height: 16),
-
+            const SizedBox(height: 26),
             // Combined scrollable area for headers and grid
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,

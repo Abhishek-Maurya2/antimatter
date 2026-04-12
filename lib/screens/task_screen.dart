@@ -1,5 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'settings_screen.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
@@ -38,6 +39,8 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
   static const Duration _completedRetention = Duration(days: 7);
 
   late Box<Task> _tasksBox;
+  final GlobalKey<CustomRefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<CustomRefreshIndicatorState>();
   List<Task> _tasks = [];
   TaskSortOption _currentSort = TaskSortOption.oldest;
   List<Task> _selectedTasksForToolbar = [];
@@ -535,9 +538,21 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
       });
     }
 
-    return Stack(
+    return CallbackShortcuts(
+      bindings: {
+        SingleActivator(LogicalKeyboardKey.keyR, control: true): () {
+          _refreshIndicatorKey.currentState?.show();
+        },
+        SingleActivator(LogicalKeyboardKey.keyR, meta: true): () {
+          _refreshIndicatorKey.currentState?.show();
+        },
+      },
+      child: Focus(
+        autofocus: true,
+        child: Stack(
       children: [
         CustomRefreshIndicator(
+          key: _refreshIndicatorKey,
           onRefresh: () async {
             await syncService.pullTasks();
             await _autoMoveOldCompletedTasksToTrash();
@@ -1271,6 +1286,8 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
           ),
         ),
       ],
+    ),
+      ),
     );
   }
 

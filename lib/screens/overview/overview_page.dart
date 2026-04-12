@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:antimatter/models/task.dart';
@@ -11,7 +12,7 @@ import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:m3e_collection/m3e_collection.dart';
 import 'package:antimatter/main.dart';
 
-class OverviewPage extends StatelessWidget {
+class OverviewPage extends StatefulWidget {
   final VoidCallback? onNavigateToTasks;
   final bool isRailExpanded;
 
@@ -22,9 +23,35 @@ class OverviewPage extends StatelessWidget {
   });
 
   @override
+  State<OverviewPage> createState() => _OverviewPageState();
+}
+
+class _OverviewPageState extends State<OverviewPage> {
+  final GlobalKey<CustomRefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<CustomRefreshIndicatorState>();
+
+  Future<void> _onRefresh() async {
+    await syncService.pullTasks();
+    await sessionSyncService.pullSessions();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Data refreshed'),
+          behavior: SnackBarBehavior.floating,
+          width: 500,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
     final tasksBox = Hive.box<Task>('tasksBox');
+    final isExpanded = MediaQuery.sizeOf(context).width >= 750;
 
     return ValueListenableBuilder(
       valueListenable: tasksBox.listenable(),
@@ -69,194 +96,193 @@ class OverviewPage extends StatelessWidget {
 
         return Scaffold(
           backgroundColor: colorTheme.surfaceContainer,
-          body: CustomRefreshIndicator(
-            onRefresh: () async {
-              await syncService.pullTasks();
-              await sessionSyncService.pullSessions();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Data refreshed'),
-                    behavior: SnackBarBehavior.floating,
-                    width: 500,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                );
-              }
+          body: CallbackShortcuts(
+            bindings: {
+              SingleActivator(LogicalKeyboardKey.keyR, control: true): () {
+                _refreshIndicatorKey.currentState?.show();
+              },
+              SingleActivator(LogicalKeyboardKey.keyR, meta: true): () {
+                _refreshIndicatorKey.currentState?.show();
+              },
             },
-            builder: (context, child, controller) {
-              return Stack(
-                children: [
-                  child,
-                  AnimatedBuilder(
-                    animation: controller,
-                    builder: (context, _) {
-                      final double opacity = (controller.value * 2).clamp(
-                        0.0,
-                        1.0,
-                      );
-                      final double scale = (controller.value * 1.5).clamp(
-                        0.0,
-                        1.0,
-                      );
+            child: Focus(
+              autofocus: true,
+              child: CustomRefreshIndicator(
+                key: _refreshIndicatorKey,
+                onRefresh: _onRefresh,
+                builder: (context, child, controller) {
+                  return Stack(
+                    children: [
+                      child,
+                      AnimatedBuilder(
+                        animation: controller,
+                        builder: (context, _) {
+                          final double opacity = (controller.value * 2).clamp(
+                            0.0,
+                            1.0,
+                          );
+                          final double scale = (controller.value * 1.5).clamp(
+                            0.0,
+                            1.0,
+                          );
 
-                      return Positioned(
-                        top: 110 * controller.value,
-                        left: 0,
-                        right: 0,
-                        child: Opacity(
-                          opacity: opacity,
-                          child: Transform.scale(
-                            scale: scale,
-                            child: Center(
-                              child: LoadingIndicatorM3E(
-                                variant: LoadingIndicatorM3EVariant.contained,
+                          return Positioned(
+                            top: 110 * controller.value,
+                            left: 0,
+                            right: 0,
+                            child: Opacity(
+                              opacity: opacity,
+                              child: Transform.scale(
+                                scale: scale,
+                                child: Center(
+                                  child: LoadingIndicatorM3E(
+                                    variant: LoadingIndicatorM3EVariant.contained,
+                                  ),
+                                ),
                               ),
                             ),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+                child: CustomScrollView(
+                  slivers: [
+                    // App bar area
+                    SliverToBoxAdapter(
+                      child: SafeArea(
+                        bottom: false,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _getGreeting(),
+                                style: TextStyle(
+                                  fontFamily: 'GoogleSansFlex',
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w700,
+                                  color: colorTheme.onSurface,
+                                  fontVariations: const [
+                                    FontVariation('wght', 700),
+                                    FontVariation('wdth', 100),
+                                    FontVariation('ROND', 100),
+                                    FontVariation('GRAD', 0),
+                                    FontVariation('opsz', 28),
+                                    FontVariation('slnt', 0),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                DateFormat('EEEE, MMMM d').format(now),
+                                style: TextStyle(
+                                  fontFamily: 'GoogleSansFlex',
+                                  fontSize: 16,
+                                  color: colorTheme.onSurfaceVariant,
+                                  fontVariations: const [
+                                    FontVariation('wght', 400),
+                                    FontVariation('wdth', 100),
+                                    FontVariation('ROND', 50),
+                                    FontVariation('GRAD', 0),
+                                    FontVariation('opsz', 16),
+                                    FontVariation('slnt', 0),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                  ),
-                ],
-              );
-            },
-            child: CustomScrollView(
-              slivers: [
-                // App bar area
-                SliverToBoxAdapter(
-                  child: SafeArea(
-                    bottom: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _getGreeting(),
-                            style: TextStyle(
-                              fontFamily: 'GoogleSansFlex',
-                              fontSize: 28,
-                              fontWeight: FontWeight.w700,
-                              color: colorTheme.onSurface,
-                              fontVariations: const [
-                                FontVariation('wght', 700),
-                                FontVariation('wdth', 100),
-                                FontVariation('ROND', 100),
-                                FontVariation('GRAD', 0),
-                                FontVariation('opsz', 28),
-                                FontVariation('slnt', 0),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            DateFormat('EEEE, MMMM d').format(now),
-                            style: TextStyle(
-                              fontFamily: 'GoogleSansFlex',
-                              fontSize: 16,
-                              color: colorTheme.onSurfaceVariant,
-                              fontVariations: const [
-                                FontVariation('wght', 400),
-                                FontVariation('wdth', 100),
-                                FontVariation('ROND', 50),
-                                FontVariation('GRAD', 0),
-                                FontVariation('opsz', 16),
-                                FontVariation('slnt', 0),
-                              ],
-                            ),
-                          ),
-                        ],
                       ),
                     ),
-                  ),
-                ),
 
-                // Bento content
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                  sliver: SliverToBoxAdapter(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        const spacing = 12.0;
-                        final upcomingHeight = 265.0;
+                    // Bento content
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                      sliver: SliverToBoxAdapter(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            const spacing = 12.0;
+                            final upcomingHeight = 265.0;
 
-                        return Column(
-                          children: [
-                            // Combined Stats Card (full width)
-                            StatsCard(
-                              totalTasks: totalTasks,
-                              completedTasks: completedTasks,
-                              pendingTasks: pendingTasks,
-                              onTap: onNavigateToTasks,
-                            ),
-                            const SizedBox(height: spacing),
-                            // Bottom row: Today's Tasks + Progress
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            return Column(
                               children: [
-                                Expanded(
-                                  child: SizedBox(
-                                    height: upcomingHeight,
-                                    child: ListCard(
-                                      title: "Pending",
-                                      tasks: upcomingTasks,
-                                      onTap: onNavigateToTasks,
-                                    ),
-                                  ),
+                                // Combined Stats Card (full width)
+                                StatsCard(
+                                  totalTasks: totalTasks,
+                                  completedTasks: completedTasks,
+                                  pendingTasks: pendingTasks,
+                                  onTap: widget.onNavigateToTasks,
                                 ),
-                                const SizedBox(width: spacing),
-                                Expanded(
-                                  child: SizedBox(
-                                    height: upcomingHeight,
-                                    child: ProgressCard(
-                                      title: "Progress",
-                                      total: todayTotalTasks.length,
-                                      completed: todayCompletedCount,
-                                      onTap: onNavigateToTasks,
+                                const SizedBox(height: spacing),
+                                // Bottom row: Today's Tasks + Progress
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: SizedBox(
+                                        height: upcomingHeight,
+                                        child: ListCard(
+                                          title: "Pending",
+                                          tasks: upcomingTasks,
+                                          onTap: widget.onNavigateToTasks,
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                    const SizedBox(width: spacing),
+                                    Expanded(
+                                      child: SizedBox(
+                                        height: upcomingHeight,
+                                        child: ProgressCard(
+                                          title: "Progress",
+                                          total: todayTotalTasks.length,
+                                          completed: todayCompletedCount,
+                                          onTap: widget.onNavigateToTasks,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ),
-
-                // Focus Time & Heat Map (Responsive)
-                if (isRailExpanded)
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                    sliver: SliverToBoxAdapter(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(flex: 3, child: FocusTimeGraph()),
-                          const SizedBox(width: 12),
-                          Expanded(flex: 2, child: ActivityHeatMap()),
-                        ],
+                            );
+                          },
+                        ),
                       ),
                     ),
-                  )
-                else ...[
-                  // Focus Time Graph
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    sliver: SliverToBoxAdapter(child: FocusTimeGraph()),
-                  ),
 
-                  // Activity Heat Map
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                    sliver: SliverToBoxAdapter(child: ActivityHeatMap()),
-                  ),
-                ],
-              ],
+                    // Focus Time & Heat Map (Responsive)
+                    if (isExpanded)
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                        sliver: SliverToBoxAdapter(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(flex: 3, child: FocusTimeGraph()),
+                              const SizedBox(width: 12),
+                              Expanded(flex: 2, child: ActivityHeatMap()),
+                            ],
+                          ),
+                        ),
+                      )
+                    else ...[
+                      // Focus Time Graph
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                        sliver: SliverToBoxAdapter(child: FocusTimeGraph()),
+                      ),
+
+                      // Activity Heat Map
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                        sliver: SliverToBoxAdapter(child: ActivityHeatMap()),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
         );
