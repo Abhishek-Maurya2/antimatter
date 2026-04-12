@@ -41,6 +41,7 @@ class ButtonGroupM3EAction {
     this.height,
     this.contentPadding,
     this.cornerRadiusOverride,
+    this.flex,
   });
 
   final Widget? label;
@@ -58,6 +59,7 @@ class ButtonGroupM3EAction {
   final double? height;
   final EdgeInsetsGeometry? contentPadding;
   final BorderRadius? cornerRadiusOverride; // per-corner radius override
+  final int? flex;
 
   ButtonGroupM3EAction copyWith({
     Widget? label,
@@ -75,6 +77,7 @@ class ButtonGroupM3EAction {
     double? height,
     EdgeInsetsGeometry? contentPadding,
     BorderRadius? cornerRadiusOverride,
+    int? flex,
   }) =>
       ButtonGroupM3EAction(
         label: label ?? this.label,
@@ -92,6 +95,7 @@ class ButtonGroupM3EAction {
         height: height ?? this.height,
         contentPadding: contentPadding ?? this.contentPadding,
         cornerRadiusOverride: cornerRadiusOverride ?? this.cornerRadiusOverride,
+        flex: flex ?? this.flex,
       );
 }
 
@@ -724,7 +728,12 @@ class _ButtonGroupM3EState extends State<ButtonGroupM3E> {
         isLast: isLast,
         child: _maybeEqualized(button),
       );
-      list.add(child);
+
+      if (action.flex != null && action.flex! > 0) {
+        list.add(Expanded(flex: action.flex!, child: child));
+      } else {
+        list.add(child);
+      }
 
       final isBetween = i < capped - 1;
       if (!isBetween) continue;

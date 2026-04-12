@@ -428,18 +428,8 @@ class _SessionScreenState extends State<SessionScreen>
                           size: ButtonGroupM3ESize.lg,
                           style: ButtonM3EStyle.filled,
                           overflow: ButtonGroupM3EOverflow.none,
+                          expanded: !isExpanded,
                           actions: [
-                            ButtonGroupM3EAction(
-                              icon: Icon(
-                                _isRunning
-                                    ? Icons.pause_rounded
-                                    : Icons.play_arrow_rounded,
-                              ),
-                              label: Text(_isRunning ? 'Pause' : 'Start'),
-                              shape: ButtonM3EShape.round,
-                              selected: _isRunning || _seconds > 0,
-                              onPressed: _toggleTimer,
-                            ),
                             ButtonGroupM3EAction(
                               icon: const Icon(Icons.stop_rounded),
                               // label: const Text('Stop'),
@@ -454,6 +444,18 @@ class _SessionScreenState extends State<SessionScreen>
                               foregroundColor: (_isRunning || _seconds > 0)
                                   ? colorTheme.onErrorContainer
                                   : colorTheme.onPrimaryContainer,
+                            ),
+                            ButtonGroupM3EAction(
+                              icon: Icon(
+                                _isRunning
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded,
+                              ),
+                              label: Text(_isRunning ? 'Pause' : 'Start'),
+                              shape: ButtonM3EShape.round,
+                              selected: _isRunning || _seconds > 0,
+                              onPressed: _toggleTimer,
+                              flex: isExpanded ? null : 1,
                             ),
                           ],
                         ),
