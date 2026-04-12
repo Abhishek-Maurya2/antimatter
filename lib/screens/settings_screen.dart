@@ -36,7 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   SettingsDetail? _selectedDetail = SettingsDetail.appearance;
 
   void _handleTap(SettingsDetail detail, Widget Function() screenBuilder) {
-    if (context.isExpanded) {
+    if (MediaQuery.sizeOf(context).width >= 800) {
       if (_selectedDetail != detail) {
         setState(() {
           _selectedDetail = detail;
