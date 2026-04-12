@@ -19,6 +19,26 @@ class _SessionsScreenState extends State<SessionsScreen> {
   bool _ambientModeEnabled = true;
   int _ambientIntervalSeconds = 5;
   bool _stayAwakeEnabled = true;
+  bool _ambientTaskEnabled = true;
+  String _ambientTaskPosition = 'bottom-right';
+
+  static const List<String> _positionOptions = [
+    'top-left',
+    'top-center',
+    'top-right',
+    'bottom-left',
+    'bottom-center',
+    'bottom-right',
+  ];
+
+  static const Map<String, String> _positionLabels = {
+    'top-left': 'Top Left',
+    'top-center': 'Top Center',
+    'top-right': 'Top Right',
+    'bottom-left': 'Bottom Left',
+    'bottom-center': 'Bottom Center',
+    'bottom-right': 'Bottom Right',
+  };
 
   @override
   void initState() {
@@ -30,6 +50,10 @@ class _SessionsScreenState extends State<SessionsScreen> {
     _ambientModeEnabled =
         PreferencesHelper.getBool('ambientModeEnabled') ?? true;
     _stayAwakeEnabled = PreferencesHelper.getBool('stayAwakeEnabled') ?? true;
+    _ambientTaskEnabled =
+        PreferencesHelper.getBool('ambientTaskEnabled') ?? true;
+    _ambientTaskPosition =
+        PreferencesHelper.getString('ambientTaskPosition') ?? 'bottom-right';
     final savedInterval =
         PreferencesHelper.getInt('ambientModeIntervalSeconds') ?? 5;
     _ambientIntervalSeconds = savedInterval.clamp(1, 60);
@@ -148,6 +172,44 @@ class _SessionsScreenState extends State<SessionsScreen> {
                       onChanged: (value) {
                         setState(() => _stayAwakeEnabled = value);
                         PreferencesHelper.setBool('stayAwakeEnabled', value);
+                      },
+                    ),
+                    SettingSwitchTile(
+                      enabled: _ambientModeEnabled,
+                      icon: iconContainer(
+                        Symbols.task_alt,
+                        isLight ? const Color(0xffd7f5d3) : const Color(0xff1b5e20).withValues(alpha: 0.3),
+                        isLight ? const Color(0xff1b5e20) : const Color(0xffd7f5d3),
+                      ),
+                      title: const Text('Show Current Task'),
+                      description: const Text(
+                        'Display your next task during ambient mode',
+                      ),
+                      toggled: _ambientTaskEnabled,
+                      onChanged: (value) {
+                        setState(() => _ambientTaskEnabled = value);
+                        PreferencesHelper.setBool('ambientTaskEnabled', value);
+                      },
+                    ),
+                    SettingSingleOptionTile<String>.detailed(
+                      enabled: _ambientModeEnabled && _ambientTaskEnabled,
+                      icon: iconContainer(
+                        Symbols.drag_pan,
+                        isLight ? const Color(0xfffff3e0) : const Color(0xffe65100).withValues(alpha: 0.2),
+                        isLight ? const Color(0xffe65100) : const Color(0xfffff3e0),
+                      ),
+                      title: const Text('Task Position'),
+                      description: Text(_positionLabels[_ambientTaskPosition] ?? 'Bottom Right'),
+                      dialogTitle: 'Task Position',
+                      options: _positionOptions.map((pos) => (
+                        value: pos as Object,
+                        title: _positionLabels[pos]!,
+                        subtitle: null as String?,
+                      )).toList(),
+                      initialOption: _ambientTaskPosition,
+                      onSubmitted: (pos) {
+                        setState(() => _ambientTaskPosition = pos);
+                        PreferencesHelper.setString('ambientTaskPosition', pos);
                       },
                     ),
                   ],

@@ -12,7 +12,10 @@ import '../utils/fullscreen_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../models/session.dart';
+import '../models/task.dart';
+import '../services/audio_service.dart';
 import '../utils/ui_utils.dart';
+import 'task_screen.dart' show TaskSortOption;
 
 class SessionScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -36,6 +39,8 @@ class _SessionScreenState extends State<SessionScreen>
   int _ambientIntervalSeconds = 5;
   Timer? _ambientTimer;
   bool _stayAwakeEnabled = true;
+  bool _ambientTaskEnabled = true;
+  String _ambientTaskPosition = 'bottom-right';
   late AnimationController _ambientFadeController;
   late Animation<double> _ambientFadeAnimation;
 
@@ -99,6 +104,10 @@ class _SessionScreenState extends State<SessionScreen>
     _ambientModeEnabled =
         PreferencesHelper.getBool('ambientModeEnabled') ?? true;
     _stayAwakeEnabled = PreferencesHelper.getBool('stayAwakeEnabled') ?? true;
+    _ambientTaskEnabled =
+        PreferencesHelper.getBool('ambientTaskEnabled') ?? true;
+    _ambientTaskPosition =
+        PreferencesHelper.getString('ambientTaskPosition') ?? 'bottom-right';
     final savedInterval =
         PreferencesHelper.getInt('ambientModeIntervalSeconds') ?? 5;
     _ambientIntervalSeconds = savedInterval.clamp(1, 60);
@@ -230,6 +239,213 @@ class _SessionScreenState extends State<SessionScreen>
     if (_isRunning && _ambientModeEnabled) {
       _startAmbientTimer();
     }
+  }
+
+  // ===== Ambient Task Logic =====
+
+  Task? _getFirstTask() {
+    final box = Hive.box<Task>('tasksBox');
+    final allTasks = box.values
+        .where((t) => !t.isDeleted && !t.isArchived && !t.isCompleted)
+        .toList();
+    if (allTasks.isEmpty) return null;
+
+    final savedSort = PreferencesHelper.getString('task_sort_preference');
+    final sortOption = savedSort != null
+        ? TaskSortOption.values.firstWhere(
+            (e) => e.name == savedSort,
+            orElse: () => TaskSortOption.oldest,
+          )
+        : TaskSortOption.oldest;
+
+    allTasks.sort((a, b) {
+      switch (sortOption) {
+        case TaskSortOption.newest:
+          final idA = int.tryParse(a.id) ?? 0;
+          final idB = int.tryParse(b.id) ?? 0;
+          return idB.compareTo(idA);
+        case TaskSortOption.oldest:
+          final idA = int.tryParse(a.id) ?? 0;
+          final idB = int.tryParse(b.id) ?? 0;
+          return idA.compareTo(idB);
+        case TaskSortOption.dueDate:
+          if (a.deadline == null && b.deadline == null) return 0;
+          if (a.deadline == null) return 1;
+          if (b.deadline == null) return -1;
+          return a.deadline!.compareTo(b.deadline!);
+      }
+    });
+
+    return allTasks.first;
+  }
+
+  void _toggleAmbientTaskCompletion(Task task) {
+    setState(() {
+      task.isCompleted = !task.isCompleted;
+      task.completedAt = task.isCompleted ? DateTime.now() : null;
+      task.save();
+      if (task.isCompleted) {
+        AudioService().playTickSound();
+      }
+    });
+  }
+
+  void _toggleAmbientSubTaskCompletion(Task parentTask, Task subTask) {
+    setState(() {
+      subTask.isCompleted = !subTask.isCompleted;
+      parentTask.save();
+      if (subTask.isCompleted) {
+        AudioService().playTickSound();
+      }
+    });
+  }
+
+  Widget _buildAmbientTaskWidget() {
+    if (!_ambientTaskEnabled) return const SizedBox.shrink();
+    final task = _getFirstTask();
+    if (task == null) return const SizedBox.shrink();
+
+    // Compute positioning based on preference
+    double? top, bottom, left, right;
+    CrossAxisAlignment crossAxis = CrossAxisAlignment.start;
+    Alignment alignment = Alignment.bottomRight;
+
+    switch (_ambientTaskPosition) {
+      case 'top-left':
+        top = 32; left = 32;
+        alignment = Alignment.topLeft;
+        crossAxis = CrossAxisAlignment.start;
+        break;
+      case 'top-center':
+        top = 32; left = 0; right = 0;
+        alignment = Alignment.topCenter;
+        crossAxis = CrossAxisAlignment.center;
+        break;
+      case 'top-right':
+        top = 32; right = 32;
+        alignment = Alignment.topRight;
+        crossAxis = CrossAxisAlignment.end;
+        break;
+      case 'bottom-left':
+        bottom = 32; left = 32;
+        alignment = Alignment.bottomLeft;
+        crossAxis = CrossAxisAlignment.start;
+        break;
+      case 'bottom-center':
+        bottom = 32; left = 0; right = 0;
+        alignment = Alignment.bottomCenter;
+        crossAxis = CrossAxisAlignment.center;
+        break;
+      case 'bottom-right':
+      default:
+        bottom = 32; right = 32;
+        alignment = Alignment.bottomRight;
+        crossAxis = CrossAxisAlignment.end;
+        break;
+    }
+
+    return Positioned(
+      top: top,
+      bottom: bottom,
+      left: left,
+      right: right,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: crossAxis,
+          children: [
+            // Main task row
+            _buildAmbientTaskRow(
+              title: task.title,
+              isCompleted: task.isCompleted,
+              onTap: () => _toggleAmbientTaskCompletion(task),
+              isParent: true,
+            ),
+            // Subtasks
+            if (task.subTasks.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(left: 28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: crossAxis,
+                  children: task.subTasks.map((subTask) {
+                    return _buildAmbientTaskRow(
+                      title: subTask.title,
+                      isCompleted: subTask.isCompleted,
+                      onTap: () =>
+                          _toggleAmbientSubTaskCompletion(task, subTask),
+                      isParent: false,
+                    );
+                  }).toList(),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAmbientTaskRow({
+    required String title,
+    required bool isCompleted,
+    required VoidCallback onTap,
+    required bool isParent,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Circular checkbox
+            Container(
+              width: isParent ? 22 : 18,
+              height: isParent ? 22 : 18,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isCompleted
+                      ? Colors.white.withOpacity(0.5)
+                      : Colors.white.withOpacity(0.3),
+                  width: 2,
+                ),
+                color: isCompleted
+                    ? Colors.white.withOpacity(0.4)
+                    : Colors.transparent,
+              ),
+              child: isCompleted
+                  ? Icon(
+                      Icons.check_rounded,
+                      size: isParent ? 14 : 11,
+                      color: Colors.white.withOpacity(0.8),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 10),
+            // Task title
+            Flexible(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(isCompleted ? 0.3 : 0.5),
+                  fontSize: isParent ? 20 : 18,
+                  fontFamily: 'GoogleSansFlex',
+                  fontWeight: isParent ? FontWeight.w500 : FontWeight.w400,
+                  decoration:
+                      isCompleted ? TextDecoration.lineThrough : null,
+                  decorationColor: Colors.white.withOpacity(0.3),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   List<String> _getTimeParts() {
@@ -510,26 +726,32 @@ class _SessionScreenState extends State<SessionScreen>
                   width: double.infinity,
                   height: double.infinity,
                   color: Colors.black,
-                  child: Center(
-                    child: SizedBox(
-                      width: 270,
-                      height: 270,
-                      child: AnimatedBuilder(
-                        animation: _weightAnimation,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scaleY: 1.8,
-                            child: _buildTimerDisplay(
-                              _getTimerTextStyle(
-                                fontSize: 94,
-                                color: Colors.white.withOpacity(0.5),
-                                progress: _weightAnimation.value,
-                              ),
-                            ),
-                          );
-                        },
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: SizedBox(
+                          width: 270,
+                          height: 270,
+                          child: AnimatedBuilder(
+                            animation: _weightAnimation,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scaleY: 1.8,
+                                child: _buildTimerDisplay(
+                                  _getTimerTextStyle(
+                                    fontSize: 94,
+                                    color: Colors.white.withOpacity(0.5),
+                                    progress: _weightAnimation.value,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
-                    ),
+                      // Ambient task widget in bottom-right
+                      _buildAmbientTaskWidget(),
+                    ],
                   ),
                 ),
               ),
