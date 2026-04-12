@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 class FloatingNavItem {
@@ -118,7 +119,10 @@ class _PageActionButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(50),
         ),
         child: IconButton(
-          onPressed: onTap,
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            onTap();
+          },
           icon: Icon(icon, size: 28, weight: 800, color: colorTheme.onPrimary),
         ),
       ),
@@ -142,7 +146,10 @@ class _NavBarItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutCubic,

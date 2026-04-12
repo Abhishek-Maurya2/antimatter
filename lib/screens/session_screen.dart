@@ -426,12 +426,11 @@ class _SessionScreenState extends State<SessionScreen>
                       ),
                       const SizedBox(height: 46),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
                         child: ButtonGroupM3E(
                           size: ButtonGroupM3ESize.lg,
                           style: ButtonM3EStyle.filled,
                           overflow: ButtonGroupM3EOverflow.none,
-                          expanded: !isExpanded,
                           actions: [
                             ButtonGroupM3EAction(
                               icon: const Icon(Icons.stop_rounded, size:35),
@@ -466,7 +465,7 @@ class _SessionScreenState extends State<SessionScreen>
                                     : Icons.play_arrow_rounded,
                                   size: 35,
                               ),
-                              width: isExpanded ? 230 : 75,
+                              width: isExpanded ? 230 : 190,
                               contentPadding: EdgeInsets.zero,
                               label: Text(_isRunning ? 'Pause' : 'Start',
                                 style: TextStyle(
@@ -483,7 +482,6 @@ class _SessionScreenState extends State<SessionScreen>
                               shape: ButtonM3EShape.round,
                               selected: _isRunning || _seconds > 0,
                               onPressed: _toggleTimer,
-                              flex: isExpanded ? null : 1,
                             ),
                           ],
                         ),
