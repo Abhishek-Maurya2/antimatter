@@ -7,6 +7,7 @@ import 'package:antimatter/screens/session_screen.dart';
 import 'package:antimatter/screens/overview/overview_page.dart';
 import 'package:antimatter/screens/task_screen.dart';
 import 'package:antimatter/widgets/floating_nav_bar.dart';
+import 'package:antimatter/utils/ui_utils.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,14 +34,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final bool isExpanded = constraints.maxWidth >= 740;
+        final bool isExpanded = context.isExpanded;
 
         // Build the body based on top-level nav index
         Widget bodyContent;
         if (_navIndex == 0) {
           final bool isRailExpanded =
               isExpanded &&
-              MediaQuery.sizeOf(context).width >= 1000 &&
+              context.isLarge &&
               _railType == NavigationRailM3EType.expanded;
 
           bodyContent = OverviewPage(
@@ -154,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return NavigationRailM3E(
-      type: MediaQuery.sizeOf(context).width < 1000
+      type: !context.isLarge
           ? NavigationRailM3EType.alwaysCollapse
           : _railType,
       modality: NavigationRailM3EModality.standard,

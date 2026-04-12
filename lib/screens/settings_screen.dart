@@ -10,6 +10,7 @@ import 'settings/sessions_screen.dart';
 import 'settings/updates_screen.dart';
 import 'settings/about_screen.dart';
 import 'settings/wavy_demo_screen.dart';
+import '../utils/ui_utils.dart';
 
 enum SettingsDetail {
   appearance,
@@ -35,7 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   SettingsDetail? _selectedDetail = SettingsDetail.appearance;
 
   void _handleTap(SettingsDetail detail, Widget Function() screenBuilder) {
-    if (MediaQuery.sizeOf(context).width >= 840) {
+    if (context.isExpanded) {
       if (_selectedDetail != detail) {
         setState(() {
           _selectedDetail = detail;
@@ -98,6 +99,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isLight = Theme.of(context).brightness == Brightness.light;
     final colorTheme = Theme.of(context).colorScheme;
     final bool isExpanded = MediaQuery.sizeOf(context).width >= 800;
+    final bool isLarge = context.isLarge;
 
     final masterList = CustomScrollView(
       slivers: [
@@ -327,7 +329,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: isExpanded
           ? Row(
               children: [
-                SizedBox(width: 420, child: masterList),
+                SizedBox(width: 350, child: masterList),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(15),

@@ -12,6 +12,7 @@ import '../utils/fullscreen_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../models/session.dart';
+import '../utils/ui_utils.dart';
 
 class SessionScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -351,7 +352,9 @@ class _SessionScreenState extends State<SessionScreen>
   @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
-    final bool isExpanded = MediaQuery.sizeOf(context).width >= 840;
+    final bool isExpanded = context.isExpanded;
+    final t = _isRunning ? 1.0 : 0.0;
+    double l(double a, double b) => a + (b - a) * t;
 
     return Scaffold(
       backgroundColor: colorTheme.surfaceContainer,
@@ -423,7 +426,7 @@ class _SessionScreenState extends State<SessionScreen>
                       ),
                       const SizedBox(height: 46),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
                         child: ButtonGroupM3E(
                           size: ButtonGroupM3ESize.lg,
                           style: ButtonM3EStyle.filled,
@@ -431,13 +434,24 @@ class _SessionScreenState extends State<SessionScreen>
                           expanded: !isExpanded,
                           actions: [
                             ButtonGroupM3EAction(
-                              icon: const Icon(Icons.stop_rounded),
-                              // label: const Text('Stop'),
+                              icon: const Icon(Icons.stop_rounded, size:35),
+                              label: isExpanded ? Text('Stop',
+                              style: TextStyle(
+                                  fontFamily: 'GoogleSansFlex',
+                                  // fontStyle: !_isRunning ? FontStyle.italic : FontStyle.normal,
+                                  fontSize: 35,
+                                  fontVariations: <FontVariation>[
+                                    FontVariation('wght', l(600.0, 850.0)),
+                                    FontVariation('wdth', l(50.0, 100.0)),
+                                    FontVariation('ROND', l(-10.0, 80.0)),
+                                  ],
+                                ),
+                              ) : null,
                               onPressed: _resetTimer,
                               shape: ButtonM3EShape.round,
                               enabled: _isRunning || _seconds > 0,
                               contentPadding: EdgeInsets.zero,
-                              width: 80,
+                              width: isExpanded ? 170 : 80,
                               backgroundColor: (_isRunning || _seconds > 0)
                                   ? colorTheme.errorContainer
                                   : null,
@@ -450,8 +464,20 @@ class _SessionScreenState extends State<SessionScreen>
                                 _isRunning
                                     ? Icons.pause_rounded
                                     : Icons.play_arrow_rounded,
+                                  size: 35,
                               ),
-                              label: Text(_isRunning ? 'Pause' : 'Start'),
+                              label: Text(_isRunning ? 'Pause' : 'Start',
+                                style: TextStyle(
+                                  fontFamily: 'GoogleSansFlex',
+                                  fontStyle: !_isRunning ? FontStyle.italic : FontStyle.normal,
+                                  fontSize: 35,
+                                  fontVariations: <FontVariation>[
+                                    FontVariation('wght', l(600.0, 850.0)),
+                                    FontVariation('wdth', l(50.0, 100.0)),
+                                    FontVariation('ROND', l(-10.0, 80.0)),
+                                  ],
+                                ),
+                              ),
                               shape: ButtonM3EShape.round,
                               selected: _isRunning || _seconds > 0,
                               onPressed: _toggleTimer,

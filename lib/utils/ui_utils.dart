@@ -25,3 +25,14 @@ class PolygonClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(PolygonClipper oldClipper) => oldClipper.polygon != polygon;
 }
+
+/// Extension for responsive layout queries.
+extension ResponsiveContext on BuildContext {
+  /// Whether the current screen width is categorized as expanded (>= 600px).
+  /// Standard Material Design 3 breakpoint for expanded layouts.
+  bool get isExpanded => MediaQuery.sizeOf(this).width >= 600;
+
+  /// Whether the current screen width is categorized as large (>= 850px).
+  /// Useful for further expanding side panels or extra content areas.
+  bool get isLarge => MediaQuery.sizeOf(this).width >= 850;
+}
