@@ -178,17 +178,14 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
     }
 
     if (!mounted) return;
-    final newTask = await Navigator.of(context).push<Task>(
+    final result = await Navigator.of(context).push<dynamic>(
       MaterialPageRoute(
         builder: (_) => TaskEditorScreen(initialTitle: taskName),
       ),
     );
 
-    if (newTask != null && mounted) {
-      setState(() {
-        _tasks.add(newTask);
-        _tasksBox.put(newTask.id, newTask);
-      });
+    if (result != null && mounted) {
+      _handleTaskResult(result);
     }
   }
 
@@ -201,15 +198,12 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
       return;
     }
 
-    final newTask = await Navigator.of(
+    final result = await Navigator.of(
       context,
-    ).push<Task>(MaterialPageRoute(builder: (_) => const TaskEditorScreen()));
+    ).push<dynamic>(MaterialPageRoute(builder: (_) => const TaskEditorScreen()));
 
-    if (newTask != null) {
-      setState(() {
-        _tasks.add(newTask);
-        _tasksBox.put(newTask.id, newTask);
-      });
+    if (result != null) {
+      _handleTaskResult(result);
     }
   }
 
@@ -347,7 +341,26 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
           }
         }
       }
+    } else if (result is List<Task>) {
+      for (final task in result) {
+        if (task.isCompleted && task.completedAt == null) {
+          task.completedAt = DateTime.now();
+        } else if (!task.isCompleted) {
+          task.completedAt = null;
+        }
+        setState(() {
+          _tasks.add(task);
+        });
+        await _tasksBox.put(task.id, task);
+        if (notificationsEnabled &&
+            deadlineReminders &&
+            task.deadline != null &&
+            !task.isCompleted) {
+          await NotificationService().scheduleDeadlineReminder(task, minutes);
+        }
+      }
     }
+
     setState(() {
       _editingTask = null;
       _isEditingNewTask = false;

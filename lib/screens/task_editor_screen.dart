@@ -7,6 +7,7 @@ import 'package:m3e_collection/m3e_collection.dart';
 import 'package:antimatter/utils/preferences_helper.dart';
 import 'package:material_new_shapes/material_new_shapes.dart';
 import 'package:antimatter/utils/ui_utils.dart';
+import 'package:antimatter/services/ai_service.dart';
 
 class TaskEditorScreen extends StatelessWidget {
   final Task? task;
@@ -54,6 +55,8 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
   late List<Task> _subTasks;
   late List<String> _selectedCategories;
   List<String> _allCategories = [];
+  bool _isLoadingAI = false;
+  final GroqService _aiService = GroqService();
 
   @override
   void initState() {
@@ -333,15 +336,38 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
               foregroundColor: colorTheme.onErrorContainer,
             ),
             const SizedBox(width: 8),
+            const SizedBox(width: 8),
           ],
-          IconButtonM3E(
-            onPressed: _saveTask,
-            icon: const Icon(Symbols.check_rounded, weight: 800),
-            tooltip: 'Save',
-            variant: IconButtonM3EVariant.filled,
-            width: IconButtonM3EWidth.wide,
-          ),
-          const SizedBox(width: 8),
+          if (_isLoadingAI)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.only(right: 16.0),
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 3),
+                ),
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: ButtonGroupM3E(
+                type: ButtonGroupM3EType.connected,
+                size: ButtonGroupM3ESize.sm,
+                style: ButtonM3EStyle.filled,
+                actions: [
+                  ButtonGroupM3EAction(
+                    icon: const Icon(Symbols.magic_button_rounded, weight: 800),
+                    onPressed: _showAIPromptSheet,
+                  ),
+                  ButtonGroupM3EAction(
+                    icon: const Icon(Symbols.check_rounded, weight: 800),
+                    onPressed: _saveTask,
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
       body: Form(
@@ -652,6 +678,274 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
         });
       },
       style: isSelected ? ButtonM3EStyle.filled : ButtonM3EStyle.tonal,
+    );
+  }
+
+  void _showAIPromptSheet() {
+    final colorTheme = Theme.of(context).colorScheme;
+    final controller = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: colorTheme.surfaceContainerHighest,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colorTheme.onSurfaceVariant.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Icon(
+                    Symbols.magic_button_rounded,
+                    weight: 800,
+                    size: 32,
+                    color: colorTheme.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'AI Task Generator',
+                    style: TextStyle(
+                      fontFamily: 'GoogleSansFlex',
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: colorTheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                maxLines: 3,
+                style: TextStyle(color: colorTheme.onSurface),
+                decoration: InputDecoration(
+                  hintText: 'e.g., "Plan a workout routine for tomorrow morning"',
+                  filled: true,
+                  fillColor: colorTheme.surfaceContainerLow,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.all(20),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: ButtonM3E(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _runAIGenerator(controller.text);
+                      },
+                      label: const Text('Generate with AI'),
+                      style: ButtonM3EStyle.filled,
+                      size: ButtonM3ESize.lg,
+                      shape: ButtonM3EShape.round,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _runAIGenerator(String prompt) async {
+    if (prompt.trim().isEmpty) return;
+
+    setState(() => _isLoadingAI = true);
+    try {
+      final generatedTasks = await _aiService.generateTasks(
+        prompt,
+        existingCategories: _allCategories,
+      );
+
+      if (!mounted) return;
+
+      if (generatedTasks.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No tasks generated. Try a different prompt.')),
+        );
+        return;
+      }
+
+      if (generatedTasks.length == 1) {
+        // Single task: populate editor
+        final task = generatedTasks.first;
+        setState(() {
+          _titleController.text = task.title;
+          if (task.description != null) {
+            _descriptionController.text = task.description!;
+          }
+          if (task.deadline != null) {
+            _deadline = task.deadline;
+          }
+          if (task.subTasks.isNotEmpty) {
+            _subTasks = task.subTasks;
+          }
+          for (final cat in task.categories) {
+            if (!_allCategories.contains(cat)) {
+              _allCategories.add(cat);
+              PreferencesHelper.setStringList('categories', _allCategories);
+            }
+            if (!_selectedCategories.contains(cat)) {
+              _selectedCategories.add(cat);
+            }
+          }
+        });
+      } else {
+        // Multiple tasks: show preview/bulk dialog
+        _showBulkPreviewDialog(generatedTasks);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoadingAI = false);
+    }
+  }
+
+  void _showBulkPreviewDialog(List<Task> tasks) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Symbols.magic_button_rounded, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+            const Text('Bulk Tasks Preview'),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: tasks.length,
+            itemBuilder: (context, index) {
+              final task = tasks[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                        child: Text('${index + 1}',
+                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)),
+                      ),
+                      title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (task.description != null && task.description!.isNotEmpty)
+                            Text(
+                              task.description!,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          if (task.deadline != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Row(
+                                children: [
+                                  Icon(Symbols.event_rounded, size: 14, color: Theme.of(context).colorScheme.primary),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    DateFormat('MMM d, h:mm a').format(task.deadline!),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (task.subTasks.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 72.0, right: 16.0, bottom: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Subtasks:',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            ...task.subTasks.map((st) => Padding(
+                                  padding: const EdgeInsets.only(top: 2.0),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Symbols.subdirectory_arrow_right_rounded, size: 12),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          st.title,
+                                          style: const TextStyle(fontSize: 12),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )),
+                          ],
+                        ),
+                      ),
+                    const Divider(indent: 72),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              widget.onResult(tasks); // Return all tasks to TaskScreen
+            },
+            child: Text('Add all ${tasks.length} tasks'),
+          ),
+        ],
+      ),
     );
   }
 }
