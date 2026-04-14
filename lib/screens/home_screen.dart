@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'settings_screen.dart';
@@ -27,7 +29,62 @@ class _HomeScreenState extends State<HomeScreen> {
   int _taskSubFilter = 0;
   bool _isSessionAmbient = false;
   bool _taskHasSelection = false;
+  late final AppLinks _appLinks;
+  StreamSubscription<Uri>? _linkSubscription;
 
+  @override
+  void initState() {
+    super.initState();
+    _initAppLinks();
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _initAppLinks() async {
+    _appLinks = AppLinks();
+
+    // Check pre-existing link
+    try {
+      final initialUri = await _appLinks.getInitialLink();
+      if (initialUri != null) {
+        _handleDeepLink(initialUri);
+      }
+    } catch (e) {
+      debugPrint("Failed to get initial app link: $e");
+    }
+
+    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      _handleDeepLink(uri);
+    });
+  }
+
+  void _handleDeepLink(Uri uri) {
+    if (uri.scheme == 'antimatter' && uri.host == 'action') {
+      final action = uri.pathSegments.firstOrNull ?? '';
+      if (action == 'create') {
+        final queryParams = uri.queryParameters;
+        final taskName = queryParams['q'] ?? '';
+        setState(() {
+          _navIndex = 1; // Go to Tasks Page
+        });
+        
+        // Wait for page transition then trigger creation if applicable
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_taskScreenKey.currentState != null && taskName.isNotEmpty) {
+            _taskScreenKey.currentState!.triggerGlobalCreate(taskName: taskName);
+          }
+        });
+      } else if (action == 'read') {
+        setState(() {
+          _navIndex = 1; // Go to Tasks Page
+        });
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;

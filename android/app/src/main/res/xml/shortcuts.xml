@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- CREATE Operation (e.g. "Create a task to buy milk in Antimatter") -->
+    <capability android:name="actions.intent.CREATE_THING">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.antimatter"
+            android:targetClass="com.example.antimatter.MainActivity">
+            <!-- This will pass the intent string directly via data -->
+            <url-template android:value="antimatter://action/create{?q}" />
+            <parameter android:name="thing.name" android:key="q" />
+        </intent>
+    </capability>
+
+    <!-- READ / GET List (e.g. "Show my tasks in Antimatter") -->
+    <capability android:name="actions.intent.GET_THING">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.antimatter"
+            android:targetClass="com.example.antimatter.MainActivity">
+            <url-template android:value="antimatter://action/read" />
+        </intent>
+    </capability>
+</shortcuts>

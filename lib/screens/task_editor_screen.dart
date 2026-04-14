@@ -10,13 +10,15 @@ import 'package:antimatter/utils/ui_utils.dart';
 
 class TaskEditorScreen extends StatelessWidget {
   final Task? task;
+  final String? initialTitle;
 
-  const TaskEditorScreen({super.key, this.task});
+  const TaskEditorScreen({super.key, this.task, this.initialTitle});
 
   @override
   Widget build(BuildContext context) {
     return TaskEditorWidget(
       task: task,
+      initialTitle: initialTitle,
       onClose: () => Navigator.of(context).pop(),
       onResult: (result) => Navigator.of(context).pop(result),
       isStandaloneScreen: true,
@@ -26,6 +28,7 @@ class TaskEditorScreen extends StatelessWidget {
 
 class TaskEditorWidget extends StatefulWidget {
   final Task? task;
+  final String? initialTitle;
   final VoidCallback onClose;
   final ValueChanged<dynamic> onResult;
   final bool isStandaloneScreen;
@@ -33,6 +36,7 @@ class TaskEditorWidget extends StatefulWidget {
   const TaskEditorWidget({
     super.key,
     this.task,
+    this.initialTitle,
     required this.onClose,
     required this.onResult,
     this.isStandaloneScreen = false,
@@ -72,7 +76,7 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
   }
 
   void _initFromTask() {
-    _titleController = TextEditingController(text: widget.task?.title ?? '');
+    _titleController = TextEditingController(text: widget.task?.title ?? widget.initialTitle ?? '');   
     _descriptionController = TextEditingController(
       text: widget.task?.description ?? '',
     );

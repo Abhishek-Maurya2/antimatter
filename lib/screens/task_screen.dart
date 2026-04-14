@@ -51,6 +51,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
   String? _selectedCategoryFilter;
   Task? _editingTask;
   bool _isEditingNewTask = false;
+  String? _initialTaskTitle;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -162,6 +163,31 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
             : null,
       );
     }).toList();
+  }
+
+  Future<void> triggerGlobalCreate({required String taskName}) async {
+    if (widget.isExpanded) {
+      if (mounted) {
+        setState(() {
+          _editingTask = null;
+          _isEditingNewTask = true;
+          _initialTaskTitle = taskName;
+        });
+      }
+      return;
+    }
+
+    if (!mounted) return;
+    final newTask = await Navigator.of(context).push<Task>(
+      MaterialPageRoute(builder: (_) => TaskEditorScreen(initialTitle: taskName)),
+    );
+
+    if (newTask != null && mounted) {
+      setState(() {
+        _tasks.add(newTask);
+        _tasksBox.put(newTask.id, newTask);
+      });
+    }
   }
 
   Future<void> openCreateTaskEditor() async {
@@ -511,10 +537,12 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
             ),
             child: TaskEditorWidget(
               task: _isEditingNewTask ? null : _editingTask,
+              initialTitle: _isEditingNewTask ? _initialTaskTitle : null,
               onClose: () {
                 setState(() {
                   _editingTask = null;
                   _isEditingNewTask = false;
+                  _initialTaskTitle = null;
                 });
               },
               onResult: _handleTaskResult,
