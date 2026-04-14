@@ -179,7 +179,9 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
 
     if (!mounted) return;
     final newTask = await Navigator.of(context).push<Task>(
-      MaterialPageRoute(builder: (_) => TaskEditorScreen(initialTitle: taskName)),
+      MaterialPageRoute(
+        builder: (_) => TaskEditorScreen(initialTitle: taskName),
+      ),
     );
 
     if (newTask != null && mounted) {
@@ -463,7 +465,9 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
       );
     }
 
-    final savedCollapsed = PreferencesHelper.getStringList('collapsed_subtask_ids');
+    final savedCollapsed = PreferencesHelper.getStringList(
+      'collapsed_subtask_ids',
+    );
     if (savedCollapsed != null) {
       _collapsedSubTaskTaskIds.addAll(savedCollapsed);
     }
@@ -587,743 +591,780 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
       child: Focus(
         autofocus: true,
         child: Stack(
-      children: [
-        CustomRefreshIndicator(
-          key: _refreshIndicatorKey,
-          onRefresh: () async {
-            await syncService.pullTasks();
-            await _autoMoveOldCompletedTasksToTrash();
-            if (context.mounted) {
-              setState(() {
-                _tasks = _tasksBox.values.toList();
-              });
-            }
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Tasks refreshed'),
-                  behavior: SnackBarBehavior.floating,
-                  width: 500,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              );
-            }
-          },
-          builder: (context, child, controller) {
-            return Stack(
-              children: [
-                child,
-                AnimatedBuilder(
-                  animation: controller,
-                  builder: (context, _) {
-                    final double opacity = (controller.value * 2).clamp(
-                      0.0,
-                      1.0,
-                    );
-                    final double scale = (controller.value * 1.5).clamp(
-                      0.0,
-                      1.0,
-                    );
+          children: [
+            CustomRefreshIndicator(
+              key: _refreshIndicatorKey,
+              onRefresh: () async {
+                await syncService.pullTasks();
+                await _autoMoveOldCompletedTasksToTrash();
+                if (context.mounted) {
+                  setState(() {
+                    _tasks = _tasksBox.values.toList();
+                  });
+                }
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Tasks refreshed'),
+                      behavior: SnackBarBehavior.floating,
+                      width: 500,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  );
+                }
+              },
+              builder: (context, child, controller) {
+                return Stack(
+                  children: [
+                    child,
+                    AnimatedBuilder(
+                      animation: controller,
+                      builder: (context, _) {
+                        final double opacity = (controller.value * 2).clamp(
+                          0.0,
+                          1.0,
+                        );
+                        final double scale = (controller.value * 1.5).clamp(
+                          0.0,
+                          1.0,
+                        );
 
-                    return Positioned(
-                      top: 110 * controller.value, // Move down as we pull
-                      left: 0,
-                      right: 0,
-                      child: Opacity(
-                        opacity: opacity,
-                        child: Transform.scale(
-                          scale: scale,
-                          child: Center(
-                            child: LoadingIndicatorM3E(
-                              variant: LoadingIndicatorM3EVariant.contained,
+                        return Positioned(
+                          top: 110 * controller.value, // Move down as we pull
+                          left: 0,
+                          right: 0,
+                          child: Opacity(
+                            opacity: opacity,
+                            child: Transform.scale(
+                              scale: scale,
+                              child: Center(
+                                child: LoadingIndicatorM3E(
+                                  variant: LoadingIndicatorM3EVariant.contained,
+                                ),
+                              ),
                             ),
                           ),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  // Search bar app bar
+                  SliverToBoxAdapter(
+                    child: SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          children: [
+                            // Search bar
+                            Expanded(
+                              child: Align(
+                                alignment: isExpanded
+                                    ? Alignment.centerRight
+                                    : Alignment.centerLeft,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxWidth: isExpanded
+                                        ? 600
+                                        : double.infinity,
+                                  ),
+                                  child: Container(
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: colorTheme.surface,
+                                      borderRadius: BorderRadius.circular(28),
+                                    ),
+                                    padding: const EdgeInsets.only(
+                                      left: 6,
+                                      right: 36,
+                                    ),
+                                    alignment: Alignment.centerLeft,
+                                    height: 58,
+                                    child: TextField(
+                                      controller: _searchController,
+                                      textAlign: TextAlign.center,
+                                      textAlignVertical:
+                                          TextAlignVertical.center,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _searchQuery = value;
+                                        });
+                                      },
+                                      decoration: InputDecoration(
+                                        hintText: 'Search Tasks',
+                                        hintStyle: TextStyle(
+                                          fontFamily: 'GoogleSansFlex',
+                                          fontSize: 25,
+                                          height: 1,
+                                          letterSpacing: -2,
+                                          fontStyle: FontStyle.italic,
+                                          color: colorTheme.onSurfaceVariant,
+                                          fontVariations: const [
+                                            FontVariation('wght', 900),
+                                            FontVariation('wdth', 130),
+                                            FontVariation('ROND', 0),
+                                          ],
+                                        ),
+                                        border: InputBorder.none,
+                                        isCollapsed: true,
+                                        prefixIcon: Icon(
+                                          Symbols.search_rounded,
+                                          fill: 0,
+                                          weight: 800,
+                                          size: 26,
+                                          color: colorTheme.onSurfaceVariant,
+                                        ),
+                                        suffixIcon: _searchQuery.isNotEmpty
+                                            ? IconButton(
+                                                icon: Icon(
+                                                  Symbols.close_rounded,
+                                                  size: 26,
+                                                  fill: 0,
+                                                  weight: 600,
+                                                  color: colorTheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _searchController.clear();
+                                                    _searchQuery = '';
+                                                  });
+                                                },
+                                              )
+                                            : null,
+                                      ),
+                                      style: TextStyle(
+                                        fontFamily: 'GoogleSansFlex',
+                                        fontSize: 16,
+                                        color: colorTheme.onSurface,
+                                        fontVariations: const [
+                                          FontVariation('wght', 400),
+                                          FontVariation('wdth', 100),
+                                          FontVariation('ROND', 50),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+
+                            // Avatar → Settings
+                            Padding(
+                              padding: const EdgeInsets.only(right: 0),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const SettingsScreen(),
+                                    ),
+                                  );
+                                },
+                                child: CircleAvatar(
+                                  radius: 24,
+                                  backgroundColor: colorTheme.primaryContainer,
+                                  backgroundImage: const AssetImage(
+                                    'assets/profile.jpg',
+                                  ),
+                                ),
+                              ),
+                            ),
+                            if (isExpanded) const SizedBox(width: 28),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                ),
-              ],
-            );
-          },
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              // Search bar app bar
-              SliverToBoxAdapter(
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    child: Row(
-                      children: [
-                        // Search bar
-                        Expanded(
-                          child: Align(
-                            alignment: isExpanded
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: isExpanded ? 600 : double.infinity,
-                              ),
-                              child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: colorTheme.surface,
-                                  borderRadius: BorderRadius.circular(28),
-                                ),
-                                padding: const EdgeInsets.only(
-                                  left: 6,
-                                  right: 36,
-                                ),
-                                alignment: Alignment.centerLeft,
-                                height: 58,
-                                child: TextField(
-                                  controller: _searchController,
-                                  textAlign: TextAlign.center,
-                                  textAlignVertical: TextAlignVertical.center,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _searchQuery = value;
-                                    });
-                                  },
-                                  decoration: InputDecoration(
-                                    hintText: 'Search Tasks',
-                                    hintStyle: TextStyle(
-                                      fontFamily: 'GoogleSansFlex',
-                                      fontSize: 25,
-                                      height: 1,
-                                      letterSpacing: -2,
-                                      fontStyle: FontStyle.italic,
-                                      color: colorTheme.onSurfaceVariant,
-                                      fontVariations: const [
-                                        FontVariation('wght', 900),
-                                        FontVariation('wdth', 130),
-                                        FontVariation('ROND', 0),
-                                      ],
-                                    ),
-                                    border: InputBorder.none,
-                                    isCollapsed: true,
-                                    prefixIcon: Icon(
-                                      Symbols.search_rounded,
-                                      fill: 0,
-                                      weight: 800,
-                                      size: 26,
-                                      color: colorTheme.onSurfaceVariant,
-                                    ),
-                                    suffixIcon: _searchQuery.isNotEmpty
-                                        ? IconButton(
-                                            icon: Icon(
-                                              Symbols.close_rounded,
-                                              size: 26,
-                                              fill: 0,
-                                              weight: 600,
-                                              color:
-                                                  colorTheme.onSurfaceVariant,
-                                            ),
-                                            onPressed: () {
-                                              setState(() {
-                                                _searchController.clear();
-                                                _searchQuery = '';
-                                              });
-                                            },
-                                          )
-                                        : null,
-                                  ),
-                                  style: TextStyle(
-                                    fontFamily: 'GoogleSansFlex',
-                                    fontSize: 16,
-                                    color: colorTheme.onSurface,
-                                    fontVariations: const [
-                                      FontVariation('wght', 400),
-                                      FontVariation('wdth', 100),
-                                      FontVariation('ROND', 50),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-
-                        // Avatar → Settings
-                        Padding(
-                          padding: const EdgeInsets.only(right: 0),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const SettingsScreen(),
-                                ),
-                              );
-                            },
-                            child: CircleAvatar(
-                              radius: 24,
-                              backgroundColor: colorTheme.primaryContainer,
-                              backgroundImage: const AssetImage(
-                                'assets/profile.jpg',
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (isExpanded) const SizedBox(width: 28),
-                      ],
                     ),
                   ),
-                ),
-              ),
-              // Content
-              if (_tasks.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: _buildEmptyState(context, colorTheme),
-                )
-              else
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 0.0,
-                      vertical: 8.0,
-                    ),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 950),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: Column(
-                            children: [
-                              if (isExpanded &&
-                                  _taskSubFilter != 5 &&
-                                  _taskSubFilter != 6)
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    0,
-                                    16,
-                                    16,
-                                  ),
-                                ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                    right: 16.0,
-                                    top: 4.0,
-                                    bottom: 8.0,
-                                  ),
-                                  child: SplitButtonM3E<TaskSortOption>(
-                                    onPressed: () {
-                                      final nextIndex =
-                                          (TaskSortOption.values.indexOf(
-                                                _currentSort,
-                                              ) +
-                                              1) %
-                                          TaskSortOption.values.length;
-                                      final nextSort =
-                                          TaskSortOption.values[nextIndex];
-                                      setState(() {
-                                        _currentSort = nextSort;
-                                      });
-                                      PreferencesHelper.setString(
-                                        'task_sort_preference',
-                                        nextSort.name,
-                                      );
-                                    },
-                                    label: _currentSort == TaskSortOption.newest
-                                        ? 'Newest first'
-                                        : _currentSort == TaskSortOption.oldest
-                                        ? 'Oldest First'
-                                        : 'Due Date',
-                                    // leadingIcon: Symbols.sort,
-                                    items: [
-                                      SplitButtonM3EItem(
-                                        value: TaskSortOption.newest,
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Text('Newest first'),
-                                            if (_currentSort ==
-                                                TaskSortOption.newest) ...[
-                                              const SizedBox(width: 12),
-                                              Icon(
-                                                Symbols.check_rounded,
-                                                size: 18,
-                                                color: colorTheme.primary,
-                                              ),
-                                            ],
-                                          ],
-                                        ),
+                  // Content
+                  if (_tasks.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: _buildEmptyState(context, colorTheme),
+                    )
+                  else
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 0.0,
+                          vertical: 8.0,
+                        ),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 950),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: Column(
+                                children: [
+                                  if (isExpanded &&
+                                      _taskSubFilter != 5 &&
+                                      _taskSubFilter != 6)
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        16,
+                                        0,
+                                        16,
+                                        16,
                                       ),
-                                      SplitButtonM3EItem(
-                                        value: TaskSortOption.oldest,
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Text('Oldest first'),
-                                            if (_currentSort ==
-                                                TaskSortOption.oldest) ...[
-                                              const SizedBox(width: 12),
-                                              Icon(
-                                                Symbols.check_rounded,
-                                                size: 18,
-                                                color: colorTheme.primary,
-                                              ),
-                                            ],
-                                          ],
-                                        ),
+                                    ),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        right: 16.0,
+                                        top: 4.0,
+                                        bottom: 8.0,
                                       ),
-                                      SplitButtonM3EItem(
-                                        value: TaskSortOption.dueDate,
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Text('Due Date'),
-                                            if (_currentSort ==
-                                                TaskSortOption.dueDate) ...[
-                                              const SizedBox(width: 12),
-                                              Icon(
-                                                Symbols.check_rounded,
-                                                size: 18,
-                                                color: colorTheme.primary,
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                    onSelected: (option) {
-                                      setState(() {
-                                        _currentSort = option;
-                                      });
-                                      PreferencesHelper.setString(
-                                        'task_sort_preference',
-                                        option.name,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                              if (_taskSubFilter == 3) // Categories index
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0,
-                                    vertical: 8.0,
-                                  ),
-                                  child: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Row(
-                                      children: [
-                                        ChoiceChip(
-                                          label: const Text('All Categories'),
-                                          selected:
-                                              _selectedCategoryFilter == null,
-                                          onSelected: (selected) {
-                                            if (selected) {
-                                              setState(() {
-                                                _selectedCategoryFilter = null;
-                                              });
-                                            }
-                                          },
-                                          selectedColor:
-                                              colorTheme.secondaryContainer,
-                                          labelStyle: TextStyle(
-                                            color:
-                                                _selectedCategoryFilter == null
-                                                ? colorTheme
-                                                      .onSecondaryContainer
-                                                : colorTheme.onSurface,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        ..._uniqueCategories.map((category) {
-                                          final isSelected =
-                                              _selectedCategoryFilter ==
-                                              category;
-                                          return Padding(
-                                            padding: const EdgeInsets.only(
-                                              right: 8.0,
+                                      child: SplitButtonM3E<TaskSortOption>(
+                                        onPressed: () {
+                                          final nextIndex =
+                                              (TaskSortOption.values.indexOf(
+                                                    _currentSort,
+                                                  ) +
+                                                  1) %
+                                              TaskSortOption.values.length;
+                                          final nextSort =
+                                              TaskSortOption.values[nextIndex];
+                                          setState(() {
+                                            _currentSort = nextSort;
+                                          });
+                                          PreferencesHelper.setString(
+                                            'task_sort_preference',
+                                            nextSort.name,
+                                          );
+                                        },
+                                        label:
+                                            _currentSort ==
+                                                TaskSortOption.newest
+                                            ? 'Newest first'
+                                            : _currentSort ==
+                                                  TaskSortOption.oldest
+                                            ? 'Oldest First'
+                                            : 'Due Date',
+                                        // leadingIcon: Symbols.sort,
+                                        items: [
+                                          SplitButtonM3EItem(
+                                            value: TaskSortOption.newest,
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Text('Newest first'),
+                                                if (_currentSort ==
+                                                    TaskSortOption.newest) ...[
+                                                  const SizedBox(width: 12),
+                                                  Icon(
+                                                    Symbols.check_rounded,
+                                                    size: 18,
+                                                    color: colorTheme.primary,
+                                                  ),
+                                                ],
+                                              ],
                                             ),
-                                            child: ChoiceChip(
-                                              label: Text(category),
-                                              selected: isSelected,
+                                          ),
+                                          SplitButtonM3EItem(
+                                            value: TaskSortOption.oldest,
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Text('Oldest first'),
+                                                if (_currentSort ==
+                                                    TaskSortOption.oldest) ...[
+                                                  const SizedBox(width: 12),
+                                                  Icon(
+                                                    Symbols.check_rounded,
+                                                    size: 18,
+                                                    color: colorTheme.primary,
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                          SplitButtonM3EItem(
+                                            value: TaskSortOption.dueDate,
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Text('Due Date'),
+                                                if (_currentSort ==
+                                                    TaskSortOption.dueDate) ...[
+                                                  const SizedBox(width: 12),
+                                                  Icon(
+                                                    Symbols.check_rounded,
+                                                    size: 18,
+                                                    color: colorTheme.primary,
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                        onSelected: (option) {
+                                          setState(() {
+                                            _currentSort = option;
+                                          });
+                                          PreferencesHelper.setString(
+                                            'task_sort_preference',
+                                            option.name,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  if (_taskSubFilter == 3) // Categories index
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0,
+                                        vertical: 8.0,
+                                      ),
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Row(
+                                          children: [
+                                            ChoiceChip(
+                                              label: const Text(
+                                                'All Categories',
+                                              ),
+                                              selected:
+                                                  _selectedCategoryFilter ==
+                                                  null,
                                               onSelected: (selected) {
-                                                setState(() {
-                                                  _selectedCategoryFilter =
-                                                      selected
-                                                      ? category
-                                                      : null;
-                                                });
+                                                if (selected) {
+                                                  setState(() {
+                                                    _selectedCategoryFilter =
+                                                        null;
+                                                  });
+                                                }
                                               },
                                               selectedColor:
                                                   colorTheme.secondaryContainer,
                                               labelStyle: TextStyle(
-                                                color: isSelected
+                                                color:
+                                                    _selectedCategoryFilter ==
+                                                        null
                                                     ? colorTheme
                                                           .onSecondaryContainer
                                                     : colorTheme.onSurface,
                                               ),
                                             ),
-                                          );
-                                        }),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              if (_sortedTasks
-                                  .where((t) => !t.isCompleted)
-                                  .isNotEmpty) ...[
-                                SettingSection(
-                                  title: Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 4,
-                                      bottom: 8,
-                                    ),
-                                    child: Text(
-                                      'Active',
-                                      style: TextStyle(
-                                        color: colorTheme.primary,
-                                        fontWeight: FontWeight.bold,
+                                            const SizedBox(width: 8),
+                                            ..._uniqueCategories.map((
+                                              category,
+                                            ) {
+                                              final isSelected =
+                                                  _selectedCategoryFilter ==
+                                                  category;
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                  right: 8.0,
+                                                ),
+                                                child: ChoiceChip(
+                                                  label: Text(category),
+                                                  selected: isSelected,
+                                                  onSelected: (selected) {
+                                                    setState(() {
+                                                      _selectedCategoryFilter =
+                                                          selected
+                                                          ? category
+                                                          : null;
+                                                    });
+                                                  },
+                                                  selectedColor: colorTheme
+                                                      .secondaryContainer,
+                                                  labelStyle: TextStyle(
+                                                    color: isSelected
+                                                        ? colorTheme
+                                                              .onSecondaryContainer
+                                                        : colorTheme.onSurface,
+                                                  ),
+                                                ),
+                                              );
+                                            }),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  styleTile: true,
-                                  tiles: _sortedTasks
+                                  if (_sortedTasks
                                       .where((t) => !t.isCompleted)
-                                      .map((task) {
-                                        return TaskTile(
-                                          titleText: task.title,
-                                          descriptionText:
-                                              task.description?.isNotEmpty ==
-                                                  true
-                                              ? task.description
-                                              : null,
-                                          labels:
-                                              task.categories, // Changed here
-                                          isDeadlineMissed:
-                                              task.deadline != null &&
-                                              task.deadline!.isBefore(
-                                                DateTime.now(),
-                                              ),
-                                          deadlineText: task.deadline != null
-                                              ? formatDeadline(task.deadline)
-                                              : null,
-                                          subTasks: _buildSubTaskTiles(
-                                            task,
-                                            colorTheme,
+                                      .isNotEmpty) ...[
+                                    SettingSection(
+                                      title: Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 4,
+                                          bottom: 8,
+                                        ),
+                                        child: Text(
+                                          'Active',
+                                          style: TextStyle(
+                                            color: colorTheme.primary,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          isSelected: _selectedTasksForToolbar
-                                              .contains(task),
-                                          checked: task.isCompleted,
-                                          onChanged: (value) async {
-                                            final isCompleted = value ?? false;
-                                            setState(() {
-                                              task.isCompleted = isCompleted;
-                                            });
-                                            await _setTaskCompleted(
-                                              task,
-                                              isCompleted,
-                                            );
-                                            await _autoMoveOldCompletedTasksToTrash();
-                                          },
-                                          onLongPress: () {
-                                            _toggleTaskSelection(task);
-                                          },
-                                          onPressed: () async {
-                                            if (_selectedTasksForToolbar
-                                                .isNotEmpty) {
-                                              _toggleTaskSelection(task);
-                                              return;
-                                            }
-                                            if (isExpanded) {
-                                              setState(() {
-                                                _editingTask = task;
-                                                _isEditingNewTask = false;
-                                              });
-                                            } else {
-                                              final updatedTask =
-                                                  await Navigator.of(
-                                                    context,
-                                                  ).push<dynamic>(
-                                                    MaterialPageRoute(
-                                                      builder: (_) =>
-                                                          TaskEditorScreen(
-                                                            task: task,
-                                                          ),
-                                                    ),
-                                                  );
-                                              if (updatedTask != null) {
+                                        ),
+                                      ),
+                                      styleTile: true,
+                                      tiles: _sortedTasks
+                                          .where((t) => !t.isCompleted)
+                                          .map((task) {
+                                            return TaskTile(
+                                              titleText: task.title,
+                                              descriptionText:
+                                                  task
+                                                          .description
+                                                          ?.isNotEmpty ==
+                                                      true
+                                                  ? task.description
+                                                  : null,
+                                              labels: task
+                                                  .categories, // Changed here
+                                              isDeadlineMissed:
+                                                  task.deadline != null &&
+                                                  task.deadline!.isBefore(
+                                                    DateTime.now(),
+                                                  ),
+                                              deadlineText:
+                                                  task.deadline != null
+                                                  ? formatDeadline(
+                                                      task.deadline,
+                                                    )
+                                                  : null,
+                                              subTasks: _buildSubTaskTiles(
+                                                task,
+                                                colorTheme,
+                                              ),
+                                              isSelected:
+                                                  _selectedTasksForToolbar
+                                                      .contains(task),
+                                              checked: task.isCompleted,
+                                              onChanged: (value) async {
+                                                final isCompleted =
+                                                    value ?? false;
                                                 setState(() {
-                                                  _editingTask = task;
-                                                  _isEditingNewTask = false;
+                                                  task.isCompleted =
+                                                      isCompleted;
                                                 });
-                                                _handleTaskResult(updatedTask);
-                                              }
-                                            }
-                                          },
-                                        );
-                                      })
-                                      .toList(),
-                                ),
-                                const SizedBox(height: 16),
-                              ],
-                              if (completedTasks.isNotEmpty)
-                                SettingSection(
-                                  title: Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 4,
-                                      bottom: 8,
+                                                await _setTaskCompleted(
+                                                  task,
+                                                  isCompleted,
+                                                );
+                                                await _autoMoveOldCompletedTasksToTrash();
+                                              },
+                                              onLongPress: () {
+                                                _toggleTaskSelection(task);
+                                              },
+                                              onPressed: () async {
+                                                if (_selectedTasksForToolbar
+                                                    .isNotEmpty) {
+                                                  _toggleTaskSelection(task);
+                                                  return;
+                                                }
+                                                if (isExpanded) {
+                                                  setState(() {
+                                                    _editingTask = task;
+                                                    _isEditingNewTask = false;
+                                                  });
+                                                } else {
+                                                  final updatedTask =
+                                                      await Navigator.of(
+                                                        context,
+                                                      ).push<dynamic>(
+                                                        MaterialPageRoute(
+                                                          builder: (_) =>
+                                                              TaskEditorScreen(
+                                                                task: task,
+                                                              ),
+                                                        ),
+                                                      );
+                                                  if (updatedTask != null) {
+                                                    setState(() {
+                                                      _editingTask = task;
+                                                      _isEditingNewTask = false;
+                                                    });
+                                                    _handleTaskResult(
+                                                      updatedTask,
+                                                    );
+                                                  }
+                                                }
+                                              },
+                                            );
+                                          })
+                                          .toList(),
                                     ),
-                                    child: Text(
-                                      'Completed',
-                                      style: TextStyle(
-                                        color: colorTheme.primary,
-                                        fontWeight: FontWeight.bold,
+                                    const SizedBox(height: 16),
+                                  ],
+                                  if (completedTasks.isNotEmpty)
+                                    SettingSection(
+                                      title: Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 4,
+                                          bottom: 8,
+                                        ),
+                                        child: Text(
+                                          'Completed',
+                                          style: TextStyle(
+                                            color: colorTheme.primary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      styleTile: true,
+                                      tiles: completedTasks
+                                          .take(_completedTasksLimit)
+                                          .map((task) {
+                                            return TaskTile(
+                                              titleText: task.title,
+                                              descriptionText:
+                                                  task
+                                                          .description
+                                                          ?.isNotEmpty ==
+                                                      true
+                                                  ? task.description
+                                                  : null,
+                                              labels: task
+                                                  .categories, // Changed here
+                                              deadlineText:
+                                                  task.deadline != null
+                                                  ? formatDeadline(
+                                                      task.deadline,
+                                                    )
+                                                  : null,
+                                              subTasks: _buildSubTaskTiles(
+                                                task,
+                                                colorTheme,
+                                              ),
+                                              isSelected:
+                                                  _selectedTasksForToolbar
+                                                      .contains(task),
+                                              checked: task.isCompleted,
+                                              onChanged: (value) async {
+                                                final isCompleted =
+                                                    value ?? false;
+                                                setState(() {
+                                                  task.isCompleted =
+                                                      isCompleted;
+                                                });
+                                                await _setTaskCompleted(
+                                                  task,
+                                                  isCompleted,
+                                                );
+                                                await _autoMoveOldCompletedTasksToTrash();
+                                              },
+                                              onLongPress: () {
+                                                _toggleTaskSelection(task);
+                                              },
+                                              onPressed: () async {
+                                                if (_selectedTasksForToolbar
+                                                    .isNotEmpty) {
+                                                  _toggleTaskSelection(task);
+                                                  return;
+                                                }
+                                                if (isExpanded) {
+                                                  setState(() {
+                                                    _editingTask = task;
+                                                    _isEditingNewTask = false;
+                                                  });
+                                                } else {
+                                                  final updatedTask =
+                                                      await Navigator.of(
+                                                        context,
+                                                      ).push<dynamic>(
+                                                        MaterialPageRoute(
+                                                          builder: (_) =>
+                                                              TaskEditorScreen(
+                                                                task: task,
+                                                              ),
+                                                        ),
+                                                      );
+                                                  if (updatedTask != null) {
+                                                    setState(() {
+                                                      _editingTask = task;
+                                                      _isEditingNewTask = false;
+                                                    });
+                                                    _handleTaskResult(
+                                                      updatedTask,
+                                                    );
+                                                  }
+                                                }
+                                              },
+                                            );
+                                          })
+                                          .toList(),
+                                    ),
+                                  if (_isLoadingMoreCompletedTasks)
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 24.0,
+                                      ),
+                                      child: Center(
+                                        child: LoadingIndicatorM3E(),
                                       ),
                                     ),
-                                  ),
-                                  styleTile: true,
-                                  tiles: completedTasks
-                                      .take(_completedTasksLimit)
-                                      .map((task) {
-                                        return TaskTile(
-                                          titleText: task.title,
-                                          descriptionText:
-                                              task.description?.isNotEmpty ==
-                                                  true
-                                              ? task.description
-                                              : null,
-                                          labels:
-                                              task.categories, // Changed here
-                                          deadlineText: task.deadline != null
-                                              ? formatDeadline(task.deadline)
-                                              : null,
-                                          subTasks: _buildSubTaskTiles(
-                                            task,
-                                            colorTheme,
-                                          ),
-                                          isSelected: _selectedTasksForToolbar
-                                              .contains(task),
-                                          checked: task.isCompleted,
-                                          onChanged: (value) async {
-                                            final isCompleted = value ?? false;
-                                            setState(() {
-                                              task.isCompleted = isCompleted;
-                                            });
-                                            await _setTaskCompleted(
-                                              task,
-                                              isCompleted,
-                                            );
-                                            await _autoMoveOldCompletedTasksToTrash();
-                                          },
-                                          onLongPress: () {
-                                            _toggleTaskSelection(task);
-                                          },
-                                          onPressed: () async {
-                                            if (_selectedTasksForToolbar
-                                                .isNotEmpty) {
-                                              _toggleTaskSelection(task);
-                                              return;
-                                            }
-                                            if (isExpanded) {
-                                              setState(() {
-                                                _editingTask = task;
-                                                _isEditingNewTask = false;
-                                              });
-                                            } else {
-                                              final updatedTask =
-                                                  await Navigator.of(
-                                                    context,
-                                                  ).push<dynamic>(
-                                                    MaterialPageRoute(
-                                                      builder: (_) =>
-                                                          TaskEditorScreen(
-                                                            task: task,
-                                                          ),
-                                                    ),
-                                                  );
-                                              if (updatedTask != null) {
-                                                setState(() {
-                                                  _editingTask = task;
-                                                  _isEditingNewTask = false;
-                                                });
-                                                _handleTaskResult(updatedTask);
-                                              }
-                                            }
-                                          },
-                                        );
-                                      })
-                                      .toList(),
-                                ),
-                              if (_isLoadingMoreCompletedTasks)
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 24.0),
-                                  child: Center(
-                                    child: LoadingIndicatorM3E(),
-                                  ),
-                                ),
-                              const SizedBox(height: 125),
-                            ],
+                                  const SizedBox(height: 125),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-        // The floating toolbar itself, animating in and out
-        AnimatedPositioned(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutCubic,
-          bottom: _selectedTasksForToolbar.isNotEmpty ? 32 : -100,
-          left: 0,
-          right: 0,
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child:
-                _selectedTasksForToolbar.isNotEmpty ||
-                    _previousTasksForToolbar.isNotEmpty
-                ? TaskFloatingToolbar(
-                    tasks: _selectedTasksForToolbar.isNotEmpty
-                        ? _selectedTasksForToolbar
-                        : _previousTasksForToolbar,
-                    colorTheme: colorTheme,
-                    onComplete: () async {
-                      final tasksToComplete = List<Task>.from(
-                        _selectedTasksForToolbar,
-                      );
-                      if (tasksToComplete.isEmpty) return;
+                ],
+              ),
+            ),
+            // The floating toolbar itself, animating in and out
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              bottom: _selectedTasksForToolbar.isNotEmpty ? 32 : -100,
+              left: 0,
+              right: 0,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child:
+                    _selectedTasksForToolbar.isNotEmpty ||
+                        _previousTasksForToolbar.isNotEmpty
+                    ? TaskFloatingToolbar(
+                        tasks: _selectedTasksForToolbar.isNotEmpty
+                            ? _selectedTasksForToolbar
+                            : _previousTasksForToolbar,
+                        colorTheme: colorTheme,
+                        onComplete: () async {
+                          final tasksToComplete = List<Task>.from(
+                            _selectedTasksForToolbar,
+                          );
+                          if (tasksToComplete.isEmpty) return;
 
-                      final allCompleted = tasksToComplete.every(
-                        (t) => t.isCompleted,
-                      );
-                      final newState = !allCompleted;
+                          final allCompleted = tasksToComplete.every(
+                            (t) => t.isCompleted,
+                          );
+                          final newState = !allCompleted;
 
-                      for (final task in tasksToComplete) {
-                        setState(() {
-                          task.isCompleted = newState;
-                        });
-                        await _setTaskCompleted(task, newState);
-                      }
+                          for (final task in tasksToComplete) {
+                            setState(() {
+                              task.isCompleted = newState;
+                            });
+                            await _setTaskCompleted(task, newState);
+                          }
 
-                      await _autoMoveOldCompletedTasksToTrash();
+                          await _autoMoveOldCompletedTasksToTrash();
 
-                      _clearSelection();
-                    },
-                    onEdit: () async {
-                      if (_selectedTasksForToolbar.length != 1) return;
-                      final taskToEdit = _selectedTasksForToolbar.first;
+                          _clearSelection();
+                        },
+                        onEdit: () async {
+                          if (_selectedTasksForToolbar.length != 1) return;
+                          final taskToEdit = _selectedTasksForToolbar.first;
 
-                      _clearSelection();
+                          _clearSelection();
 
-                      // Wait for animation
-                      await Future.delayed(const Duration(milliseconds: 200));
+                          // Wait for animation
+                          await Future.delayed(
+                            const Duration(milliseconds: 200),
+                          );
 
-                      if (isExpanded) {
-                        setState(() {
-                          _editingTask = taskToEdit;
-                          _isEditingNewTask = false;
-                        });
-                      } else {
-                        final updatedTask = await Navigator.of(context)
-                            .push<dynamic>(
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    TaskEditorScreen(task: taskToEdit),
-                              ),
-                            );
-                        if (updatedTask != null) {
-                          setState(() {
-                            _editingTask = taskToEdit;
-                            _isEditingNewTask = false;
-                          });
-                          _handleTaskResult(updatedTask);
-                        }
-                      }
-                    },
-                    onDelete: () async {
-                      final tasksToDelete = List<Task>.from(
-                        _selectedTasksForToolbar,
-                      );
-                      if (tasksToDelete.isEmpty) return;
-
-                      for (final task in tasksToDelete) {
-                        if (task.isDeleted) {
-                          setState(() {
-                            final index = _tasks.indexWhere(
-                              (t) => t.id == task.id,
-                            );
-                            if (index != -1) {
-                              _tasks.removeAt(index);
+                          if (isExpanded) {
+                            setState(() {
+                              _editingTask = taskToEdit;
+                              _isEditingNewTask = false;
+                            });
+                          } else {
+                            final updatedTask = await Navigator.of(context)
+                                .push<dynamic>(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        TaskEditorScreen(task: taskToEdit),
+                                  ),
+                                );
+                            if (updatedTask != null) {
+                              setState(() {
+                                _editingTask = taskToEdit;
+                                _isEditingNewTask = false;
+                              });
+                              _handleTaskResult(updatedTask);
                             }
-                          });
-                          await _tasksBox.delete(task.id);
-                          await syncService.deleteTask(task.id);
-                        } else {
-                          setState(() {
-                            task.isDeleted = true;
-                          });
-                          await task.save();
-                          await syncService.pushTask(task);
-                        }
-                      }
+                          }
+                        },
+                        onDelete: () async {
+                          final tasksToDelete = List<Task>.from(
+                            _selectedTasksForToolbar,
+                          );
+                          if (tasksToDelete.isEmpty) return;
 
-                      _clearSelection();
-                    },
-                    onArchive: () async {
-                      final tasksToArchive = List<Task>.from(
-                        _selectedTasksForToolbar,
-                      );
-                      if (tasksToArchive.isEmpty) return;
+                          for (final task in tasksToDelete) {
+                            if (task.isDeleted) {
+                              setState(() {
+                                final index = _tasks.indexWhere(
+                                  (t) => t.id == task.id,
+                                );
+                                if (index != -1) {
+                                  _tasks.removeAt(index);
+                                }
+                              });
+                              await _tasksBox.delete(task.id);
+                              await syncService.deleteTask(task.id);
+                            } else {
+                              setState(() {
+                                task.isDeleted = true;
+                              });
+                              await task.save();
+                              await syncService.pushTask(task);
+                            }
+                          }
 
-                      final allArchived = tasksToArchive.every(
-                        (t) => t.isArchived,
-                      );
-                      final newState = !allArchived;
+                          _clearSelection();
+                        },
+                        onArchive: () async {
+                          final tasksToArchive = List<Task>.from(
+                            _selectedTasksForToolbar,
+                          );
+                          if (tasksToArchive.isEmpty) return;
 
-                      for (final task in tasksToArchive) {
-                        setState(() {
-                          task.isArchived = newState;
-                        });
-                        await task.save();
-                        await syncService.pushTask(task);
-                      }
+                          final allArchived = tasksToArchive.every(
+                            (t) => t.isArchived,
+                          );
+                          final newState = !allArchived;
 
-                      _clearSelection();
-                    },
-                    onRestore: () async {
-                      final tasksToRestore = List<Task>.from(
-                        _selectedTasksForToolbar,
-                      );
-                      if (tasksToRestore.isEmpty) return;
+                          for (final task in tasksToArchive) {
+                            setState(() {
+                              task.isArchived = newState;
+                            });
+                            await task.save();
+                            await syncService.pushTask(task);
+                          }
 
-                      for (final task in tasksToRestore) {
-                        setState(() {
-                          task.isDeleted = false;
-                        });
-                        await task.save();
-                        await syncService.pushTask(task);
-                      }
+                          _clearSelection();
+                        },
+                        onRestore: () async {
+                          final tasksToRestore = List<Task>.from(
+                            _selectedTasksForToolbar,
+                          );
+                          if (tasksToRestore.isEmpty) return;
 
-                      _clearSelection();
-                    },
-                    onClose: () {
-                      _clearSelection();
-                    },
-                  )
-                : const SizedBox.shrink(),
-          ),
+                          for (final task in tasksToRestore) {
+                            setState(() {
+                              task.isDeleted = false;
+                            });
+                            await task.save();
+                            await syncService.pushTask(task);
+                          }
+
+                          _clearSelection();
+                        },
+                        onClose: () {
+                          _clearSelection();
+                        },
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ),
+          ],
         ),
-      ],
-    ),
       ),
     );
   }

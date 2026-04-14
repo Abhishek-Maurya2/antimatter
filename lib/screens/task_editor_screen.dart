@@ -76,7 +76,9 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
   }
 
   void _initFromTask() {
-    _titleController = TextEditingController(text: widget.task?.title ?? widget.initialTitle ?? '');   
+    _titleController = TextEditingController(
+      text: widget.task?.title ?? widget.initialTitle ?? '',
+    );
     _descriptionController = TextEditingController(
       text: widget.task?.description ?? '',
     );

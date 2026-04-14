@@ -71,11 +71,13 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _navIndex = 1; // Go to Tasks Page
         });
-        
+
         // Wait for page transition then trigger creation if applicable
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (_taskScreenKey.currentState != null && taskName.isNotEmpty) {
-            _taskScreenKey.currentState!.triggerGlobalCreate(taskName: taskName);
+            _taskScreenKey.currentState!.triggerGlobalCreate(
+              taskName: taskName,
+            );
           }
         });
       } else if (action == 'read') {
@@ -85,6 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
@@ -212,9 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return NavigationRailM3E(
-      type: !context.isLarge
-          ? NavigationRailM3EType.alwaysCollapse
-          : _railType,
+      type: !context.isLarge ? NavigationRailM3EType.alwaysCollapse : _railType,
       modality: NavigationRailM3EModality.standard,
       selectedIndex: railSelectedIndex,
       onDestinationSelected: (index) {
