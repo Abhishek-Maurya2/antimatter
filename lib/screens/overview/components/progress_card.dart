@@ -93,7 +93,7 @@ class ProgressCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'No tasks for today',
+                        'No tasks found',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: colorTheme.onSurfaceVariant,
                         ),

@@ -323,21 +323,21 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
           ),
         ),
         actions: [
-          if (widget.task != null) ...[
-            IconButtonM3E(
-              onPressed: () {
-                widget.onResult('DELETE');
-              },
-              icon: const Icon(Symbols.delete_rounded, weight: 800, size: 22),
-              tooltip: 'Delete',
-              variant: IconButtonM3EVariant.tonal,
-              width: IconButtonM3EWidth.narrow,
-              backgroundColor: colorTheme.errorContainer,
-              foregroundColor: colorTheme.onErrorContainer,
-            ),
-            const SizedBox(width: 8),
-            const SizedBox(width: 8),
-          ],
+          // if (widget.task != null) ...[
+          //   IconButtonM3E(
+          //     onPressed: () {
+          //       widget.onResult('DELETE');
+          //     },
+          //     icon: const Icon(Symbols.delete_rounded, weight: 800, size: 22),
+          //     tooltip: 'Delete',
+          //     variant: IconButtonM3EVariant.tonal,
+          //     width: IconButtonM3EWidth.narrow,
+          //     backgroundColor: colorTheme.errorContainer,
+          //     foregroundColor: colorTheme.onErrorContainer,
+          //   ),
+          //   const SizedBox(width: 8),
+          //   const SizedBox(width: 8),
+          // ],
           if (_isLoadingAI)
             const Center(
               child: Padding(
@@ -353,17 +353,39 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: ButtonGroupM3E(
-                type: ButtonGroupM3EType.connected,
+                type: ButtonGroupM3EType.standard,
                 size: ButtonGroupM3ESize.sm,
                 style: ButtonM3EStyle.filled,
                 actions: [
+                  if (widget.task != null) ...[
+                    ButtonGroupM3EAction(
+                      onPressed: () {
+                        widget.onResult('DELETE');
+                      },
+                      icon: const Icon(
+                        Symbols.delete_rounded,
+                        weight: 800,
+                        size: 22,
+                      ),
+                      width: 30,
+                      contentPadding: EdgeInsets.zero,
+                      foregroundColor: colorTheme.error,
+                      backgroundColor: colorTheme.errorContainer,
+                      shape: ButtonM3EShape.round,
+                    ),
+                  ],
                   ButtonGroupM3EAction(
                     icon: const Icon(Symbols.magic_button_rounded, weight: 800),
                     onPressed: _showAIPromptSheet,
+                    shape: ButtonM3EShape.round,
+                    width: 40,
+                    contentPadding: EdgeInsets.zero,
                   ),
                   ButtonGroupM3EAction(
-                    icon: const Icon(Symbols.check_rounded, weight: 800),
+                    icon: const Icon(Symbols.check_rounded, weight: 800, size: 26),
                     onPressed: _saveTask,
+                    shape: ButtonM3EShape.round,
+                    contentPadding: EdgeInsets.zero,
                   ),
                 ],
               ),

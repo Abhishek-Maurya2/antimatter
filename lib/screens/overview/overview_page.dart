@@ -62,25 +62,9 @@ class _OverviewPageState extends State<OverviewPage> {
         final totalTasks = allTasks.length;
         final completedTasks = allTasks.where((t) => t.isCompleted).length;
         final pendingTasks = totalTasks - completedTasks;
-
         final now = DateTime.now();
-        final todayStart = DateTime(now.year, now.month, now.day);
-        final tomorrowStart = todayStart.add(const Duration(days: 1));
 
-        final todayTotalTasks = allTasks.where((t) {
-          if (t.deadline == null) return false;
-          return t.deadline!.isAfter(todayStart) &&
-              t.deadline!.isBefore(tomorrowStart);
-        }).toList();
-
-        final todayTasks = todayTotalTasks
-            .where((t) => !t.isCompleted)
-            .toList();
-
-        final todayCompletedCount = todayTotalTasks
-            .where((t) => t.isCompleted)
-            .length;
-
+        // Get all uncompleted tasks for the Pending list
         final upcomingTasks =
             allTasks.where((t) {
               return !t.isCompleted;
@@ -237,8 +221,8 @@ class _OverviewPageState extends State<OverviewPage> {
                                         height: upcomingHeight,
                                         child: ProgressCard(
                                           title: "Progress",
-                                          total: todayTotalTasks.length,
-                                          completed: todayCompletedCount,
+                                          total: totalTasks,
+                                          completed: completedTasks,
                                           onTap: widget.onNavigateToTasks,
                                         ),
                                       ),
