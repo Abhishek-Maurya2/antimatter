@@ -800,10 +800,10 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                     ),
                   ),
                   // Content
-                  if (_tasks.isEmpty)
+                  if (_tasks.isEmpty || _sortedTasks.where((t) => !t.isCompleted && !t.isDeleted && !t.isArchived).isEmpty && _taskSubFilter == 0 && _searchQuery.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
-                      child: _buildEmptyState(context, colorTheme),
+                      child: _buildEmptyState(context, colorTheme, allCompleted: _tasks.isNotEmpty),
                     )
                   else
                     SliverToBoxAdapter(
@@ -1382,47 +1382,97 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, ColorScheme colorTheme) {
+  Widget _buildEmptyState(BuildContext context, ColorScheme colorTheme, {bool allCompleted = false}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Color inversion matrix for dark theme
+    const ColorFilter invertFilter = ColorFilter.matrix(<double>[
+      -1,  0,  0, 0, 255,
+       0, -1,  0, 0, 255,
+       0,  0, -1, 0, 255,
+       0,  0,  0, 1,   0,
+    ]);
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         spacing: 16,
         children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: colorTheme.primaryContainer.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(32),
+          if (allCompleted) ...[
+            Builder(
+              builder: (context) {
+                final image = Image.asset(
+                  'assets/illus.png',
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.contain,
+                );
+                if (isDark) {
+                  return ColorFiltered(
+                    colorFilter: invertFilter,
+                    child: image,
+                  );
+                }
+                return image;
+              },
             ),
-            child: Icon(
-              Symbols.task_alt_rounded,
-              fill: 1,
-              weight: 300,
-              size: 64,
-              color: colorTheme.primary,
-            ),
-          ),
-          Text(
-            'No tasks yet',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              color: colorTheme.onSurface,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 48),
-            child: Text(
-              'Tap the + button to create your first task and start organizing your day.',
-              textAlign: TextAlign.center,
+            Text(
+              'All done!',
               style: TextStyle(
-                fontSize: 14,
-                color: colorTheme.onSurfaceVariant,
-                height: 1.4,
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                color: colorTheme.onSurface,
               ),
             ),
-          ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: Text(
+                'You\'ve completed all your tasks. Time to relax!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: colorTheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ] else ...[
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: colorTheme.primaryContainer.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(32),
+              ),
+              child: Icon(
+                Symbols.task_alt_rounded,
+                fill: 1,
+                weight: 300,
+                size: 64,
+                color: colorTheme.primary,
+              ),
+            ),
+            Text(
+              'No tasks yet',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                color: colorTheme.onSurface,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: Text(
+                'Tap the + button to create your first task and start organizing your day.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: colorTheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 80),
         ],
       ),
