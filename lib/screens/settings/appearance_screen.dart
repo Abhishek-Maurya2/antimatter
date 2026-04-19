@@ -8,6 +8,7 @@ import '../../providers/settings_provider.dart';
 import '../settings_screen.dart'; // For iconContainer helper if we keep it there, or better to duplicate/move. I'll duplicate for now to be self-contained or import if public.
 import '../../models/theme_preset.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
+import 'color_mixer_screen.dart';
 
 class AppearanceScreen extends ConsumerWidget {
   final bool isEmbedded;
@@ -249,11 +250,16 @@ class AppearanceScreen extends ConsumerWidget {
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             scrollDirection: Axis.horizontal,
-            itemCount: allPresets.length + 1,
+            itemCount: allPresets.length + 2, // +1 for mixer, +1 for add button
             separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              if (index < allPresets.length) {
-                final preset = allPresets[index];
+              // First item: Color Mixer card
+              if (index == 0) {
+                return _buildColorMixerCard(context, colorTheme);
+              }
+              final presetIndex = index - 1;
+              if (presetIndex < allPresets.length) {
+                final preset = allPresets[presetIndex];
                 final isActive =
                     themeState.activePresetId == preset.id &&
                     !themeState.useDynamicColors;
@@ -271,6 +277,89 @@ class AppearanceScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildColorMixerCard(BuildContext context, ColorScheme colorTheme) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const ColorMixerScreen()),
+        );
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        width: 120,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colorTheme.surfaceContainerHighest.withAlpha(150),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: colorTheme.outlineVariant.withAlpha(100),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFFE57373),
+                      Color(0xFFFFB74D),
+                      Color(0xFFFFF176),
+                      Color(0xFF81C784),
+                      Color(0xFF64B5F6),
+                      Color(0xFFBA68C8),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorTheme.primary.withAlpha(40),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(70),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Symbols.palette,
+                      color: Colors.white,
+                      size: 28,
+                      weight: 700,
+                      fill: 1,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Color Mixer',
+              style: TextStyle(
+                fontSize: 13,
+                color: colorTheme.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
