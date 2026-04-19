@@ -57,40 +57,53 @@ class FloatingNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final showFab = onPageActionTap != null && pageActionIcon != null;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: bottomPadding, left: 24, right: 24),
+      padding: EdgeInsets.only(bottom: bottomPadding, left: 12, right: 12),
       child: Center(
-        child: Material(
-          elevation: 3,
-          shadowColor: colorTheme.shadow.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(50),
-          color: colorTheme.primaryContainer,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children:
-                  List.generate(_items.length, (index) {
-                    return _NavBarItem(
-                      item: _items[index],
-                      isSelected: selectedIndex == index,
-                      onTap: () => onItemSelected(index),
-                      colorTheme: colorTheme,
-                    );
-                  })..addAll([
-                    if (onPageActionTap != null && pageActionIcon != null) ...[
-                      _PageActionButton(
-                        icon: pageActionIcon!,
-                        tooltip: pageActionTooltip,
-                        onTap: onPageActionTap!,
-                        colorTheme: colorTheme,
-                      ),
-                    ],
-                  ]),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+        children: [
+            // Nav bar container
+          Material(
+            elevation: 3,
+            shadowColor: colorTheme.shadow.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(50),
+            color: colorTheme.primaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(_items.length, (index) {
+                  return _NavBarItem(
+                    item: _items[index],
+                    isSelected: selectedIndex == index,
+                    onTap: () => onItemSelected(index),
+                    colorTheme: colorTheme,
+                  );
+                }),
+              ),
             ),
           ),
-        ),
+            // Separate FAB
+            if (showFab) ...[
+              const SizedBox(width: 8),
+              Material(
+                elevation: 3,
+                shadowColor: colorTheme.shadow.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(10),
+                color: colorTheme.primary,
+                child: _PageActionButton(
+                  icon: pageActionIcon!,
+                  tooltip: pageActionTooltip,
+                  onTap: onPageActionTap!,
+                  colorTheme: colorTheme,
+                ),
+              ),
+            ],
+        ],
+      ),
       ),
     );
   }
@@ -113,17 +126,15 @@ class _PageActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Tooltip(
       message: tooltip ?? '',
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorTheme.primary,
-          borderRadius: BorderRadius.circular(50),
-        ),
+      child: SizedBox(
+        width: 60,
+        height: 60,
         child: IconButton(
           onPressed: () {
             HapticFeedback.lightImpact();
             onTap();
           },
-          icon: Icon(icon, size: 28, weight: 800, color: colorTheme.onPrimary),
+          icon: Icon(icon, size: 30, weight: 800, color: colorTheme.onPrimary),
         ),
       ),
     );
