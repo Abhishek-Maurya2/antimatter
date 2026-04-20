@@ -300,7 +300,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
         );
       }
     } else if (result is Task) {
-      if (_isEditingNewTask) {
+      if (_isEditingNewTask || _editingTask == null) {
         if (result.isCompleted && result.completedAt == null) {
           result.completedAt = DateTime.now();
         } else if (!result.isCompleted) {

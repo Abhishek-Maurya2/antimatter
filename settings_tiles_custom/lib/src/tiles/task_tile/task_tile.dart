@@ -102,8 +102,8 @@ class TaskTile extends SettingTile {
       selectedColor: colorScheme.onTertiaryContainer,
       iconColor: isSelected ? colorScheme.onTertiaryContainer : null,
       textColor: isSelected ? colorScheme.onTertiaryContainer : null,
-      contentPadding: const EdgeInsets.only(right: 4, left: 6),
-      // horizontalTitleGap: 0,
+      contentPadding: const EdgeInsets.only(right: 6, left: 6),
+      horizontalTitleGap: 0,
       // titleAlignment: ListTileTitleAlignment.top,
       enabled: enabled,
       leading: icon,
@@ -122,10 +122,10 @@ class TaskTile extends SettingTile {
           ),
           if (deadlineText != null)
             Padding(
-              padding: const EdgeInsets.only(left: 8.0),
+              padding: const EdgeInsets.only(left: 1),
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
+                  horizontal: 5,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(

@@ -23,8 +23,8 @@ class FloatingNavBar extends StatelessWidget {
 
   static const _items = [
     FloatingNavItem(
-      icon: Symbols.dashboard_rounded,
-      selectedIcon: Symbols.dashboard_rounded,
+      icon: Symbols.home_rounded,
+      selectedIcon: Symbols.home_rounded,
       label: 'Overview',
     ),
     FloatingNavItem(
