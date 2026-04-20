@@ -10,6 +10,7 @@ import 'settings/sessions_screen.dart';
 import 'settings/updates_screen.dart';
 import 'settings/about_screen.dart';
 import 'settings/wavy_demo_screen.dart';
+import 'settings/widget_settings_screen.dart';
 import '../utils/ui_utils.dart';
 
 enum SettingsDetail {
@@ -21,6 +22,7 @@ enum SettingsDetail {
   updates,
   about,
   wavyDemo,
+  customWidget,
 }
 
 class SettingsScreen extends StatefulWidget {
@@ -76,6 +78,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         break;
       case SettingsDetail.wavyDemo:
         detailScreen = const WavyDemoScreen(isEmbedded: true);
+        break;
+      case SettingsDetail.customWidget:
+        detailScreen = const WidgetSettingsScreen(isEmbedded: true);
         break;
       default:
         detailScreen = const Center(child: Text('Select a setting'));
@@ -155,6 +160,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onTap: () => _handleTap(
                       SettingsDetail.appearance,
                       () => const AppearanceScreen(),
+                    ),
+                  ),
+                  SettingActionTile(
+                    icon: iconContainer(
+                      Symbols.widgets,
+                      isLight ? Color(0xffa1e4ff) : Color(0xff004d66),
+                      isLight ? Color(0xff004d66) : Color(0xffa1e4ff),
+                    ),
+                    title: Text('Home Screen Widget'),
+                    description: Text('Customize your home screen widget'),
+                    onTap: () => _handleTap(
+                      SettingsDetail.customWidget,
+                      () => const WidgetSettingsScreen(),
                     ),
                   ),
                 ],

@@ -17,14 +17,21 @@ class HomeWidgetService {
   static Future<void> updateTasksWidget(List<Task> allTasks) async {
     if (!_isSupported) return;
 
-    // Filter active tasks (not completed, not deleted, not archived)
+    final showCompleted = await HomeWidget.getWidgetData<bool>('widget_show_completed') ?? true;
+
+    // Filter active tasks (not deleted, not archived)
+    // If showCompleted is false, also exclude completed tasks.
     final activeTasks = allTasks
-        .where((t) => !t.isCompleted && !t.isDeleted && !t.isArchived)
+        .where((t) => !t.isDeleted && !t.isArchived && (showCompleted || !t.isCompleted))
         .toList();
 
     // Convert to a simple List of Maps tailored for the widget
     final tasksData = activeTasks
-        .map((t) => {'id': t.id, 'title': t.title})
+        .map((t) => {
+              'id': t.id,
+              'title': t.title,
+              'isCompleted': t.isCompleted,
+            })
         .toList();
 
     // Save as JSON string

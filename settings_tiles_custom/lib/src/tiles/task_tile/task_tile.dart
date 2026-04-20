@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:settings_tiles/src/tiles/setting_tile.dart';
 import '../../section/setting_section.dart';
@@ -102,8 +103,9 @@ class TaskTile extends SettingTile {
       selectedColor: colorScheme.onTertiaryContainer,
       iconColor: isSelected ? colorScheme.onTertiaryContainer : null,
       textColor: isSelected ? colorScheme.onTertiaryContainer : null,
-      contentPadding: const EdgeInsets.only(right: 6, left: 6),
-      horizontalTitleGap: 0,
+      contentPadding:
+          EdgeInsets.only(right: 6, left: kIsWeb ? 10 : (defaultTargetPlatform == TargetPlatform.android ? 6 : 12)),
+      horizontalTitleGap: kIsWeb ? 10 : (defaultTargetPlatform == TargetPlatform.android ? 0 : 15),
       // titleAlignment: ListTileTitleAlignment.top,
       enabled: enabled,
       leading: icon,

@@ -6,6 +6,8 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
+import android.graphics.Color
 import android.net.Uri
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetPlugin
@@ -23,6 +25,15 @@ class TasksWidgetReceiver : AppWidgetProvider() {
             val taskId = intent.getStringExtra(EXTRA_TASK_ID) ?: return
             handleTaskCompletion(context, taskId)
             return
+        }
+        if (intent.action == "es.antonborri.home_widget.action.UPDATE") {
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val widgetIds = appWidgetManager.getAppWidgetIds(
+                ComponentName(context, TasksWidgetReceiver::class.java)
+            )
+            for (id in widgetIds) {
+                updateAppWidget(context, appWidgetManager, id)
+            }
         }
         super.onReceive(context, intent)
     }
@@ -79,6 +90,30 @@ class TasksWidgetReceiver : AppWidgetProvider() {
         appWidgetId: Int
     ) {
         val views = RemoteViews(context.packageName, R.layout.widget_tasks)
+
+        val widgetData = HomeWidgetPlugin.getData(context)
+        val opacity = widgetData.getFloat("widget_opacity", 0.8f).toDouble()
+        val themeMode = widgetData.getString("widget_theme", "system") ?: "system"
+
+        val isSystemDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+        val isDark = when (themeMode) {
+            "dark" -> true
+            "light" -> false
+            else -> isSystemDark
+        }
+
+        // Apply appearance customizations dynamically
+        val bgColor = if (isDark) Color.parseColor("#121212") else Color.parseColor("#F5F5F5")
+        val textColor = if (isDark) Color.parseColor("#E6E6E6") else Color.parseColor("#1C1C1C")
+        val emptyTextColor = if (isDark) Color.parseColor("#A0A0A0") else Color.parseColor("#757575")
+
+        // Set dynamic tint on the white background shape
+        views.setInt(R.id.widget_dynamic_bg, "setColorFilter", bgColor)
+        // Set dynamic alpha on the background image (0..255)
+        views.setInt(R.id.widget_dynamic_bg, "setImageAlpha", (opacity * 255).toInt())
+
+        views.setTextColor(R.id.widget_title, textColor)
+        views.setTextColor(R.id.widget_empty_view, emptyTextColor)
 
         // Setup the list adapter
         val serviceIntent = Intent(context, TasksWidgetService::class.java).apply {

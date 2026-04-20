@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- Root container: RelativeLayout allows flexible child positioning (above, below, center, etc.) -->
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_root"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_frame"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/widget_background"
-    android:padding="10dp">
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/widget_dynamic_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/widget_bg_shape"
+        android:scaleType="fitXY" />
+
+    <RelativeLayout
+        android:id="@+id/widget_root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="10dp">
     <!-- id: unique identifier for this root view -->
     <!-- layout_width/height: match_parent = fill the entire widget space -->
     <!-- background: custom drawable with rounded corners and surface color -->
@@ -60,4 +70,5 @@
     <!-- layout_centerInParent: centers horizontally and vertically -->
     <!-- visibility=gone: hidden by default; ListView toggles it automatically -->
 
-</RelativeLayout>
+    </RelativeLayout>
+</FrameLayout>
