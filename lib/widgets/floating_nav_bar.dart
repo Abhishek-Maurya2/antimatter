@@ -56,43 +56,42 @@ class FloatingNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
     final showFab = onPageActionTap != null && pageActionIcon != null;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: bottomPadding, left: 12, right: 12),
+      padding: EdgeInsets.symmetric(horizontal: 4),
       child: Center(
         child: Row(
           mainAxisSize: MainAxisSize.min,
-        children: [
+          children: [
             // Nav bar container
-          Material(
-            elevation: 3,
-            shadowColor: colorTheme.shadow.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(50),
-            color: colorTheme.primaryContainer,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(_items.length, (index) {
-                  return _NavBarItem(
-                    item: _items[index],
-                    isSelected: selectedIndex == index,
-                    onTap: () => onItemSelected(index),
-                    colorTheme: colorTheme,
-                  );
-                }),
+            Material(
+              elevation: 3,
+              shadowColor: colorTheme.shadow.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(50),
+              color: colorTheme.primaryContainer,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(_items.length, (index) {
+                    return _NavBarItem(
+                      item: _items[index],
+                      isSelected: selectedIndex == index,
+                      onTap: () => onItemSelected(index),
+                      colorTheme: colorTheme,
+                    );
+                  }),
+                ),
               ),
             ),
-          ),
             // Separate FAB
             if (showFab) ...[
               const SizedBox(width: 8),
               Material(
                 elevation: 3,
                 shadowColor: colorTheme.shadow.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(15),
                 color: colorTheme.primary,
                 child: _PageActionButton(
                   icon: pageActionIcon!,
@@ -102,8 +101,8 @@ class FloatingNavBar extends StatelessWidget {
                 ),
               ),
             ],
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -127,8 +126,8 @@ class _PageActionButton extends StatelessWidget {
     return Tooltip(
       message: tooltip ?? '',
       child: SizedBox(
-        width: 60,
-        height: 60,
+        width: 55,
+        height: 55,
         child: IconButton(
           onPressed: () {
             HapticFeedback.lightImpact();

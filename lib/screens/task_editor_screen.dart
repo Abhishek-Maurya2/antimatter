@@ -382,8 +382,13 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                     contentPadding: EdgeInsets.zero,
                   ),
                   ButtonGroupM3EAction(
-                    icon: const Icon(Symbols.check_rounded, weight: 800, size: 26),
+                    icon: const Icon(
+                      Symbols.check_rounded,
+                      weight: 800,
+                      size: 26,
+                    ),
                     onPressed: _saveTask,
+                    width: 52,
                     shape: ButtonM3EShape.round,
                     contentPadding: EdgeInsets.zero,
                   ),
@@ -760,7 +765,8 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                 maxLines: 3,
                 style: TextStyle(color: colorTheme.onSurface),
                 decoration: InputDecoration(
-                  hintText: 'e.g., "Plan a workout routine for tomorrow morning"',
+                  hintText:
+                      'e.g., "Plan a workout routine for tomorrow morning"',
                   filled: true,
                   fillColor: colorTheme.surfaceContainerLow,
                   border: OutlineInputBorder(
@@ -808,7 +814,9 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
 
       if (generatedTasks.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No tasks generated. Try a different prompt.')),
+          const SnackBar(
+            content: Text('No tasks generated. Try a different prompt.'),
+          ),
         );
         return;
       }
@@ -843,9 +851,9 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoadingAI = false);
@@ -858,7 +866,10 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Symbols.magic_button_rounded, color: Theme.of(context).colorScheme.primary),
+            Icon(
+              Symbols.magic_button_rounded,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             const SizedBox(width: 8),
             const Text('Bulk Tasks Preview'),
           ],
@@ -877,15 +888,27 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                   children: [
                     ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                        child: Text('${index + 1}',
-                            style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer)),
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.primaryContainer,
+                        child: Text(
+                          '${index + 1}',
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onPrimaryContainer,
+                          ),
+                        ),
                       ),
-                      title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      title: Text(
+                        task.title,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (task.description != null && task.description!.isNotEmpty)
+                          if (task.description != null &&
+                              task.description!.isNotEmpty)
                             Text(
                               task.description!,
                               maxLines: 2,
@@ -897,13 +920,23 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                               padding: const EdgeInsets.only(top: 4.0),
                               child: Row(
                                 children: [
-                                  Icon(Symbols.event_rounded, size: 14, color: Theme.of(context).colorScheme.primary),
+                                  Icon(
+                                    Symbols.event_rounded,
+                                    size: 14,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    DateFormat('MMM d, h:mm a').format(task.deadline!),
+                                    DateFormat(
+                                      'MMM d, h:mm a',
+                                    ).format(task.deadline!),
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Theme.of(context).colorScheme.primary,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -915,7 +948,11 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                     ),
                     if (task.subTasks.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.only(left: 72.0, right: 16.0, bottom: 8.0),
+                        padding: const EdgeInsets.only(
+                          left: 72.0,
+                          right: 16.0,
+                          bottom: 8.0,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -924,26 +961,33 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
-                            ...task.subTasks.map((st) => Padding(
-                                  padding: const EdgeInsets.only(top: 2.0),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Symbols.subdirectory_arrow_right_rounded, size: 12),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          st.title,
-                                          style: const TextStyle(fontSize: 12),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                            ...task.subTasks.map(
+                              (st) => Padding(
+                                padding: const EdgeInsets.only(top: 2.0),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Symbols.subdirectory_arrow_right_rounded,
+                                      size: 12,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        st.title,
+                                        style: const TextStyle(fontSize: 12),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ],
-                                  ),
-                                )),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),

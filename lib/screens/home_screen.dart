@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         curve: Curves.easeOutCubic,
                         bottom: _isSessionAmbient
                             ? -150
-                            : (_taskHasSelection ? -100 : 32),
+                            : (_taskHasSelection ? -100 : 22),
                         left: 0,
                         right: 0,
                         child: Center(
