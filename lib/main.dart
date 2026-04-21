@@ -20,6 +20,7 @@ import 'services/supabase_sync_service.dart';
 import 'services/session_sync_service.dart';
 import 'services/notification_service.dart';
 
+
 // Initialize Supabase details
 const String supaUrl = 'https://gztupoebzdjjdcttenkb.supabase.co';
 const String supaAnonKey = 'sb_publishable_fILUo9xhkWoqMlt2UiNlWg_kZf220ex';
