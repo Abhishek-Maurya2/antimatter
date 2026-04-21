@@ -11,7 +11,6 @@ import 'providers/theme_provider.dart';
 import 'providers/settings_provider.dart';
 import 'utils/preferences_helper.dart';
 import 'utils/typography_helper.dart';
-
 import 'screens/home_screen.dart';
 import 'models/task.dart';
 import 'models/session.dart';
