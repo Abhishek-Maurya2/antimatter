@@ -13,14 +13,14 @@ String _$settingsControllerHash() =>
 @ProviderFor(SettingsController)
 final settingsControllerProvider =
     NotifierProvider<SettingsController, SettingsState>.internal(
-      SettingsController.new,
-      name: r'settingsControllerProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$settingsControllerHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+  SettingsController.new,
+  name: r'settingsControllerProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$settingsControllerHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
 typedef _$SettingsController = Notifier<SettingsState>;
 // ignore_for_file: type=lint

@@ -12,14 +12,14 @@ String _$tasksControllerHash() => r'0977857d565c9a81e4bb1f11f28da2525a7916a6';
 @ProviderFor(TasksController)
 final tasksControllerProvider =
     NotifierProvider<TasksController, List<Task>>.internal(
-      TasksController.new,
-      name: r'tasksControllerProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$tasksControllerHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+  TasksController.new,
+  name: r'tasksControllerProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$tasksControllerHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
 typedef _$TasksController = Notifier<List<Task>>;
 // ignore_for_file: type=lint

@@ -6,20 +6,20 @@ part of 'theme_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$themeControllerHash() => r'137acdc81696b114a6284f3039655176e81cf56c';
+String _$themeControllerHash() => r'7721a8ae2e1d50e5c7b47cf766ecdd988747f09a';
 
 /// See also [ThemeController].
 @ProviderFor(ThemeController)
 final themeControllerProvider =
     NotifierProvider<ThemeController, ThemeState>.internal(
-      ThemeController.new,
-      name: r'themeControllerProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$themeControllerHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+  ThemeController.new,
+  name: r'themeControllerProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$themeControllerHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
 typedef _$ThemeController = Notifier<ThemeState>;
 // ignore_for_file: type=lint

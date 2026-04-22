@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/task.dart';
+import '../utils/preferences_helper.dart';
 
 class SupabaseSyncService {
   final _supabase = Supabase.instance.client;
@@ -14,6 +15,7 @@ class SupabaseSyncService {
   bool _isSyncingFromServer = false;
   final Set<String> _pendingPushTaskIds = HashSet<String>();
   final Set<String> _pendingDeleteTaskIds = HashSet<String>();
+  final Map<String, Timer> _debounceTimers = {};
 
   SupabaseSyncService(this._tasksBox);
 
@@ -25,12 +27,15 @@ class SupabaseSyncService {
       int retryCount = 0;
       const maxRetries = 3;
 
+      final lastSync = PreferencesHelper.getString('tasks_last_sync');
+
       while (retryCount < maxRetries) {
         try {
-          response = await _supabase
-              .from('tasks')
-              .select()
-              .timeout(const Duration(seconds: 15));
+          var query = _supabase.from('tasks').select();
+          if (lastSync != null) {
+            query = query.gte('updated_at', lastSync);
+          }
+          response = await query.timeout(const Duration(seconds: 15));
           break; // Success
         } catch (e) {
           retryCount++;
@@ -57,12 +62,14 @@ class SupabaseSyncService {
         debugPrint(
           'Supabase Sync: Successfully pulled ${response.length} tasks.',
         );
+        PreferencesHelper.setString('tasks_last_sync', DateTime.now().toUtc().subtract(const Duration(minutes: 1)).toIso8601String());
       }
     } catch (e) {
       debugPrint('Supabase Sync: Error pulling tasks - $e');
     } finally {
       _isSyncingFromServer = false;
       await _flushPendingPushes();
+      await _runAutoCleanup();
     }
   }
 
@@ -143,21 +150,61 @@ class SupabaseSyncService {
 
   /// Listen to the local Hive box for any changes and push them to Supabase
   void startListening() {
-    _tasksBox.listenable().addListener(() {
+    _tasksBox.watch().listen((event) {
       if (_isSyncingFromServer) {
-        for (final task in _tasksBox.values) {
-          _pendingPushTaskIds.add(task.id);
+        if (event.deleted) {
+          _pendingDeleteTaskIds.add(event.key.toString());
+        } else {
+          _pendingPushTaskIds.add(event.key.toString());
         }
         return;
       }
 
-      // When the box changes, we could inspect the specific changes, but Hive's listenable
-      // just tells us *something* changed. We will iterate and ensure all tasks are synced.
-      // For a more robust solution, we can hook into singular put/delete operations at the repository level.
-      for (final task in _tasksBox.values) {
-        pushTask(task);
+      if (event.deleted) {
+        deleteTask(event.key.toString());
+      } else {
+        final task = event.value as Task;
+        _scheduleDebouncedPush(task);
       }
     });
+  }
+
+  void _scheduleDebouncedPush(Task task) {
+    _debounceTimers[task.id]?.cancel();
+    _debounceTimers[task.id] = Timer(const Duration(milliseconds: 500), () {
+      pushTask(task);
+      _debounceTimers.remove(task.id);
+    });
+  }
+
+  Future<void> _runAutoCleanup() async {
+    final now = DateTime.now();
+    final List<String> toDelete = [];
+
+    for (final task in _tasksBox.values) {
+      if (task.isArchived) continue;
+
+      if (task.isDeleted && task.deletedAt != null) {
+        if (now.difference(task.deletedAt!).inDays >= 30) {
+          toDelete.add(task.id);
+          continue;
+        }
+      }
+
+      if (task.isCompleted && !task.isDeleted) {
+        final completedAt = task.completedAt;
+        if (completedAt != null && now.difference(completedAt).inDays >= 15) {
+          task.isDeleted = true;
+          task.deletedAt = now;
+          await task.save();
+        }
+      }
+    }
+
+    for (final id in toDelete) {
+      await _tasksBox.delete(id);
+      await deleteTask(id);
+    }
   }
 
   Future<void> _flushPendingPushes() async {

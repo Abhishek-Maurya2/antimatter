@@ -27,13 +27,14 @@ class TaskAdapter extends TypeAdapter<Task> {
       isDeleted: fields[7] == null ? false : fields[7] as bool,
       categories: fields[8] == null ? [] : (fields[8] as List).cast<String>(),
       completedAt: fields[9] as DateTime?,
+      deletedAt: fields[10] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Task obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -53,7 +54,9 @@ class TaskAdapter extends TypeAdapter<Task> {
       ..writeByte(8)
       ..write(obj.categories)
       ..writeByte(9)
-      ..write(obj.completedAt);
+      ..write(obj.completedAt)
+      ..writeByte(10)
+      ..write(obj.deletedAt);
   }
 
   @override

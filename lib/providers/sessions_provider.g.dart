@@ -13,14 +13,14 @@ String _$sessionsControllerHash() =>
 @ProviderFor(SessionsController)
 final sessionsControllerProvider =
     NotifierProvider<SessionsController, List<Session>>.internal(
-      SessionsController.new,
-      name: r'sessionsControllerProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$sessionsControllerHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+  SessionsController.new,
+  name: r'sessionsControllerProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$sessionsControllerHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
 typedef _$SessionsController = Notifier<List<Session>>;
 // ignore_for_file: type=lint

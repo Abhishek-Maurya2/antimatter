@@ -241,32 +241,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
   }
 
   Future<void> _autoMoveOldCompletedTasksToTrash() async {
-    final now = DateTime.now();
-    bool changed = false;
-
-    for (final task in _tasksBox.values) {
-      if (!task.isCompleted || task.isDeleted) continue;
-
-      final completedAt = task.completedAt;
-      if (completedAt == null) {
-        task.completedAt = now;
-        await task.save();
-        changed = true;
-        continue;
-      }
-
-      if (now.difference(completedAt) >= _completedRetention) {
-        task.isDeleted = true;
-        await task.save();
-        changed = true;
-      }
-    }
-
-    if (changed && mounted) {
-      setState(() {
-        _tasks = _tasksBox.values.toList();
-      });
-    }
+    // Redundant as of sync optimization. Handled globally by SupabaseSyncService.
   }
 
   void _handleTaskResult(dynamic result) async {
@@ -1324,6 +1299,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                             } else {
                               setState(() {
                                 task.isDeleted = true;
+                                task.deletedAt = DateTime.now();
                               });
                               await task.save();
                               await syncService.pushTask(task);

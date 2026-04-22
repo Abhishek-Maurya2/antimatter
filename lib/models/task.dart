@@ -34,6 +34,9 @@ class Task extends HiveObject {
   @HiveField(9)
   DateTime? completedAt;
 
+  @HiveField(10)
+  DateTime? deletedAt;
+
   Task({
     required this.id,
     required this.title,
@@ -45,6 +48,7 @@ class Task extends HiveObject {
     this.isDeleted = false,
     this.categories = const [],
     this.completedAt,
+    this.deletedAt,
   });
 
   /// Factory constructor to create a Task from JSON (e.g. from Supabase)
@@ -66,6 +70,9 @@ class Task extends HiveObject {
       isDeleted: json['is_deleted'] as bool? ?? false,
       completedAt: json['completed_at'] != null
           ? DateTime.parse(json['completed_at'] as String).toLocal()
+          : null,
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.parse(json['deleted_at'] as String).toLocal()
           : null,
       categories:
           (json['categories'] as List<dynamic>?)
@@ -91,6 +98,7 @@ class Task extends HiveObject {
       'is_deleted': isDeleted,
       'categories': categories,
       'completed_at': completedAt?.toUtc().toIso8601String(),
+      'deleted_at': deletedAt?.toUtc().toIso8601String(),
     };
   }
 }
