@@ -1,6 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/settings_provider.dart';
+
+void _triggerHapticFeedback(String setting) {
+  switch (setting) {
+    case "Light":
+      HapticFeedback.lightImpact();
+      break;
+    case "Medium":
+      HapticFeedback.mediumImpact();
+      break;
+    case "Heavy":
+      HapticFeedback.heavyImpact();
+      break;
+    case "Selection":
+      HapticFeedback.selectionClick();
+      break;
+    case "Off":
+    default:
+      break;
+  }
+}
 
 class FloatingNavItem {
   final IconData icon;
@@ -108,7 +130,7 @@ class FloatingNavBar extends StatelessWidget {
   }
 }
 
-class _PageActionButton extends StatelessWidget {
+class _PageActionButton extends ConsumerWidget {
   final IconData icon;
   final String? tooltip;
   final VoidCallback onTap;
@@ -122,7 +144,11 @@ class _PageActionButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hapticSetting = ref
+        .watch(settingsControllerProvider)
+        .navHapticFeedback;
+
     return Tooltip(
       message: tooltip ?? '',
       child: SizedBox(
@@ -130,7 +156,7 @@ class _PageActionButton extends StatelessWidget {
         height: 55,
         child: IconButton(
           onPressed: () {
-            HapticFeedback.lightImpact();
+            _triggerHapticFeedback(hapticSetting);
             onTap();
           },
           icon: Icon(icon, size: 30, weight: 800, color: colorTheme.onPrimary),
@@ -140,7 +166,7 @@ class _PageActionButton extends StatelessWidget {
   }
 }
 
-class _NavBarItem extends StatelessWidget {
+class _NavBarItem extends ConsumerWidget {
   final FloatingNavItem item;
   final bool isSelected;
   final VoidCallback onTap;
@@ -154,10 +180,14 @@ class _NavBarItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hapticSetting = ref
+        .watch(settingsControllerProvider)
+        .navHapticFeedback;
+
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        _triggerHapticFeedback(hapticSetting);
         onTap();
       },
       child: AnimatedContainer(
@@ -179,7 +209,7 @@ class _NavBarItem extends StatelessWidget {
                 key: ValueKey(isSelected),
                 fill: isSelected ? 1 : 0,
                 weight: isSelected ? 900 : 800,
-                size: isSelected ? 26 : 24,
+                size: isSelected ? 27 : 26,
                 color: isSelected
                     ? colorTheme.onSurface
                     : colorTheme.onPrimaryContainer,

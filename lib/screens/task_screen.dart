@@ -22,11 +22,13 @@ enum TaskSortOption { newest, oldest, dueDate }
 
 class TaskScreen extends ConsumerStatefulWidget {
   final VoidCallback? onBack;
+  final VoidCallback? onNavigateToSettings;
   final bool isExpanded;
   final ValueChanged<bool>? onSelectionChanged;
   const TaskScreen({
     super.key,
     this.onBack,
+    this.onNavigateToSettings,
     required this.isExpanded,
     this.onSelectionChanged,
   });
@@ -190,7 +192,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
   }
 
   Future<void> openCreateTaskEditor() async {
-    if (widget.isExpanded) {
+    if (MediaQuery.sizeOf(context).width >= 650) {
       setState(() {
         _editingTask = null;
         _isEditingNewTask = true;
@@ -198,9 +200,9 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
       return;
     }
 
-    final result = await Navigator.of(
-      context,
-    ).push<dynamic>(MaterialPageRoute(builder: (_) => const TaskEditorScreen()));
+    final result = await Navigator.of(context).push<dynamic>(
+      MaterialPageRoute(builder: (_) => const TaskEditorScreen()),
+    );
 
     if (result != null) {
       _handleTaskResult(result);
@@ -753,11 +755,15 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                               padding: const EdgeInsets.only(right: 0),
                               child: GestureDetector(
                                 onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => const SettingsScreen(),
-                                    ),
-                                  );
+                                  if (widget.onNavigateToSettings != null) {
+                                    widget.onNavigateToSettings!();
+                                  } else {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => const SettingsScreen(),
+                                      ),
+                                    );
+                                  }
                                 },
                                 child: CircleAvatar(
                                   radius: 24,
@@ -775,10 +781,24 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                     ),
                   ),
                   // Content
-                  if (_tasks.isEmpty || _sortedTasks.where((t) => !t.isCompleted && !t.isDeleted && !t.isArchived).isEmpty && _taskSubFilter == 0 && _searchQuery.isEmpty)
+                  if (_tasks.isEmpty ||
+                      _sortedTasks
+                              .where(
+                                (t) =>
+                                    !t.isCompleted &&
+                                    !t.isDeleted &&
+                                    !t.isArchived,
+                              )
+                              .isEmpty &&
+                          _taskSubFilter == 0 &&
+                          _searchQuery.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
-                      child: _buildEmptyState(context, colorTheme, allCompleted: _tasks.isNotEmpty),
+                      child: _buildEmptyState(
+                        context,
+                        colorTheme,
+                        allCompleted: _tasks.isNotEmpty,
+                      ),
                     )
                   else
                     SliverToBoxAdapter(
@@ -1358,15 +1378,35 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, ColorScheme colorTheme, {bool allCompleted = false}) {
+  Widget _buildEmptyState(
+    BuildContext context,
+    ColorScheme colorTheme, {
+    bool allCompleted = false,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Color inversion matrix for dark theme
     const ColorFilter invertFilter = ColorFilter.matrix(<double>[
-      -1,  0,  0, 0, 255,
-       0, -1,  0, 0, 255,
-       0,  0, -1, 0, 255,
-       0,  0,  0, 1,   0,
+      -1,
+      0,
+      0,
+      0,
+      255,
+      0,
+      -1,
+      0,
+      0,
+      255,
+      0,
+      0,
+      -1,
+      0,
+      255,
+      0,
+      0,
+      0,
+      1,
+      0,
     ]);
 
     return Center(
@@ -1384,10 +1424,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                   fit: BoxFit.contain,
                 );
                 if (isDark) {
-                  return ColorFiltered(
-                    colorFilter: invertFilter,
-                    child: image,
-                  );
+                  return ColorFiltered(colorFilter: invertFilter, child: image);
                 }
                 return image;
               },

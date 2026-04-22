@@ -9,6 +9,7 @@ import '../settings_screen.dart'; // For iconContainer helper if we keep it ther
 import '../../models/theme_preset.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'color_mixer_screen.dart';
+import '../../widgets/settings_app_bar.dart';
 
 class AppearanceScreen extends ConsumerWidget {
   final bool isEmbedded;
@@ -34,28 +35,7 @@ class AppearanceScreen extends ConsumerWidget {
           : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.large(
-            title: Text('Appearance'),
-            titleSpacing: isEmbedded ? 16 : 0,
-            leadingWidth: isEmbedded ? 0 : 80,
-            automaticallyImplyLeading: !isEmbedded,
-            leading: isEmbedded
-                ? null
-                : Center(
-                    child: IconButtonM3E(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Symbols.arrow_back_rounded, weight: 700),
-                      tooltip: 'Back',
-                      variant: IconButtonM3EVariant.tonal,
-                      width: IconButtonM3EWidth.wide,
-                    ),
-                  ),
-            backgroundColor: isEmbedded
-                ? colorTheme.surfaceContainerLow
-                : colorTheme.surfaceContainer,
-            scrolledUnderElevation: 1,
-            expandedHeight: 120,
-          ),
+          SettingsAppBar(title: 'Appearance', isEmbedded: isEmbedded),
           SliverToBoxAdapter(
             child: Column(
               children: [
@@ -283,9 +263,9 @@ class AppearanceScreen extends ConsumerWidget {
   Widget _buildColorMixerCard(BuildContext context, ColorScheme colorTheme) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const ColorMixerScreen()),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const ColorMixerScreen()));
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),

@@ -9,6 +9,7 @@ import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../widgets/settings_app_bar.dart';
 
 const String _githubOwner = 'Abhishek-Maurya2';
 const String _githubRepo = 'antimatter';
@@ -357,31 +358,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
         children: [
           CustomScrollView(
             slivers: [
-              SliverAppBar.large(
-                title: Text('Updates'),
-                titleSpacing: widget.isEmbedded ? 16 : 0,
-                leadingWidth: widget.isEmbedded ? 0 : 80,
-                automaticallyImplyLeading: !widget.isEmbedded,
-                leading: widget.isEmbedded
-                    ? null
-                    : Center(
-                        child: IconButtonM3E(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(
-                            Symbols.arrow_back_rounded,
-                            weight: 800,
-                          ),
-                          tooltip: 'Back',
-                          variant: IconButtonM3EVariant.tonal,
-                          width: IconButtonM3EWidth.wide,
-                        ),
-                      ),
-                backgroundColor: widget.isEmbedded
-                    ? colorTheme.surfaceContainerLow
-                    : colorTheme.surfaceContainer,
-                scrolledUnderElevation: 1,
-                expandedHeight: 120,
-              ),
+              SettingsAppBar(title: 'Updates', isEmbedded: widget.isEmbedded),
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Padding(

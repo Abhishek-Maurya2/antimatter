@@ -6,6 +6,7 @@ import 'package:m3e_collection/m3e_collection.dart'
 
 import '../../utils/preferences_helper.dart';
 import '../settings_screen.dart';
+import '../../widgets/settings_app_bar.dart';
 
 class SessionsScreen extends StatefulWidget {
   final bool isEmbedded;
@@ -71,28 +72,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
           : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.large(
-            title: Text('Sessions'),
-            titleSpacing: widget.isEmbedded ? 16 : 0,
-            leadingWidth: widget.isEmbedded ? 0 : 80,
-            automaticallyImplyLeading: !widget.isEmbedded,
-            leading: widget.isEmbedded
-                ? null
-                : Center(
-                    child: IconButtonM3E(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Symbols.arrow_back_rounded, weight: 700),
-                      tooltip: 'Back',
-                      variant: IconButtonM3EVariant.tonal,
-                      width: IconButtonM3EWidth.wide,
-                    ),
-                  ),
-            backgroundColor: widget.isEmbedded
-                ? colorTheme.surfaceContainerLow
-                : colorTheme.surfaceContainer,
-            scrolledUnderElevation: 1,
-            expandedHeight: 120,
-          ),
+          SettingsAppBar(title: 'Sessions', isEmbedded: widget.isEmbedded),
           SliverToBoxAdapter(
             child: Column(
               children: [

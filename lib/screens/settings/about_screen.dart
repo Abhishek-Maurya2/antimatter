@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:antimatter/utils/ui_utils.dart';
+import '../../widgets/settings_app_bar.dart';
 
 const String _githubUrl = 'https://github.com/Abhishek-Maurya2/antimatter';
 
@@ -43,31 +44,7 @@ class _AboutScreenState extends State<AboutScreen> {
         children: [
           CustomScrollView(
             slivers: [
-              SliverAppBar.large(
-                title: const Text('About'),
-                titleSpacing: widget.isEmbedded ? 16 : 0,
-                leadingWidth: widget.isEmbedded ? 0 : 80,
-                automaticallyImplyLeading: !widget.isEmbedded,
-                leading: widget.isEmbedded
-                    ? null
-                    : Center(
-                        child: IconButtonM3E(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(
-                            Symbols.arrow_back_rounded,
-                            weight: 800,
-                          ),
-                          tooltip: 'Back',
-                          variant: IconButtonM3EVariant.tonal,
-                          width: IconButtonM3EWidth.wide,
-                        ),
-                      ),
-                backgroundColor: widget.isEmbedded
-                    ? colorTheme.surfaceContainerLow
-                    : colorTheme.surfaceContainer,
-                scrolledUnderElevation: 1,
-                expandedHeight: 120,
-              ),
+              SettingsAppBar(title: 'About', isEmbedded: widget.isEmbedded),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 120),

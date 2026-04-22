@@ -5,6 +5,7 @@ import 'package:m3e_collection/m3e_collection.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import '../../providers/theme_provider.dart';
 import '../../models/theme_preset.dart';
+import '../../widgets/settings_app_bar.dart';
 
 class ColorMixerScreen extends ConsumerStatefulWidget {
   const ColorMixerScreen({super.key});
@@ -89,23 +90,7 @@ class _ColorMixerScreenState extends ConsumerState<ColorMixerScreen> {
       backgroundColor: colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.large(
-            title: const Text('Color Mixer'),
-            titleSpacing: 0,
-            leadingWidth: 80,
-            leading: Center(
-              child: IconButtonM3E(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Symbols.arrow_back_rounded, weight: 700),
-                tooltip: 'Back',
-                variant: IconButtonM3EVariant.tonal,
-                width: IconButtonM3EWidth.wide,
-              ),
-            ),
-            backgroundColor: colorTheme.surfaceContainer,
-            scrolledUnderElevation: 1,
-            expandedHeight: 120,
-          ),
+          SettingsAppBar(title: 'Color Mixer'),
           SliverToBoxAdapter(
             child: isWide
                 ? _buildWideLayout(colorTheme)

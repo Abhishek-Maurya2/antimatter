@@ -13,7 +13,6 @@ class WavyDemoScreen extends StatefulWidget {
 }
 
 class _WavyDemoScreenState extends State<WavyDemoScreen> {
-
   // Wavy Slider Demo state
   double _wavySliderValue = 0.5;
   double _wavySliderGap = 6.0;
@@ -34,7 +33,7 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
   double _brokenWavelength = 30.0;
   double _brokenStrokeWidth = 4.0;
   double _brokenSpeed = 1.0;
-  
+
   // Official M3E Demo State
   double _m3eProgress = 0.5;
 
@@ -557,7 +556,10 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Wavy Shape (Primary, Medium)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              const Text(
+                'Wavy Shape (Primary, Medium)',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 4),
               SliderM3E(
                 value: _m3eProgress,
@@ -570,8 +572,11 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
                 endIcon: const Icon(Symbols.volume_up, size: 20),
               ),
               const SizedBox(height: 24),
-              
-              const Text('Flat Shape (Same Tall Thumb)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+
+              const Text(
+                'Flat Shape (Same Tall Thumb)',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 4),
               SliderM3E(
                 value: _m3eProgress,
@@ -582,7 +587,10 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
               ),
               const SizedBox(height: 24),
 
-              const Text('Emphasis Variations', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              const Text(
+                'Emphasis Variations',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 12),
               SliderM3E(
                 value: _m3eProgress,
@@ -601,7 +609,10 @@ class _WavyDemoScreenState extends State<WavyDemoScreen> {
               ),
               const SizedBox(height: 24),
 
-              const Text('Size Comparison', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              const Text(
+                'Size Comparison',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 12),
               SliderM3E(
                 value: _m3eProgress,
@@ -909,7 +920,9 @@ class _BrokenWavyCircularProgressIndicatorState
     final activeColor = widget.color ?? colorTheme.primary;
     final trackColor =
         widget.backgroundColor ?? colorTheme.surfaceContainerHighest;
-    final effectiveAmplitude = (widget.value != null && widget.value! >= 1.0) ? 0.0 : widget.waveAmplitude;
+    final effectiveAmplitude = (widget.value != null && widget.value! >= 1.0)
+        ? 0.0
+        : widget.waveAmplitude;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -1282,7 +1295,7 @@ class _BrokenWavyLinearIndicatorPainter extends CustomPainter {
       final double endL = (activeWaveEndX + phaseShift) * ratio;
 
       final segment = metrics.extractPath(startL, endL);
-      
+
       canvas.save();
       canvas.translate(-phaseShift, 0);
       canvas.drawPath(segment, activePaint);
@@ -1364,7 +1377,9 @@ class _BrokenWavyLinearProgressIndicatorState
     final activeColor = widget.color ?? colorTheme.primary;
     final trackColor =
         widget.backgroundColor ?? colorTheme.surfaceContainerHighest;
-    final effectiveAmplitude = (widget.value != null && widget.value! >= 1.0) ? 0.0 : widget.waveAmplitude;
+    final effectiveAmplitude = (widget.value != null && widget.value! >= 1.0)
+        ? 0.0
+        : widget.waveAmplitude;
 
     return AnimatedBuilder(
       animation: _controller,

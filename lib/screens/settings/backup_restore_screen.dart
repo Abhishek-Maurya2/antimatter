@@ -8,6 +8,7 @@ import 'package:settings_tiles/settings_tiles.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/task.dart';
 import '../settings_screen.dart';
+import '../../widgets/settings_app_bar.dart';
 
 class BackupRestoreScreen extends StatefulWidget {
   final bool isEmbedded;
@@ -60,28 +61,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
           : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.large(
-            title: Text('Backup & Restore'),
-            titleSpacing: widget.isEmbedded ? 16 : 0,
-            leadingWidth: widget.isEmbedded ? 0 : 80,
-            automaticallyImplyLeading: !widget.isEmbedded,
-            leading: widget.isEmbedded
-                ? null
-                : Center(
-                    child: IconButtonM3E(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Symbols.arrow_back_rounded, weight: 700),
-                      tooltip: 'Back',
-                      variant: IconButtonM3EVariant.tonal,
-                      width: IconButtonM3EWidth.wide,
-                    ),
-                  ),
-            backgroundColor: widget.isEmbedded
-                ? colorTheme.surfaceContainerLow
-                : colorTheme.surfaceContainer,
-            scrolledUnderElevation: 1,
-            expandedHeight: 120,
-          ),
+          SettingsAppBar(title: 'Backup & Restore', isEmbedded: widget.isEmbedded),
           SliverToBoxAdapter(
             child: Column(
               children: [

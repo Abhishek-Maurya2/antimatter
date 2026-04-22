@@ -98,9 +98,13 @@ class _CircularProgressIndicatorM3EState
         (widget.value == null
             ? widget.size.defaultIndeterminateStrokeWidth
             : widget.size.defaultStrokeWidth);
-    final effectiveGap = widget.gap ?? widget.size.defaultGap;
-    final effectiveWaveLength = widget.waveLength ?? widget.size.defaultWaveLength;
-    final rawAmplitude = widget.waveAmplitude ?? widget.size.defaultWaveAmplitude;
+    final rawGap = widget.gap ?? widget.size.defaultGap;
+    final effectiveGap =
+        (widget.value != null && widget.value! >= 1.0) ? 0.0 : rawGap;
+    final effectiveWaveLength =
+        widget.waveLength ?? widget.size.defaultWaveLength;
+    final rawAmplitude =
+        widget.waveAmplitude ?? widget.size.defaultWaveAmplitude;
 
     // Flatten amplitude at 100%
     final effectiveAmplitude =
@@ -130,6 +134,7 @@ class _CircularProgressIndicatorM3EState
                       ? widget.rotation
                       : _controller.value * 2 * math.pi,
                   size: widget.size,
+                  gap: effectiveGap,
                 ),
         ),
       ),
@@ -148,6 +153,7 @@ class _CircularFlatPainter extends CustomPainter {
     required this.track,
     required this.rotation,
     required this.size,
+    required this.gap,
   });
 
   final double? value;
@@ -155,6 +161,7 @@ class _CircularFlatPainter extends CustomPainter {
   final Color track;
   final double rotation;
   final CircularProgressM3ESize size;
+  final double gap;
 
   @override
   void paint(Canvas canvas, Size s) {
@@ -163,8 +170,7 @@ class _CircularFlatPainter extends CustomPainter {
     final radius = (math.min(s.width, s.height) - stroke) / 2;
     final rect = Rect.fromCircle(center: center, radius: radius);
 
-    final gapDp = 8.0;
-    final gapAngle = gapDp / radius;
+    final gapAngle = gap / radius;
 
     final sweep =
         value == null ? math.pi * 1.5 : (value!.clamp(0.0, 1.0) * math.pi * 2);
@@ -202,7 +208,8 @@ class _CircularFlatPainter extends CustomPainter {
       active != old.active ||
       track != old.track ||
       rotation != old.rotation ||
-      size != old.size;
+      size != old.size ||
+      gap != old.gap;
 }
 
 // ---------------------------------------------------------------------------
@@ -253,14 +260,12 @@ class _BrokenWavyCircularPainter extends CustomPainter {
           final double prevDist = (copy == 0 && i == 0)
               ? 0
               : (i > 0 ? (i - 1) * adjWave / 2 : halfCycles * adjWave / 2);
-          final double prevTheta =
-              (i > 0
+          final double prevTheta = (i > 0
                   ? (copy * circumference + prevDist)
                   : ((copy - 1) * circumference + (halfCycles * adjWave / 2))) /
               radius;
-          final double prevShift = ((i > 0 ? i - 1 : halfCycles) % 2 == 1)
-              ? -waveAmplitude
-              : 0.0;
+          final double prevShift =
+              ((i > 0 ? i - 1 : halfCycles) % 2 == 1) ? -waveAmplitude : 0.0;
           final double prevR = radius + prevShift;
           final double prevPx =
               center.dx + prevR * math.cos(prevTheta - math.pi / 2);
@@ -326,8 +331,7 @@ class _BrokenWavyCircularPainter extends CustomPainter {
 
     if (value != null) {
       // Determinate mode
-      final double progressSweep =
-          (value! * totalSweep).clamp(0.0, totalSweep);
+      final double progressSweep = (value! * totalSweep).clamp(0.0, totalSweep);
 
       final double arcLen = (progressSweep / totalSweep) * halfLen;
       final double startExtract = pathGapLen;

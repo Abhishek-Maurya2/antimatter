@@ -329,7 +329,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: isExpanded
           ? Row(
               children: [
-                SizedBox(width: 350, child: masterList),
+                SizedBox(width: 400, child: masterList),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(15),

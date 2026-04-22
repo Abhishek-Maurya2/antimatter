@@ -132,6 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
             key: _taskScreenKey,
             isExpanded: isExpanded,
             onBack: () => setState(() => _navIndex = 0),
+            onNavigateToSettings: () => setState(() => _navIndex = 3),
             onSelectionChanged: (hasSelection) {
               setState(() {
                 _taskHasSelection = hasSelection;

@@ -9,6 +9,7 @@ import '../../utils/preferences_helper.dart';
 import '../../services/notification_service.dart';
 import '../../main.dart';
 import '../settings_screen.dart';
+import '../../widgets/settings_app_bar.dart';
 
 class NotificationsScreen extends StatefulWidget {
   final bool isEmbedded;
@@ -165,28 +166,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           : colorTheme.surfaceContainer,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar.large(
-            title: Text('Notifications'),
-            titleSpacing: widget.isEmbedded ? 16 : 0,
-            leadingWidth: widget.isEmbedded ? 0 : 80,
-            automaticallyImplyLeading: !widget.isEmbedded,
-            leading: widget.isEmbedded
-                ? null
-                : Center(
-                    child: IconButtonM3E(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Symbols.arrow_back_rounded, weight: 700),
-                      tooltip: 'Back',
-                      variant: IconButtonM3EVariant.tonal,
-                      width: IconButtonM3EWidth.wide,
-                    ),
-                  ),
-            backgroundColor: widget.isEmbedded
-                ? colorTheme.surfaceContainerLow
-                : colorTheme.surfaceContainer,
-            scrolledUnderElevation: 1,
-            expandedHeight: 120,
-          ),
+          SettingsAppBar(title: 'Notifications', isEmbedded: widget.isEmbedded),
           SliverToBoxAdapter(
             child: Column(
               children: [
