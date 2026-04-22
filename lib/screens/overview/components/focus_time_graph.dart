@@ -386,11 +386,10 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                             final heightFactor = seconds / maxSeconds;
                             final isToday = _isSameDay(date, today);
                             final isLowFocus =
-                                averageFocus > 0 &&
-                                seconds < (averageFocus / 2);
+                                seconds < 1800; // less than 30 minutes
                             final isLessFocus =
-                                averageFocus > 0 &&
-                                seconds < (averageFocus / 1.2);
+                                windowBestSeconds > 0 &&
+                                seconds < (windowBestSeconds * 0.7);
 
                             final barChild = Column(
                               mainAxisAlignment: MainAxisAlignment.end,
@@ -399,6 +398,9 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                                   message: _formatDuration(seconds),
                                   triggerMode: TooltipTriggerMode.tap,
                                   child: Container(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 60,
+                                    ),
                                     margin: const EdgeInsets.symmetric(
                                       horizontal: 4,
                                     ),
