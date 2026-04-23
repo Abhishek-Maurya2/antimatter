@@ -120,7 +120,8 @@ class _OverviewPageState extends State<OverviewPage> {
                                 scale: scale,
                                 child: Center(
                                   child: LoadingIndicatorM3E(
-                                    variant: LoadingIndicatorM3EVariant.contained,
+                                    variant:
+                                        LoadingIndicatorM3EVariant.contained,
                                   ),
                                 ),
                               ),
@@ -146,31 +147,30 @@ class _OverviewPageState extends State<OverviewPage> {
                                 _getGreeting(),
                                 style: TextStyle(
                                   fontFamily: 'GoogleSansFlex',
-                                  fontSize: 28,
+                                  fontSize: 54,
                                   fontWeight: FontWeight.w700,
                                   color: colorTheme.onSurface,
                                   fontVariations: const [
-                                    FontVariation('wght', 700),
-                                    FontVariation('wdth', 100),
-                                    FontVariation('ROND', 100),
-                                    FontVariation('GRAD', 0),
-                                    FontVariation('opsz', 28),
+                                    FontVariation('wght', 550),
+                                    FontVariation('wdth', 35),
+                                    FontVariation('ROND', -10),
+                                    FontVariation('GRAD', 10),
+                                    FontVariation('opsz', 208),
                                     FontVariation('slnt', 0),
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 4),
                               Text(
                                 DateFormat('EEEE, MMMM d').format(now),
                                 style: TextStyle(
                                   fontFamily: 'GoogleSansFlex',
-                                  fontSize: 16,
+                                  fontSize: 21,
                                   color: colorTheme.onSurfaceVariant,
                                   fontVariations: const [
-                                    FontVariation('wght', 400),
+                                    FontVariation('wght', 500),
                                     FontVariation('wdth', 100),
-                                    FontVariation('ROND', 50),
-                                    FontVariation('GRAD', 0),
+                                    FontVariation('ROND', 90),
+                                    FontVariation('GRAD', 500),
                                     FontVariation('opsz', 16),
                                     FontVariation('slnt', 0),
                                   ],

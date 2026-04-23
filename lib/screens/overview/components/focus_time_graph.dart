@@ -386,7 +386,7 @@ class _FocusGraphCardState extends State<_FocusGraphCard> {
                             final heightFactor = seconds / maxSeconds;
                             final isToday = _isSameDay(date, today);
                             final isLowFocus =
-                                seconds < 1800; // less than 30 minutes
+                                seconds < 3600; // less than 30 minutes
                             final isLessFocus =
                                 windowBestSeconds > 0 &&
                                 seconds < (windowBestSeconds * 0.7);

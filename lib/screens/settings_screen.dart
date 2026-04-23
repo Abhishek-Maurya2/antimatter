@@ -125,7 +125,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               : null,
           backgroundColor: colorTheme.surfaceContainer,
           scrolledUnderElevation: 1,
-          expandedHeight: 120,
+          expandedHeight: 160,
         ),
         SliverToBoxAdapter(
           child: Column(

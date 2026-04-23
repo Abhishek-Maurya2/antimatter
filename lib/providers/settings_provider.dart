@@ -6,22 +6,26 @@ part 'settings_provider.g.dart';
 class SettingsState {
   final bool useVibrantVariant;
   final bool sortCompletedNewest;
+  final bool navHapticFeedbackEnabled;
   final String navHapticFeedback;
 
   const SettingsState({
     this.useVibrantVariant = false,
     this.sortCompletedNewest = true,
+    this.navHapticFeedbackEnabled = true,
     this.navHapticFeedback = "Light",
   });
 
   SettingsState copyWith({
     bool? useVibrantVariant,
     bool? sortCompletedNewest,
+    bool? navHapticFeedbackEnabled,
     String? navHapticFeedback,
   }) {
     return SettingsState(
       useVibrantVariant: useVibrantVariant ?? this.useVibrantVariant,
       sortCompletedNewest: sortCompletedNewest ?? this.sortCompletedNewest,
+      navHapticFeedbackEnabled: navHapticFeedbackEnabled ?? this.navHapticFeedbackEnabled,
       navHapticFeedback: navHapticFeedback ?? this.navHapticFeedback,
     );
   }
@@ -36,6 +40,8 @@ class SettingsController extends _$SettingsController {
           PreferencesHelper.getBool("useVibrantVariant") ?? false,
       sortCompletedNewest:
           PreferencesHelper.getBool("sortCompletedNewest") ?? true,
+      navHapticFeedbackEnabled:
+          PreferencesHelper.getBool("navHapticFeedbackEnabled") ?? true,
       navHapticFeedback:
           PreferencesHelper.getString("navHapticFeedback") ?? "Light",
     );
@@ -49,6 +55,11 @@ class SettingsController extends _$SettingsController {
   void setSortCompletedNewest(bool value) {
     PreferencesHelper.setBool("sortCompletedNewest", value);
     state = state.copyWith(sortCompletedNewest: value);
+  }
+
+  void setNavHapticFeedbackEnabled(bool value) {
+    PreferencesHelper.setBool("navHapticFeedbackEnabled", value);
+    state = state.copyWith(navHapticFeedbackEnabled: value);
   }
 
   void setNavHapticFeedback(String value) {

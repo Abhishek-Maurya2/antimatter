@@ -4,7 +4,8 @@ import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/settings_provider.dart';
 
-void _triggerHapticFeedback(String setting) {
+void _triggerHapticFeedback(bool enabled, String setting) {
+  if (!enabled) return;
   switch (setting) {
     case "Light":
       HapticFeedback.lightImpact();
@@ -145,9 +146,9 @@ class _PageActionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hapticSetting = ref
-        .watch(settingsControllerProvider)
-        .navHapticFeedback;
+    final settings = ref.watch(settingsControllerProvider);
+    final hapticSetting = settings.navHapticFeedback;
+    final hapticEnabled = settings.navHapticFeedbackEnabled;
 
     return Tooltip(
       message: tooltip ?? '',
@@ -156,7 +157,7 @@ class _PageActionButton extends ConsumerWidget {
         height: 55,
         child: IconButton(
           onPressed: () {
-            _triggerHapticFeedback(hapticSetting);
+            _triggerHapticFeedback(hapticEnabled, hapticSetting);
             onTap();
           },
           icon: Icon(icon, size: 30, weight: 800, color: colorTheme.onPrimary),
@@ -181,13 +182,13 @@ class _NavBarItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hapticSetting = ref
-        .watch(settingsControllerProvider)
-        .navHapticFeedback;
+    final settings = ref.watch(settingsControllerProvider);
+    final hapticSetting = settings.navHapticFeedback;
+    final hapticEnabled = settings.navHapticFeedbackEnabled;
 
     return GestureDetector(
       onTap: () {
-        _triggerHapticFeedback(hapticSetting);
+        _triggerHapticFeedback(hapticEnabled, hapticSetting);
         onTap();
       },
       child: AnimatedContainer(
@@ -198,7 +199,7 @@ class _NavBarItem extends ConsumerWidget {
           color: isSelected ? colorTheme.surfaceContainer : Colors.transparent,
           borderRadius: BorderRadius.circular(50),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 9),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -209,7 +210,7 @@ class _NavBarItem extends ConsumerWidget {
                 key: ValueKey(isSelected),
                 fill: isSelected ? 1 : 0,
                 weight: isSelected ? 900 : 800,
-                size: isSelected ? 27 : 26,
+                size: isSelected ? 25 : 25,
                 color: isSelected
                     ? colorTheme.onSurface
                     : colorTheme.onPrimaryContainer,

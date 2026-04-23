@@ -642,6 +642,7 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                                   ),
                                 ),
                               ),
+                              const SizedBox(height: 25),
                             ],
                           ],
                         ),

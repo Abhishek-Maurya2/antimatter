@@ -42,7 +42,7 @@ class SettingsAppBar extends StatelessWidget {
           ? colorTheme.surfaceContainerLow
           : colorTheme.surfaceContainer,
       scrolledUnderElevation: 1,
-      expandedHeight: 120,
+      expandedHeight: 150,
     );
   }
 }

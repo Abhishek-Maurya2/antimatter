@@ -188,6 +188,71 @@ class AppearanceScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+                SettingSection(
+                  styleTile: true,
+                  title: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      bottom: 8,
+                      top: 16,
+                    ),
+                    child: Text(
+                      'Interactions',
+                      style: TextStyle(
+                        color: colorTheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  tiles: [
+                    SettingSwitchTile(
+                      icon: iconContainer(
+                        Symbols.touch_app_rounded,
+                        isLight
+                            ? const Color(0xffffe0b2)
+                            : const Color(0xff5d4037),
+                        isLight
+                            ? const Color(0xff5d4037)
+                            : const Color(0xffffe0b2),
+                      ),
+                      title: const Text('Nav Haptic Feedback'),
+                      description: const Text('Vibrate on navigation actions'),
+                      toggled: ref.watch(settingsControllerProvider).navHapticFeedbackEnabled,
+                      onChanged: (value) {
+                        ref.read(settingsControllerProvider.notifier).setNavHapticFeedbackEnabled(value);
+                      },
+                    ),
+                    if (ref.watch(settingsControllerProvider).navHapticFeedbackEnabled)
+                      SettingSingleOptionTile(
+                        icon: iconContainer(
+                          Symbols.vibration,
+                          isLight ? const Color(0xffe1bee7) : const Color(0xff4a148c),
+                          isLight ? const Color(0xff4a148c) : const Color(0xffe1bee7),
+                        ),
+                        title: const Text('Feedback Intensity'),
+                        dialogTitle: 'Feedback Intensity',
+                        value: SettingTileValue(
+                          ref.watch(settingsControllerProvider).navHapticFeedback,
+                        ),
+                        options: const [
+                          'Light',
+                          'Medium',
+                          'Heavy',
+                          'Selection',
+                        ],
+                        initialOption: ref
+                            .watch(settingsControllerProvider)
+                            .navHapticFeedback,
+                        onSubmitted: (value) {
+                          ref
+                              .read(settingsControllerProvider.notifier)
+                              .setNavHapticFeedback(value);
+                        },
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 200),
               ],
             ),
