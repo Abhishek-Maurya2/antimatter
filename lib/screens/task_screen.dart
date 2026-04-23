@@ -572,10 +572,10 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
     return CallbackShortcuts(
       bindings: {
         SingleActivator(LogicalKeyboardKey.keyR, control: true): () {
-          _refreshIndicatorKey.currentState?.show();
+          _refreshIndicatorKey.currentState?.refresh();
         },
         SingleActivator(LogicalKeyboardKey.keyR, meta: true): () {
-          _refreshIndicatorKey.currentState?.show();
+          _refreshIndicatorKey.currentState?.refresh();
         },
       },
       child: Focus(
