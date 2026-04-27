@@ -586,6 +586,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
               key: _refreshIndicatorKey,
               onRefresh: () async {
                 await syncService.pullTasks();
+                await sessionSyncService.pullSessions();
                 await _autoMoveOldCompletedTasksToTrash();
                 if (context.mounted) {
                   setState(() {
@@ -595,7 +596,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Tasks refreshed'),
+                      content: const Text('Data refreshed'),
                       behavior: SnackBarBehavior.floating,
                       width: 500,
                       shape: RoundedRectangleBorder(
