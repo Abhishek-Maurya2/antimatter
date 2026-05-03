@@ -10,6 +10,7 @@ import '../../models/theme_preset.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'color_mixer_screen.dart';
 import '../../widgets/settings_app_bar.dart';
+import '../../utils/m3_motion.dart';
 
 class AppearanceScreen extends ConsumerWidget {
   final bool isEmbedded;
@@ -330,7 +331,7 @@ class AppearanceScreen extends ConsumerWidget {
       onTap: () {
         Navigator.of(
           context,
-        ).push(MaterialPageRoute(builder: (_) => const ColorMixerScreen()));
+        ).push(M3Motion.sharedAxisRoute(const ColorMixerScreen()));
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),

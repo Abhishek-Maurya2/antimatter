@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:animations/animations.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'settings_screen.dart';
 import 'package:m3e_collection/m3e_collection.dart'
@@ -10,6 +11,7 @@ import 'package:antimatter/screens/overview/overview_page.dart';
 import 'package:antimatter/screens/task_screen.dart';
 import 'package:antimatter/widgets/floating_nav_bar.dart';
 import 'package:antimatter/utils/ui_utils.dart';
+import 'package:antimatter/utils/m3_motion.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -151,11 +153,24 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: Stack(
                   children: [
-                    bodyContent,
+                    PageTransitionSwitcher(
+                      duration: M3Motion.durationMedium4,
+                      transitionBuilder: (child, primaryAnimation, secondaryAnimation) {
+                        return FadeThroughTransition(
+                          animation: primaryAnimation,
+                          secondaryAnimation: secondaryAnimation,
+                          child: child,
+                        );
+                      },
+                      child: KeyedSubtree(
+                        key: ValueKey<int>(_navIndex),
+                        child: bodyContent,
+                      ),
+                    ),
                     if (!isExpanded)
                       AnimatedPositioned(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOutCubic,
+                        duration: M3Motion.durationMedium2,
+                        curve: M3Motion.emphasizedDecelerate,
                         bottom: _isSessionAmbient
                             ? -150
                             : (_taskHasSelection ? -100 : 20),

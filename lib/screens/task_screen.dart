@@ -17,6 +17,7 @@ import 'package:antimatter/services/notification_service.dart';
 import 'package:antimatter/services/audio_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:antimatter/providers/settings_provider.dart';
+import 'package:antimatter/utils/m3_motion.dart';
 
 enum TaskSortOption { newest, oldest, dueDate }
 
@@ -181,8 +182,8 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
 
     if (!mounted) return;
     final result = await Navigator.of(context).push<dynamic>(
-      MaterialPageRoute(
-        builder: (_) => TaskEditorScreen(initialTitle: taskName),
+      M3Motion.sharedAxisRoute(
+        TaskEditorScreen(initialTitle: taskName),
       ),
     );
 
@@ -201,7 +202,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
     }
 
     final result = await Navigator.of(context).push<dynamic>(
-      MaterialPageRoute(builder: (_) => const TaskEditorScreen()),
+      M3Motion.sharedAxisRoute(const TaskEditorScreen()),
     );
 
     if (result != null) {
@@ -760,8 +761,8 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                                     widget.onNavigateToSettings!();
                                   } else {
                                     Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => const SettingsScreen(),
+                                      M3Motion.sharedAxisRoute(
+                                        const SettingsScreen(),
                                       ),
                                     );
                                   }
@@ -1085,11 +1086,10 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                                                       await Navigator.of(
                                                         context,
                                                       ).push<dynamic>(
-                                                        MaterialPageRoute(
-                                                          builder: (_) =>
-                                                              TaskEditorScreen(
-                                                                task: task,
-                                                              ),
+                                                        M3Motion.sharedAxisRoute(
+                                                          TaskEditorScreen(
+                                                            task: task,
+                                                          ),
                                                         ),
                                                       );
                                                   if (updatedTask != null) {
@@ -1185,11 +1185,10 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                                                       await Navigator.of(
                                                         context,
                                                       ).push<dynamic>(
-                                                        MaterialPageRoute(
-                                                          builder: (_) =>
-                                                              TaskEditorScreen(
-                                                                task: task,
-                                                              ),
+                                                        M3Motion.sharedAxisRoute(
+                                                          TaskEditorScreen(
+                                                            task: task,
+                                                          ),
                                                         ),
                                                       );
                                                   if (updatedTask != null) {
@@ -1285,9 +1284,8 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                           } else {
                             final updatedTask = await Navigator.of(context)
                                 .push<dynamic>(
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        TaskEditorScreen(task: taskToEdit),
+                                  M3Motion.sharedAxisRoute(
+                                    TaskEditorScreen(task: taskToEdit),
                                   ),
                                 );
                             if (updatedTask != null) {

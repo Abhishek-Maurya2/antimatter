@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:animations/animations.dart';
 import 'package:m3e_collection/m3e_collection.dart';
 import 'package:settings_tiles/settings_tiles.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
@@ -11,6 +12,7 @@ import 'settings/updates_screen.dart';
 import 'settings/about_screen.dart';
 import 'settings/wavy_demo_screen.dart';
 import '../utils/ui_utils.dart';
+import '../utils/m3_motion.dart';
 
 enum SettingsDetail {
   appearance,
@@ -45,7 +47,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => screenBuilder()),
+        M3Motion.sharedAxisRoute(screenBuilder()),
       );
     }
   }
@@ -339,7 +341,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: colorTheme.surface,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: _getDetailScreen(),
+                      child: PageTransitionSwitcher(
+                        duration: M3Motion.durationMedium2,
+                        transitionBuilder: (child, primaryAnimation, secondaryAnimation) {
+                          return FadeThroughTransition(
+                            animation: primaryAnimation,
+                            secondaryAnimation: secondaryAnimation,
+                            child: child,
+                          );
+                        },
+                        child: KeyedSubtree(
+                          key: ValueKey<SettingsDetail?>(_selectedDetail),
+                          child: _getDetailScreen(),
+                        ),
+                      ),
                     ),
                   ),
                 ),
