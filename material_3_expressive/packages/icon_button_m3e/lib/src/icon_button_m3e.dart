@@ -23,6 +23,8 @@ class IconButtonM3E extends StatelessWidget {
     this.size = IconButtonM3ESize.sm,
     this.shape = IconButtonM3EShapeVariant.round,
     this.width = IconButtonM3EWidth.defaultWidth,
+    this.customWidth,
+    this.customHeight,
     this.isSelected,
     this.selectedIcon,
     this.enableFeedback,
@@ -39,6 +41,10 @@ class IconButtonM3E extends StatelessWidget {
   final IconButtonM3ESize size;
   final IconButtonM3EShapeVariant shape;
   final IconButtonM3EWidth width;
+  /// Custom visual width in pixels. Overrides the width from [size] and [width] enums.
+  final double? customWidth;
+  /// Custom visual height in pixels. Overrides the height from [size] and [width] enums.
+  final double? customHeight;
   final bool? isSelected;
   final Widget? selectedIcon;
   final bool? enableFeedback;
@@ -51,8 +57,16 @@ class IconButtonM3E extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final m3e = context.m3e;
 
-    final Size visual = size.visual(width);
-    final Size target = size.target(width);
+    final Size enumVisual = size.visual(width);
+    final Size enumTarget = size.target(width);
+    final Size visual = Size(
+      customWidth ?? enumVisual.width,
+      customHeight ?? enumVisual.height,
+    );
+    final Size target = Size(
+      customWidth != null ? customWidth!.clamp(enumTarget.width, double.infinity) : enumTarget.width,
+      customHeight != null ? customHeight!.clamp(enumTarget.height, double.infinity) : enumTarget.height,
+    );
     final double iconPx = size.icon;
 
     final bool selected = isSelected ?? false;

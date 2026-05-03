@@ -290,6 +290,7 @@ class _HeatMapContentState extends State<_HeatMapContent> {
                   variant: IconButtonM3EVariant.tonal,
                   backgroundColor: colorScheme.surfaceContainer,
                   width: IconButtonM3EWidth.narrow,
+                  customHeight: 45,
                 ),
               ],
             ),
