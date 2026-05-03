@@ -16,6 +16,10 @@ class SupabaseSyncService {
   final Set<String> _pendingPushTaskIds = HashSet<String>();
   final Set<String> _pendingDeleteTaskIds = HashSet<String>();
   final Map<String, Timer> _debounceTimers = {};
+  RealtimeChannel? _realtimeChannel;
+
+  // Queue to serialize realtime event processing and avoid interleaving
+  Future<void> _realtimeQueue = Future.value();
 
   SupabaseSyncService(this._tasksBox);
 
@@ -51,11 +55,7 @@ class SupabaseSyncService {
         for (final row in response) {
           final task = Task.fromJson(row);
           final existingTask = _tasksBox.get(task.id);
-          if (task.isCompleted && task.completedAt == null) {
-            task.completedAt = existingTask?.completedAt;
-          } else if (!task.isCompleted) {
-            task.completedAt = null;
-          }
+          _mergeCompletedAt(task, existingTask);
           // Put the remote task into the local box (upsert by ID)
           await _tasksBox.put(task.id, task);
         }
@@ -177,6 +177,17 @@ class SupabaseSyncService {
     });
   }
 
+  /// Preserves the local completedAt timestamp when the remote record omits it,
+  /// and clears it when the task is marked incomplete. Extracted to avoid
+  /// duplicating this logic across pull and realtime paths.
+  void _mergeCompletedAt(Task remoteTask, Task? localTask) {
+    if (remoteTask.isCompleted && remoteTask.completedAt == null) {
+      remoteTask.completedAt = localTask?.completedAt;
+    } else if (!remoteTask.isCompleted) {
+      remoteTask.completedAt = null;
+    }
+  }
+
   Future<void> _runAutoCleanup() async {
     final now = DateTime.now();
     final List<String> toDelete = [];
@@ -225,5 +236,60 @@ class SupabaseSyncService {
         await pushTask(task);
       }
     }
+  }
+
+  /// Subscribe to Supabase Realtime so that changes made on other devices are
+  /// immediately applied to the local Hive box without requiring a manual refresh.
+  void subscribeToRealtime() {
+    _realtimeChannel = _supabase
+        .channel('public:tasks')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'tasks',
+          callback: _handleRealtimeEvent,
+        )
+        .subscribe();
+    debugPrint('Supabase Realtime: Subscribed to tasks table.');
+  }
+
+  Future<void> _handleRealtimeEvent(PostgresChangePayload payload) async {
+    // Enqueue to serialize processing and prevent flag interleaving
+    _realtimeQueue = _realtimeQueue.then((_) => _processRealtimeEvent(payload));
+    await _realtimeQueue;
+  }
+
+  Future<void> _processRealtimeEvent(PostgresChangePayload payload) async {
+    try {
+      _isSyncingFromServer = true;
+      if (payload.eventType == PostgresChangeEvent.delete) {
+        final id = payload.oldRecord['id'] as String?;
+        if (id != null) {
+          await _tasksBox.delete(id);
+          debugPrint('Supabase Realtime: Deleted task $id from local box.');
+        }
+      } else {
+        // INSERT or UPDATE
+        final task = Task.fromJson(payload.newRecord);
+        final existingTask = _tasksBox.get(task.id);
+        _mergeCompletedAt(task, existingTask);
+        await _tasksBox.put(task.id, task);
+        debugPrint('Supabase Realtime: Upserted task ${task.id} in local box.');
+      }
+    } catch (e) {
+      debugPrint('Supabase Realtime: Error handling task event - $e');
+    } finally {
+      _isSyncingFromServer = false;
+    }
+  }
+
+  /// Unsubscribe from Supabase Realtime and cancel all debounce timers.
+  void dispose() {
+    for (final timer in _debounceTimers.values) {
+      timer.cancel();
+    }
+    _debounceTimers.clear();
+    _realtimeChannel?.unsubscribe();
+    _realtimeChannel = null;
   }
 }

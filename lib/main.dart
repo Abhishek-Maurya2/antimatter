@@ -67,6 +67,10 @@ void main() async {
   syncService.startListening();
   sessionSyncService.startListening();
 
+  // Subscribe to Supabase Realtime for instant cross-device updates
+  syncService.subscribeToRealtime();
+  sessionSyncService.subscribeToRealtime();
+
   // Listen to changes in the tasksBox and update the home widget
   tasksBox.listenable().addListener(() {
     HomeWidgetService.updateTasksWidget(tasksBox.values.toList());
@@ -77,6 +81,14 @@ void main() async {
 
   // Sync any tasks completed from the widget
   await HomeWidgetService.syncWidgetCompletions(tasksBox);
+
+  // Dispose sync services (unsubscribe realtime) when the app is fully detached
+  AppLifecycleListener(
+    onDetach: () {
+      syncService.dispose();
+      sessionSyncService.dispose();
+    },
+  );
 
   runApp(const ProviderScope(child: AntimatterApp()));
 }

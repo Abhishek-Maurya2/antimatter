@@ -11,6 +11,10 @@ class SessionSyncService {
   final Box<Session> _sessionsBox;
   bool _isSyncingFromServer = false;
   final Map<String, Timer> _debounceTimers = {};
+  RealtimeChannel? _realtimeChannel;
+
+  // Queue to serialize realtime event processing and avoid interleaving
+  Future<void> _realtimeQueue = Future.value();
 
   SessionSyncService(this._sessionsBox);
 
@@ -79,5 +83,62 @@ class SessionSyncService {
       pushSession(session);
       _debounceTimers.remove(session.id);
     });
+  }
+
+  /// Subscribe to Supabase Realtime so that session changes made on other
+  /// devices are immediately applied to the local Hive box.
+  void subscribeToRealtime() {
+    _realtimeChannel = _supabase
+        .channel('public:sessions')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'sessions',
+          callback: _handleRealtimeEvent,
+        )
+        .subscribe();
+    debugPrint('Supabase Realtime: Subscribed to sessions table.');
+  }
+
+  Future<void> _handleRealtimeEvent(PostgresChangePayload payload) async {
+    // Enqueue to serialize processing and prevent flag interleaving
+    _realtimeQueue = _realtimeQueue.then((_) => _processRealtimeEvent(payload));
+    await _realtimeQueue;
+  }
+
+  Future<void> _processRealtimeEvent(PostgresChangePayload payload) async {
+    try {
+      _isSyncingFromServer = true;
+      if (payload.eventType == PostgresChangeEvent.delete) {
+        final id = payload.oldRecord['id'] as String?;
+        if (id != null) {
+          await _sessionsBox.delete(id);
+          debugPrint(
+            'Supabase Realtime: Deleted session $id from local box.',
+          );
+        }
+      } else {
+        // INSERT or UPDATE
+        final session = Session.fromJson(payload.newRecord);
+        await _sessionsBox.put(session.id, session);
+        debugPrint(
+          'Supabase Realtime: Upserted session ${session.id} in local box.',
+        );
+      }
+    } catch (e) {
+      debugPrint('Supabase Realtime: Error handling session event - $e');
+    } finally {
+      _isSyncingFromServer = false;
+    }
+  }
+
+  /// Unsubscribe from Supabase Realtime and cancel all debounce timers.
+  void dispose() {
+    for (final timer in _debounceTimers.values) {
+      timer.cancel();
+    }
+    _debounceTimers.clear();
+    _realtimeChannel?.unsubscribe();
+    _realtimeChannel = null;
   }
 }
