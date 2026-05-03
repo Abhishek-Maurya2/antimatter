@@ -155,13 +155,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     PageTransitionSwitcher(
                       duration: M3Motion.durationMedium4,
-                      transitionBuilder: (child, primaryAnimation, secondaryAnimation) {
-                        return FadeThroughTransition(
-                          animation: primaryAnimation,
-                          secondaryAnimation: secondaryAnimation,
-                          child: child,
-                        );
-                      },
+                      transitionBuilder:
+                          (child, primaryAnimation, secondaryAnimation) {
+                            return FadeThroughTransition(
+                              animation: primaryAnimation,
+                              secondaryAnimation: secondaryAnimation,
+                              fillColor: Colors.transparent,
+                              child: child,
+                            );
+                          },
                       child: KeyedSubtree(
                         key: ValueKey<int>(_navIndex),
                         child: bodyContent,

@@ -182,9 +182,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
 
     if (!mounted) return;
     final result = await Navigator.of(context).push<dynamic>(
-      M3Motion.sharedAxisRoute(
-        TaskEditorScreen(initialTitle: taskName),
-      ),
+      M3Motion.sharedAxisRoute(TaskEditorScreen(initialTitle: taskName)),
     );
 
     if (result != null && mounted) {
@@ -201,9 +199,9 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
       return;
     }
 
-    final result = await Navigator.of(context).push<dynamic>(
-      M3Motion.sharedAxisRoute(const TaskEditorScreen()),
-    );
+    final result = await Navigator.of(
+      context,
+    ).push<dynamic>(M3Motion.sharedAxisRoute(const TaskEditorScreen()));
 
     if (result != null) {
       _handleTaskResult(result);

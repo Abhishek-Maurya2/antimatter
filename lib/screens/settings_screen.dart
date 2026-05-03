@@ -347,6 +347,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           return FadeThroughTransition(
                             animation: primaryAnimation,
                             secondaryAnimation: secondaryAnimation,
+                            fillColor: Colors.transparent,
                             child: child,
                           );
                         },
