@@ -27,6 +27,7 @@ const String supaAnonKey = 'sb_publishable_fILUo9xhkWoqMlt2UiNlWg_kZf220ex';
 // Global reference for Supabase Sync
 late final SupabaseSyncService syncService;
 late final SessionSyncService sessionSyncService;
+late final AppLifecycleListener _appLifecycleListener;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,7 +84,7 @@ void main() async {
   await HomeWidgetService.syncWidgetCompletions(tasksBox);
 
   // Dispose sync services (unsubscribe realtime) when the app is fully detached
-  AppLifecycleListener(
+  _appLifecycleListener = AppLifecycleListener(
     onDetach: () {
       syncService.dispose();
       sessionSyncService.dispose();

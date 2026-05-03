@@ -253,10 +253,10 @@ class SupabaseSyncService {
     debugPrint('Supabase Realtime: Subscribed to tasks table.');
   }
 
-  Future<void> _handleRealtimeEvent(PostgresChangePayload payload) async {
+  Future<void> _handleRealtimeEvent(PostgresChangePayload payload) {
     // Enqueue to serialize processing and prevent flag interleaving
     _realtimeQueue = _realtimeQueue.then((_) => _processRealtimeEvent(payload));
-    await _realtimeQueue;
+    return _realtimeQueue;
   }
 
   Future<void> _processRealtimeEvent(PostgresChangePayload payload) async {
