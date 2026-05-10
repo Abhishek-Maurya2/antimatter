@@ -1,7 +1,7 @@
 name: antimatter
 description: "AntiMatter - A Material 3 Expressive Task Manager App."
 publish_to: 'none'
-version: 3.5.4
+version: 3.5.5
 
 environment:
   sdk: ^3.11.0
@@ -70,6 +70,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/icon/
   fonts:
     - family: RobotoFlex
       fonts:
@@ -97,7 +98,7 @@ flutter_launcher_icons:
     generate: true
   windows:
     generate: true
-  image_path: "assets/icon/app_icon.png"
+  image_path: "assets/icon/logo.png"
   min_sdk_android: 21
 
 dependency_overrides:

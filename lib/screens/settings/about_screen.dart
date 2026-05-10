@@ -96,12 +96,11 @@ class _AboutScreenState extends State<AboutScreen> {
                 ),
               ),
               child: Center(
-                child: Icon(
-                  Symbols.task_alt_rounded,
-                  weight: 800,
-                  fill: 1,
-                  size: 72,
-                  color: colorTheme.onPrimary,
+                child: Image.asset(
+                  'assets/icon/logo.png',
+                  width: 90,
+                  height: 90,
+                  fit: BoxFit.contain,
                 ),
               ),
             ),
@@ -369,12 +368,15 @@ class _AboutScreenState extends State<AboutScreen> {
                         color: colorTheme.primaryContainer,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        Symbols.task_alt_rounded,
-                        weight: 800,
-                        fill: 1,
-                        color: colorTheme.onPrimaryContainer,
-                      ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            'assets/icon/logo.png',
+                            width: 48,
+                            height: 48,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                     ),
                   ),
                 );

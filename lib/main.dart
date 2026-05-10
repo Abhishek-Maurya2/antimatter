@@ -18,6 +18,7 @@ import 'services/home_widget_service.dart';
 import 'services/supabase_sync_service.dart';
 import 'services/session_sync_service.dart';
 import 'services/notification_service.dart';
+import 'utils/window_state_manager.dart';
 
 
 // Initialize Supabase details
@@ -32,19 +33,14 @@ late final AppLifecycleListener _appLifecycleListener;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await PreferencesHelper.init();
+
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     await windowManager.ensureInitialized();
+    await WindowStateManager.init();
   }
 
   await Supabase.initialize(url: supaUrl, anonKey: supaAnonKey);
-
-  // Allow all orientations for web/desktop
-  // await SystemChrome.setPreferredOrientations([
-  //   DeviceOrientation.portraitUp,
-  //   DeviceOrientation.portraitDown,
-  // ]);
-
-  await PreferencesHelper.init();
   await ThemeController.prefetchDynamicColors();
 
   await Hive.initFlutter();
