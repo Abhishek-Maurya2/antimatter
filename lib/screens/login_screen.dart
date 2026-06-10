@@ -15,8 +15,36 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      debugPrint('[Auth] App resumed. Checking session...');
+      // Give a tiny delay to allow deep link processing to complete if it is running
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted && _isLoading && Supabase.instance.client.auth.currentSession == null) {
+          debugPrint('[Auth] No session found after resume. Resetting loading state.');
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      });
+    }
+  }
 
   void _showSnackBar(String message) {
     if (!mounted) return;

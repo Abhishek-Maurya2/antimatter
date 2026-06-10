@@ -152,34 +152,53 @@ class _AntimatterAppState extends ConsumerState<AntimatterApp> {
 
   void _initDeepLinks() {
     _appLinks = AppLinks();
+    debugPrint('[DeepLink] Initializing deep links listener...');
     
     // Check initial deep link
     _appLinks.getInitialLink().then((uri) {
       if (uri != null) {
+        debugPrint('[DeepLink] Found initial deep link on cold launch: $uri');
         _handleAuthLink(uri);
+      } else {
+        debugPrint('[DeepLink] No initial deep link found on cold launch.');
       }
     }).catchError((e) {
-      debugPrint('Root App Links: Error getting initial link - $e');
+      debugPrint('[DeepLink] Error getting initial link: $e');
     });
 
     _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      debugPrint('[DeepLink] Stream received deep link: $uri');
       _handleAuthLink(uri);
     });
   }
 
   Future<void> _handleAuthLink(Uri uri) async {
-    if (uri.scheme == 'antimatter' && uri.host == 'login-callback') {
+    debugPrint('[DeepLink] Received deep link: $uri');
+    debugPrint('[DeepLink] Scheme: ${uri.scheme}, Host: ${uri.host}, Path: ${uri.path}, QueryParameters: ${uri.queryParameters}');
+    
+    // Check if the scheme matches antimatter and it targets the login callback.
+    // Sometimes the path can contain the callback host depending on how it was parsed.
+    final isCallback = uri.scheme == 'antimatter' && 
+        (uri.host == 'login-callback' || uri.path.contains('login-callback'));
+
+    if (isCallback) {
       try {
-        await Supabase.instance.client.auth.getSessionFromUrl(uri);
+        debugPrint('[DeepLink] Parsing session from URL: $uri');
+        final response = await Supabase.instance.client.auth.getSessionFromUrl(uri);
+        debugPrint('[DeepLink] Session parsed successfully! User ID: ${response.session?.user.id}');
+        
         await PreferencesHelper.setBool('offline_mode', false);
         
         // Force state refresh
         if (mounted) {
           setState(() {});
         }
-      } catch (e) {
-        debugPrint('Root App Links: Auth callback failed - $e');
+      } catch (e, stackTrace) {
+        debugPrint('[DeepLink] Auth callback failed with error: $e');
+        debugPrint('[DeepLink] Stacktrace: $stackTrace');
       }
+    } else {
+      debugPrint('[DeepLink] Received deep link but it did not match callback criteria.');
     }
   }
 
