@@ -1,4 +1,4 @@
-﻿name: settings_tiles
+name: settings_tiles
 description: "A collection of settings tiles to easily create a settings screen"
 
 repository: https://github.com/maelchiotti/settings_tiles
@@ -27,3 +27,24 @@ dependencies:
 dev_dependencies:
   flutter_lints: ^6.0.0
   very_good_analysis: ^9.0.0
+
+dependency_overrides:
+  icon_button_m3e:
+    path: ../material_3_expressive/packages/icon_button_m3e
+  split_button_m3e:
+    path: ../material_3_expressive/packages/split_button_m3e
+  loading_indicator_m3e:
+    path: ../material_3_expressive/packages/loading_indicator_m3e
+  button_m3e:
+    path: ../material_3_expressive/packages/button_m3e
+  button_group_m3e:
+    path: ../material_3_expressive/packages/button_group_m3e
+  slider_m3e:
+    path: ../material_3_expressive/packages/slider_m3e
+  progress_indicator_m3e:
+    path: ../material_3_expressive/packages/progress_indicator_m3e
+  m3e_collection:
+    path: ../material_3_expressive/packages/m3e_collection
+  m3e_design:
+    path: ../material_3_expressive/packages/m3e_design
+

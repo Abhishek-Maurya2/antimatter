@@ -34,20 +34,18 @@ packages:
     source: hosted
     version: "2.1.2"
   button_group_m3e:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: button_group_m3e
-      sha256: bb8ce524f87e806c89abb4cd430425de22cd53feeacc122e3b5da45c76ba2246
-      url: "https://pub.dev"
-    source: hosted
+      path: "../material_3_expressive/packages/button_group_m3e"
+      relative: true
+    source: path
     version: "0.3.1"
   button_m3e:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: button_m3e
-      sha256: "6754ddeb9068ad2005bd26d5ceabc41268029465095686d7d228296c2e706909"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../material_3_expressive/packages/button_m3e"
+      relative: true
+    source: path
     version: "0.1.2"
   characters:
     dependency: transitive
@@ -197,12 +195,11 @@ packages:
     source: hosted
     version: "3.0.1"
   icon_button_m3e:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: icon_button_m3e
-      sha256: c4524d6141a468679821bbb635b833ac6831925d8a6ae4a4511430b0e4ab9c67
-      url: "https://pub.dev"
-    source: hosted
+      path: "../material_3_expressive/packages/icon_button_m3e"
+      relative: true
+    source: path
     version: "0.2.1"
   intl:
     dependency: transitive
@@ -245,12 +242,11 @@ packages:
     source: hosted
     version: "6.0.0"
   loading_indicator_m3e:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: loading_indicator_m3e
-      sha256: "3fe97385b4f84382c25b901abf88fcee4200e6e78fcd5ed7e037a34d7db53038"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../material_3_expressive/packages/loading_indicator_m3e"
+      relative: true
+    source: path
     version: "0.1.1"
   m3e_collection:
     dependency: "direct main"
@@ -260,12 +256,11 @@ packages:
     source: path
     version: "0.3.7"
   m3e_design:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: m3e_design
-      sha256: "15ff0ef4c43553d855c5e866a9aee8231d44919fe2bb354b1259337bdfd659b4"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../material_3_expressive/packages/m3e_design"
+      relative: true
+    source: path
     version: "0.2.1"
   matcher:
     dependency: transitive
@@ -295,10 +290,10 @@ packages:
     dependency: transitive
     description:
       name: meta
-      sha256: "23f08335362185a5ea2ad3a4e597f1375e78bce8a040df5c600c8d3552ef2394"
+      sha256: "1741988757a65eb6b36abe716829688cf01910bbf91c34354ff7ec1c3de2b349"
       url: "https://pub.dev"
     source: hosted
-    version: "1.17.0"
+    version: "1.18.0"
   navigation_bar_m3e:
     dependency: transitive
     description:
@@ -364,12 +359,11 @@ packages:
     source: hosted
     version: "2.1.8"
   progress_indicator_m3e:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: progress_indicator_m3e
-      sha256: "1a2ca029d14427d31093552a0e916b453f58643b78ef805ce6f4669845ac8f70"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../material_3_expressive/packages/progress_indicator_m3e"
+      relative: true
+    source: path
     version: "0.1.1"
   shared_preferences:
     dependency: transitive
@@ -433,12 +427,11 @@ packages:
     source: sdk
     version: "0.0.0"
   slider_m3e:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: slider_m3e
-      sha256: e4c25e94b46ebf3164f407e9db6cce70aa51b92db5143d720f6e55a2a709aa67
-      url: "https://pub.dev"
-    source: hosted
+      path: "../material_3_expressive/packages/slider_m3e"
+      relative: true
+    source: path
     version: "0.1.1"
   source_span:
     dependency: transitive
@@ -449,12 +442,11 @@ packages:
     source: hosted
     version: "1.10.2"
   split_button_m3e:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: split_button_m3e
-      sha256: "8864b612e2475cf8d070783d5d834c8da98b7489365e4597e5b4f6ef85d50f66"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../material_3_expressive/packages/split_button_m3e"
+      relative: true
+    source: path
     version: "0.2.1"
   stack_trace:
     dependency: transitive
@@ -492,10 +484,10 @@ packages:
     dependency: transitive
     description:
       name: test_api
-      sha256: "8161c84903fd860b26bfdefb7963b3f0b68fee7adea0f59ef805ecca346f0c7a"
+      sha256: "949a932224383300f01be9221c39180316445ecb8e7547f70a41a35bf421fb9e"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.10"
+    version: "0.7.11"
   toolbar_m3e:
     dependency: transitive
     description:
@@ -545,5 +537,5 @@ packages:
     source: hosted
     version: "1.1.0"
 sdks:
-  dart: ">=3.9.2 <4.0.0"
+  dart: ">=3.10.0-0 <4.0.0"
   flutter: ">=3.27.0"

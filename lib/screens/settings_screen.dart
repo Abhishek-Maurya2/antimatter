@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'login_screen.dart';
 import 'package:m3e_collection/m3e_collection.dart';
 import 'package:settings_tiles/settings_tiles.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
@@ -11,8 +13,9 @@ import 'settings/sessions_screen.dart';
 import 'settings/updates_screen.dart';
 import 'settings/about_screen.dart';
 import 'settings/wavy_demo_screen.dart';
-import '../utils/ui_utils.dart';
+import 'settings/google_calendar_screen.dart';
 import '../utils/m3_motion.dart';
+import '../utils/preferences_helper.dart';
 
 enum SettingsDetail {
   appearance,
@@ -20,6 +23,7 @@ enum SettingsDetail {
   categories,
   backupRestore,
   sessions,
+  googleCalendar,
   updates,
   about,
   wavyDemo,
@@ -70,6 +74,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case SettingsDetail.sessions:
         detailScreen = const SessionsScreen(isEmbedded: true);
         break;
+      case SettingsDetail.googleCalendar:
+        detailScreen = const GoogleCalendarScreen(isEmbedded: true);
+        break;
       case SettingsDetail.updates:
         detailScreen = const UpdatesScreen(isEmbedded: true);
         break;
@@ -101,7 +108,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isLight = Theme.of(context).brightness == Brightness.light;
     final colorTheme = Theme.of(context).colorScheme;
     final bool isExpanded = MediaQuery.sizeOf(context).width >= 800;
-    final bool isLarge = context.isLarge;
 
     final masterList = CustomScrollView(
       slivers: [
@@ -132,6 +138,90 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SliverToBoxAdapter(
           child: Column(
             children: [
+              // Google Account Section
+              SettingSection(
+                title: Padding(
+                  padding: const EdgeInsets.only(left: 4, bottom: 8),
+                  child: Text(
+                    'Google Account',
+                    style: TextStyle(
+                      color: colorTheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                styleTile: true,
+                tiles: [
+                  if (Supabase.instance.client.auth.currentUser == null)
+                    SettingActionTile(
+                      icon: iconContainer(
+                        Symbols.account_circle,
+                        isLight ? const Color(0xffd6e3ff) : const Color(0xff284777),
+                        isLight ? const Color(0xff284777) : const Color(0xffd6e3ff),
+                      ),
+                      title: const Text('Sign In with Google'),
+                      description: const Text('Enable cloud backups and cross-device sync'),
+                      onTap: () {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          M3Motion.sharedAxisRoute(const LoginScreen()),
+                          (route) => false,
+                        );
+                      },
+                    )
+                  else
+                    SettingActionTile(
+                      icon: iconContainer(
+                        Symbols.account_circle,
+                        isLight ? const Color(0xffcdeda3) : const Color(0xff354e16),
+                        isLight ? const Color(0xff354e16) : const Color(0xffcdeda3),
+                      ),
+                      title: Text(Supabase.instance.client.auth.currentUser?.userMetadata?['full_name'] as String? ?? 'Authenticated User'),
+                      description: Text('Log out of ${Supabase.instance.client.auth.currentUser?.email ?? 'Connected'}'),
+                      onTap: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Sign Out?'),
+                            content: const Text(
+                              'Are you sure you want to sign out? '
+                              'Your local tasks and sessions will be cleared, and you will be routed back to the login screen.',
+                            ),
+                            actions: [
+                              ButtonM3E(
+                                onPressed: () => Navigator.of(ctx).pop(false),
+                                style: ButtonM3EStyle.text,
+                                label: const Text('Cancel'),
+                              ),
+                              ButtonM3E(
+                                onPressed: () => Navigator.of(ctx).pop(true),
+                                style: ButtonM3EStyle.filled,
+                                backgroundColor: colorTheme.error,
+                                foregroundColor: colorTheme.onError,
+                                label: const Text('Sign Out'),
+                              ),
+                            ],
+                          ),
+                        );
+                        
+                        if (confirmed == true) {
+                          // The global auth state change listener in main.dart handles all cleanups
+                          // (GoogleCalendarService.signOut, syncService.clearLocalData, sessionSyncService.clearLocalData)
+                          // when it detects the signedOut event.
+                          await Supabase.instance.client.auth.signOut();
+                          await PreferencesHelper.remove('offline_mode');
+                          
+                          if (context.mounted) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              M3Motion.sharedAxisRoute(const LoginScreen()),
+                              (route) => false,
+                            );
+                          }
+                        }
+                      },
+                    ),
+                ],
+              ),
+              SizedBox(height: 16),
               // Appearance section
               SettingSection(
                 title: Padding(
@@ -242,6 +332,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onTap: () => _handleTap(
                       SettingsDetail.sessions,
                       () => const SessionsScreen(),
+                    ),
+                  ),
+                  SettingActionTile(
+                    icon: iconContainer(
+                      Symbols.calendar_month,
+                      isLight ? Color(0xffd6e3ff) : Color(0xff284777),
+                      isLight ? Color(0xff284777) : Color(0xffd6e3ff),
+                    ),
+                    title: Text('Google Calendar'),
+                    description: Text('Sync tasks with Google Workspace'),
+                    onTap: () => _handleTap(
+                      SettingsDetail.googleCalendar,
+                      () => const GoogleCalendarScreen(),
                     ),
                   ),
                 ],

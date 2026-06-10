@@ -85,6 +85,20 @@ class Task extends HiveObject {
     );
   }
 
+  /// Update this Task's fields in-place from another Task instance
+  void updateFrom(Task other) {
+    title = other.title;
+    description = other.description;
+    isCompleted = other.isCompleted;
+    deadline = other.deadline;
+    subTasks = other.subTasks;
+    isArchived = other.isArchived;
+    isDeleted = other.isDeleted;
+    categories = other.categories;
+    completedAt = other.completedAt;
+    deletedAt = other.deletedAt;
+  }
+
   /// Convert this Task to JSON (e.g. to send to Supabase)
   Map<String, dynamic> toJson() {
     return {

@@ -17,6 +17,7 @@ class SupabaseSyncService {
   final Set<String> _pendingDeleteTaskIds = HashSet<String>();
   final Map<String, Timer> _debounceTimers = {};
   RealtimeChannel? _realtimeChannel;
+  StreamSubscription<BoxEvent>? _subscription;
 
   // Queue to serialize realtime event processing and avoid interleaving
   Future<void> _realtimeQueue = Future.value();
@@ -25,6 +26,7 @@ class SupabaseSyncService {
 
   /// Pull all tasks from Supabase and merge them into the local Hive box
   Future<void> pullTasks() async {
+    if (_supabase.auth.currentUser == null) return;
     try {
       _isSyncingFromServer = true;
       List<Map<String, dynamic>>? response;
@@ -56,8 +58,12 @@ class SupabaseSyncService {
           final task = Task.fromJson(row);
           final existingTask = _tasksBox.get(task.id);
           _mergeCompletedAt(task, existingTask);
-          // Put the remote task into the local box (upsert by ID)
-          await _tasksBox.put(task.id, task);
+          if (existingTask != null) {
+            existingTask.updateFrom(task);
+            await existingTask.save();
+          } else {
+            await _tasksBox.put(task.id, task);
+          }
         }
         debugPrint(
           'Supabase Sync: Successfully pulled ${response.length} tasks.',
@@ -75,6 +81,9 @@ class SupabaseSyncService {
 
   /// Push a single task up to Supabase
   Future<void> pushTask(Task task) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+
     // If this update was triggered by a pull from the server, don't push it back!
     if (_isSyncingFromServer) {
       _pendingDeleteTaskIds.remove(task.id);
@@ -88,6 +97,7 @@ class SupabaseSyncService {
 
     try {
       final taskJson = task.toJson();
+      taskJson['user_id'] = user.id;
       int retryCount = 0;
       const maxRetries = 3;
 
@@ -115,6 +125,7 @@ class SupabaseSyncService {
 
   /// Permanently delete a task in Supabase by ID
   Future<void> deleteTask(String taskId) async {
+    if (_supabase.auth.currentUser == null) return;
     if (_isSyncingFromServer) {
       _pendingPushTaskIds.remove(taskId);
       _pendingDeleteTaskIds.add(taskId);
@@ -150,7 +161,8 @@ class SupabaseSyncService {
 
   /// Listen to the local Hive box for any changes and push them to Supabase
   void startListening() {
-    _tasksBox.watch().listen((event) {
+    _subscription?.cancel();
+    _subscription = _tasksBox.watch().listen((event) {
       if (_isSyncingFromServer) {
         if (event.deleted) {
           _pendingDeleteTaskIds.add(event.key.toString());
@@ -241,6 +253,8 @@ class SupabaseSyncService {
   /// Subscribe to Supabase Realtime so that changes made on other devices are
   /// immediately applied to the local Hive box without requiring a manual refresh.
   void subscribeToRealtime() {
+    if (_supabase.auth.currentUser == null) return;
+    _realtimeChannel?.unsubscribe();
     _realtimeChannel = _supabase
         .channel('public:tasks')
         .onPostgresChanges(
@@ -273,7 +287,12 @@ class SupabaseSyncService {
         final task = Task.fromJson(payload.newRecord);
         final existingTask = _tasksBox.get(task.id);
         _mergeCompletedAt(task, existingTask);
-        await _tasksBox.put(task.id, task);
+        if (existingTask != null) {
+          existingTask.updateFrom(task);
+          await existingTask.save();
+        } else {
+          await _tasksBox.put(task.id, task);
+        }
         debugPrint('Supabase Realtime: Upserted task ${task.id} in local box.');
       }
     } catch (e) {
@@ -289,7 +308,34 @@ class SupabaseSyncService {
       timer.cancel();
     }
     _debounceTimers.clear();
+    _subscription?.cancel();
+    _subscription = null;
     _realtimeChannel?.unsubscribe();
     _realtimeChannel = null;
+  }
+
+  /// Clear all local tasks in the Hive box on logout
+  Future<void> clearLocalData() async {
+    await _subscription?.cancel();
+    _subscription = null;
+    try {
+      await _tasksBox.clear();
+      PreferencesHelper.remove('tasks_last_sync');
+    } catch (e) {
+      debugPrint('Supabase Sync: Error clearing local tasks - $e');
+    }
+  }
+
+  /// Push all existing local tasks to the cloud (used to merge offline tasks on sign-in)
+  Future<void> uploadLocalData() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+
+    debugPrint('Supabase Sync: Merging local tasks to account...');
+    for (final task in _tasksBox.values) {
+      if (!task.isDeleted || task.deletedAt != null) {
+        await pushTask(task);
+      }
+    }
   }
 }

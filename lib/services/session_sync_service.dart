@@ -15,6 +15,7 @@ class SessionSyncService {
   final Set<String> _pendingDeleteSessionIds = HashSet<String>();
   final Map<String, Timer> _debounceTimers = {};
   RealtimeChannel? _realtimeChannel;
+  StreamSubscription<BoxEvent>? _subscription;
 
   // Queue to serialize realtime event processing and avoid interleaving
   Future<void> _realtimeQueue = Future.value();
@@ -24,6 +25,7 @@ class SessionSyncService {
   /// Pull all sessions from Supabase, merge into local Hive box,
   /// then push any local-only sessions that are missing from the server.
   Future<void> pullSessions() async {
+    if (_supabase.auth.currentUser == null) return;
     try {
       _isSyncingFromServer = true;
       List<Map<String, dynamic>>? response;
@@ -142,6 +144,7 @@ class SessionSyncService {
   /// Push a single session to Supabase (called from listener or flush).
   /// Skips push if currently syncing from server and queues it instead.
   Future<void> pushSession(Session session) async {
+    if (_supabase.auth.currentUser == null) return;
     if (_isSyncingFromServer) {
       _pendingDeleteSessionIds.remove(session.id);
       _pendingPushSessionIds.add(session.id);
@@ -157,7 +160,11 @@ class SessionSyncService {
 
   /// Direct push with retry logic, bypassing the syncing-from-server guard.
   Future<void> _pushSessionDirect(Session session) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
     try {
+      final sessionJson = session.toJson();
+      sessionJson['user_id'] = user.id;
       int retryCount = 0;
       const maxRetries = 3;
 
@@ -165,7 +172,7 @@ class SessionSyncService {
         try {
           await _supabase
               .from('sessions')
-              .upsert(session.toJson())
+              .upsert(sessionJson)
               .timeout(const Duration(seconds: 15));
           break; // Success
         } catch (e) {
@@ -185,6 +192,7 @@ class SessionSyncService {
 
   /// Permanently delete a session in Supabase by ID
   Future<void> deleteSession(String sessionId) async {
+    if (_supabase.auth.currentUser == null) return;
     if (_isSyncingFromServer) {
       _pendingPushSessionIds.remove(sessionId);
       _pendingDeleteSessionIds.add(sessionId);
@@ -222,7 +230,8 @@ class SessionSyncService {
 
   /// Listen to local Hive box changes
   void startListening() {
-    _sessionsBox.watch().listen((event) {
+    _subscription?.cancel();
+    _subscription = _sessionsBox.watch().listen((event) {
       if (_isSyncingFromServer) {
         if (event.deleted) {
           _pendingDeleteSessionIds.add(event.key.toString());
@@ -274,6 +283,8 @@ class SessionSyncService {
   /// Subscribe to Supabase Realtime so that session changes made on other
   /// devices are immediately applied to the local Hive box.
   void subscribeToRealtime() {
+    if (_supabase.auth.currentUser == null) return;
+    _realtimeChannel?.unsubscribe();
     _realtimeChannel = _supabase
         .channel('public:sessions')
         .onPostgresChanges(
@@ -324,7 +335,31 @@ class SessionSyncService {
       timer.cancel();
     }
     _debounceTimers.clear();
+    _subscription?.cancel();
+    _subscription = null;
     _realtimeChannel?.unsubscribe();
     _realtimeChannel = null;
+  }
+
+  Future<void> clearLocalData() async {
+    await _subscription?.cancel();
+    _subscription = null;
+    try {
+      await _sessionsBox.clear();
+      PreferencesHelper.remove('sessions_last_sync');
+    } catch (e) {
+      debugPrint('Supabase Session Sync: Error clearing local sessions - $e');
+    }
+  }
+
+  /// Push all existing local sessions to the cloud (used to merge offline sessions on sign-in)
+  Future<void> uploadLocalData() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+
+    debugPrint('Supabase Sync: Merging local sessions to account...');
+    for (final session in _sessionsBox.values) {
+      await pushSession(session);
+    }
   }
 }
