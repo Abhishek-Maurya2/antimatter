@@ -30,21 +30,27 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _signInWithGoogle() async {
+    debugPrint('[Auth] Sign In with Google button clicked.');
     setState(() {
       _isLoading = true;
     });
 
     try {
+      final redirectUrl = kIsWeb ? Uri.base.toString() : 'antimatter://login-callback';
+      debugPrint('[Auth] Triggering signInWithOAuth. Redirect URL: $redirectUrl');
+      
       // Trigger Supabase OAuth sign-in. This will launch the system browser.
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: kIsWeb ? Uri.base.toString() : 'antimatter://login-callback',
+        redirectTo: redirectUrl,
         scopes: 'https://www.googleapis.com/auth/calendar',
       );
       
+      debugPrint('[Auth] signInWithOAuth call completed successfully (returned).');
       // On desktop, the browser opens and the app continues running. 
       // The deep link handler in HomeScreen/main will capture the redirect and complete the login.
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('[Auth] Exception caught in signInWithGoogle: $e\n$stackTrace');
       if (mounted) {
         setState(() {
           _isLoading = false;

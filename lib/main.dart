@@ -42,6 +42,9 @@ void main() async {
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     await windowManager.ensureInitialized();
     await WindowStateManager.init();
+    if (Platform.isWindows) {
+      await _registerWindowsProtocol();
+    }
   }
 
   await Supabase.initialize(url: supaUrl, anonKey: supaAnonKey);
@@ -305,5 +308,44 @@ class _AntimatterAppState extends ConsumerState<AntimatterApp> {
           ? const HomeScreen()
           : const LoginScreen(),
     );
+  }
+}
+
+Future<void> _registerWindowsProtocol() async {
+  try {
+    final appPath = Platform.resolvedExecutable;
+    const scheme = 'antimatter';
+    
+    // Register the custom protocol scheme for Windows (HKCU doesn't require admin privileges)
+    final regKeyResult = await Process.run('reg', [
+      'add',
+      'HKCU\\Software\\Classes\\$scheme',
+      '/v',
+      'URL Protocol',
+      '/t',
+      'REG_SZ',
+      '/d',
+      '',
+      '/f'
+    ]);
+    
+    final regCmdResult = await Process.run('reg', [
+      'add',
+      'HKCU\\Software\\Classes\\$scheme\\shell\\open\\command',
+      '/ve',
+      '/t',
+      'REG_SZ',
+      '/d',
+      '"$appPath" "%1"',
+      '/f'
+    ]);
+
+    if (regKeyResult.exitCode != 0 || regCmdResult.exitCode != 0) {
+      debugPrint('Failed to register protocol: ${regKeyResult.stderr} ${regCmdResult.stderr}');
+    } else {
+      debugPrint('Successfully registered protocol antimatter:// to $appPath');
+    }
+  } catch (e) {
+    debugPrint('Error registering Windows protocol: $e');
   }
 }
