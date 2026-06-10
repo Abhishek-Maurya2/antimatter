@@ -1,5 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'settings_screen.dart';
@@ -78,7 +79,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
     widget.onSelectionChanged?.call(_selectedTasksForToolbar.isNotEmpty);
   }
 
-  void _clearSelection() {
+  void clearSelection() {
     setState(() {
       _previousTasksForToolbar = List.from(_selectedTasksForToolbar);
       _selectedTasksForToolbar.clear();
@@ -243,6 +244,34 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
 
   Future<void> _autoMoveOldCompletedTasksToTrash() async {
     // Redundant as of sync optimization. Handled globally by SupabaseSyncService.
+  }
+
+  Future<void> deleteSelectedTasks() async {
+    final tasksToDelete = List<Task>.from(_selectedTasksForToolbar);
+    if (tasksToDelete.isEmpty) return;
+
+    for (final task in tasksToDelete) {
+      if (task.isDeleted) {
+        setState(() {
+          final index = _tasks.indexWhere((t) => t.id == task.id);
+          if (index != -1) {
+            _tasks.removeAt(index);
+          }
+        });
+        await _tasksBox.delete(task.id);
+        await syncService.deleteTask(task.id);
+        await NotificationService().cancelNotification(task.id.hashCode);
+      } else {
+        setState(() {
+          task.isDeleted = true;
+          task.deletedAt = DateTime.now();
+        });
+        await task.save();
+        await syncService.pushTask(task);
+      }
+    }
+
+    clearSelection();
   }
 
   void _handleTaskResult(dynamic result) async {
@@ -765,12 +794,19 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                                     );
                                   }
                                 },
-                                child: CircleAvatar(
-                                  radius: 24,
-                                  backgroundColor: colorTheme.primaryContainer,
-                                  backgroundImage: const AssetImage(
-                                    'assets/profile.jpg',
-                                  ),
+                                child: Builder(
+                                  builder: (context) {
+                                    final supabaseUser = Supabase.instance.client.auth.currentUser;
+                                    final avatarUrl = supabaseUser?.userMetadata?['avatar_url'] as String?;
+                                    
+                                    return CircleAvatar(
+                                      radius: 24,
+                                      backgroundColor: colorTheme.primaryContainer,
+                                      backgroundImage: avatarUrl != null
+                                          ? NetworkImage(avatarUrl)
+                                          : const AssetImage('assets/profile.jpg') as ImageProvider,
+                                    );
+                                  },
                                 ),
                               ),
                             ),
@@ -1261,13 +1297,13 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
 
                           await _autoMoveOldCompletedTasksToTrash();
 
-                          _clearSelection();
+                          clearSelection();
                         },
                         onEdit: () async {
                           if (_selectedTasksForToolbar.length != 1) return;
                           final taskToEdit = _selectedTasksForToolbar.first;
 
-                          _clearSelection();
+                          clearSelection();
 
                           // Wait for animation
                           await Future.delayed(
@@ -1296,34 +1332,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                           }
                         },
                         onDelete: () async {
-                          final tasksToDelete = List<Task>.from(
-                            _selectedTasksForToolbar,
-                          );
-                          if (tasksToDelete.isEmpty) return;
-
-                          for (final task in tasksToDelete) {
-                            if (task.isDeleted) {
-                              setState(() {
-                                final index = _tasks.indexWhere(
-                                  (t) => t.id == task.id,
-                                );
-                                if (index != -1) {
-                                  _tasks.removeAt(index);
-                                }
-                              });
-                              await _tasksBox.delete(task.id);
-                              await syncService.deleteTask(task.id);
-                            } else {
-                              setState(() {
-                                task.isDeleted = true;
-                                task.deletedAt = DateTime.now();
-                              });
-                              await task.save();
-                              await syncService.pushTask(task);
-                            }
-                          }
-
-                          _clearSelection();
+                          await deleteSelectedTasks();
                         },
                         onArchive: () async {
                           final tasksToArchive = List<Task>.from(
@@ -1344,7 +1353,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                             await syncService.pushTask(task);
                           }
 
-                          _clearSelection();
+                          clearSelection();
                         },
                         onRestore: () async {
                           final tasksToRestore = List<Task>.from(
@@ -1360,10 +1369,10 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                             await syncService.pushTask(task);
                           }
 
-                          _clearSelection();
+                          clearSelection();
                         },
                         onClose: () {
-                          _clearSelection();
+                          clearSelection();
                         },
                       )
                     : const SizedBox.shrink(),

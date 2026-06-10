@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:antimatter/models/task.dart';
@@ -296,10 +297,16 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: widget.isStandaloneScreen
-          ? colorTheme.surfaceContainer
-          : colorTheme.surfaceContainerHigh,
+    return CallbackShortcuts(
+      bindings: {
+        SingleActivator(LogicalKeyboardKey.escape): () {
+          widget.onClose();
+        },
+      },
+      child: Scaffold(
+        backgroundColor: widget.isStandaloneScreen
+            ? colorTheme.surfaceContainer
+            : colorTheme.surfaceContainerHigh,
       appBar: AppBar(
         title: widget.isStandaloneScreen
             ? Text(widget.task == null ? 'New Task' : 'Edit Task')
@@ -685,8 +692,9 @@ class _TaskEditorWidgetState extends State<TaskEditorWidget> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   ButtonGroupM3EAction _buildCategoryAction(
     String category,

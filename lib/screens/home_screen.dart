@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:animations/animations.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'settings_screen.dart';
@@ -143,71 +144,132 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        return Scaffold(
-          key: _scaffoldKey,
-          backgroundColor: colorTheme.surfaceContainer,
-          body: Row(
-            children: [
-              if (isExpanded && !_isSessionAmbient)
-                _buildNavigationRail(context, colorTheme, isExpanded: true),
-              Expanded(
-                child: Stack(
-                  children: [
-                    PageTransitionSwitcher(
-                      duration: M3Motion.durationMedium4,
-                      transitionBuilder:
-                          (child, primaryAnimation, secondaryAnimation) {
-                            return FadeThroughTransition(
-                              animation: primaryAnimation,
-                              secondaryAnimation: secondaryAnimation,
-                              fillColor: Colors.transparent,
-                              child: child,
-                            );
-                          },
-                      child: KeyedSubtree(
-                        key: ValueKey<int>(_navIndex),
-                        child: bodyContent,
-                      ),
-                    ),
-                    if (!isExpanded)
-                      AnimatedPositioned(
-                        duration: M3Motion.durationMedium2,
-                        curve: M3Motion.emphasizedDecelerate,
-                        bottom: _isSessionAmbient
-                            ? -150
-                            : (_taskHasSelection ? -100 : 20),
-                        left: 0,
-                        right: 0,
-                        child: Center(
-                          child: FloatingNavBar(
-                            selectedIndex: _navIndex,
-                            onItemSelected: (index) {
-                              setState(() {
-                                _navIndex = index;
-                                if (index == 1 && _taskSubFilter == -1) {
-                                  _taskSubFilter = 0;
-                                }
-                              });
+        void handleTaskCreateShortcut() {
+          if (FocusManager.instance.primaryFocus?.context?.widget is! EditableText) {
+            if (_navIndex == 1) {
+              _taskScreenKey.currentState?.openCreateTaskEditor();
+            } else {
+              setState(() {
+                _navIndex = 1;
+              });
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _taskScreenKey.currentState?.openCreateTaskEditor();
+              });
+            }
+          }
+        }
+
+        void handleSettingsShortcut() {
+          if (FocusManager.instance.primaryFocus?.context?.widget is! EditableText) {
+            setState(() {
+              _navIndex = 3;
+            });
+          }
+        }
+
+        void handleDeleteShortcut() {
+          if (FocusManager.instance.primaryFocus?.context?.widget is! EditableText) {
+            if (_navIndex == 1) {
+              _taskScreenKey.currentState?.deleteSelectedTasks();
+            }
+          }
+        }
+
+        void handleCancelSelectionShortcut() {
+          if (FocusManager.instance.primaryFocus?.context?.widget is! EditableText) {
+            if (_navIndex == 1) {
+              _taskScreenKey.currentState?.clearSelection();
+            }
+          }
+        }
+
+        return CallbackShortcuts(
+          bindings: {
+            // Create Task
+            SingleActivator(LogicalKeyboardKey.keyN, control: true): handleTaskCreateShortcut,
+            SingleActivator(LogicalKeyboardKey.keyN, meta: true): handleTaskCreateShortcut,
+            SingleActivator(LogicalKeyboardKey.keyN, alt: true): handleTaskCreateShortcut,
+            
+            // Go to Settings
+            SingleActivator(LogicalKeyboardKey.keyI, control: true): handleSettingsShortcut,
+            SingleActivator(LogicalKeyboardKey.keyI, meta: true): handleSettingsShortcut,
+            SingleActivator(LogicalKeyboardKey.keyI, alt: true): handleSettingsShortcut,
+            
+            // Delete Selected Tasks
+            SingleActivator(LogicalKeyboardKey.delete): handleDeleteShortcut,
+
+            // Cancel Task Selection / Deselect
+            SingleActivator(LogicalKeyboardKey.escape): handleCancelSelectionShortcut,
+          },
+          child: Focus(
+            autofocus: true,
+            child: Scaffold(
+            key: _scaffoldKey,
+            backgroundColor: colorTheme.surfaceContainer,
+            body: Row(
+              children: [
+                if (isExpanded && !_isSessionAmbient)
+                  _buildNavigationRail(context, colorTheme, isExpanded: true),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      PageTransitionSwitcher(
+                        duration: M3Motion.durationMedium4,
+                        transitionBuilder:
+                            (child, primaryAnimation, secondaryAnimation) {
+                              return FadeThroughTransition(
+                                animation: primaryAnimation,
+                                secondaryAnimation: secondaryAnimation,
+                                fillColor: Colors.transparent,
+                                child: child,
+                              );
                             },
-                            pageActionIcon: _navIndex == 1
-                                ? Symbols.add_rounded
-                                : null,
-                            pageActionTooltip: _navIndex == 1
-                                ? 'Add task'
-                                : null,
-                            onPageActionTap: _navIndex == 1
-                                ? () => _taskScreenKey.currentState
-                                      ?.openCreateTaskEditor()
-                                : null,
-                          ),
+                        child: KeyedSubtree(
+                          key: ValueKey<int>(_navIndex),
+                          child: bodyContent,
                         ),
                       ),
-                  ],
+                      if (!isExpanded)
+                        AnimatedPositioned(
+                          duration: M3Motion.durationMedium2,
+                          curve: M3Motion.emphasizedDecelerate,
+                          bottom: _isSessionAmbient
+                              ? -150
+                              : (_taskHasSelection ? -100 : 20),
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: FloatingNavBar(
+                              selectedIndex: _navIndex,
+                              onItemSelected: (index) {
+                                setState(() {
+                                  _navIndex = index;
+                                  if (index == 1 && _taskSubFilter == -1) {
+                                    _taskSubFilter = 0;
+                                  }
+                                });
+                              },
+                              pageActionIcon: _navIndex == 1
+                                  ? Symbols.add_rounded
+                                  : null,
+                              pageActionTooltip: _navIndex == 1
+                                  ? 'Add task'
+                                  : null,
+                              onPageActionTap: _navIndex == 1
+                                  ? () => _taskScreenKey.currentState
+                                        ?.openCreateTaskEditor()
+                                  : null,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        );
+        ),
+      );
       },
     );
   }
