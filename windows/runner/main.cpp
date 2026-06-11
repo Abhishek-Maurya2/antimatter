@@ -1,12 +1,38 @@
 #include <flutter/dart_project.h>
 #include <flutter/flutter_view_controller.h>
 #include <windows.h>
+#include <string>
 
+#include "app_links/app_links_plugin_c_api.h"
 #include "flutter_window.h"
 #include "utils.h"
 
+bool SendAppLinkToInstance(const std::wstring& title) {
+  // Find our exact window (use the title string passed to window.Create)
+  HWND hwnd = ::FindWindow(L"FLUTTER_RUNNER_WIN32_WINDOW", title.c_str());
+  if (hwnd) {
+    // Dispatch new link to current window
+    SendAppLink(hwnd);
+    
+    // Restore and bring to foreground
+    WINDOWPLACEMENT place = { sizeof(WINDOWPLACEMENT) };
+    ::GetWindowPlacement(hwnd, &place);
+    if (place.showCmd == SW_SHOWMINIMIZED) {
+      ::ShowWindow(hwnd, SW_RESTORE);
+    } else {
+      ::ShowWindow(hwnd, SW_SHOW);
+    }
+    ::SetForegroundWindow(hwnd);
+    return true;
+  }
+  return false;
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
+  if (SendAppLinkToInstance(L"antimatter")) {
+    return EXIT_SUCCESS;
+  }
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.
   if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent()) {
