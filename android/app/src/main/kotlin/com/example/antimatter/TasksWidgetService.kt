@@ -37,8 +37,31 @@ class TasksRemoteViewsFactory(private val context: Context) : RemoteViewsService
     private fun loadData() {
         val widgetData = HomeWidgetPlugin.getData(context)
         val tasksString = widgetData.getString("active_tasks", "[]")
+        val selectedCategory = widgetData.getString("selected_category", "All") ?: "All"
         try {
-            tasksArray = JSONArray(tasksString)
+            val rawArray = JSONArray(tasksString)
+            if (selectedCategory.equals("All", ignoreCase = true)) {
+                tasksArray = rawArray
+            } else {
+                val filteredArray = JSONArray()
+                for (i in 0 until rawArray.length()) {
+                    val taskObj = rawArray.optJSONObject(i) ?: continue
+                    val categoriesArray = taskObj.optJSONArray("categories")
+                    var hasCategory = false
+                    if (categoriesArray != null) {
+                        for (j in 0 until categoriesArray.length()) {
+                            if (categoriesArray.optString(j).equals(selectedCategory, ignoreCase = true)) {
+                                hasCategory = true
+                                break
+                            }
+                        }
+                    }
+                    if (hasCategory) {
+                        filteredArray.put(taskObj)
+                    }
+                }
+                tasksArray = filteredArray
+            }
         } catch (e: JSONException) {
             e.printStackTrace()
             tasksArray = JSONArray()

@@ -77,10 +77,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Wait for page transition then trigger creation if applicable
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_taskScreenKey.currentState != null && taskName.isNotEmpty) {
-            _taskScreenKey.currentState!.triggerGlobalCreate(
-              taskName: taskName,
-            );
+          if (_taskScreenKey.currentState != null) {
+            if (taskName.isNotEmpty) {
+              _taskScreenKey.currentState!.triggerGlobalCreate(
+                taskName: taskName,
+              );
+            } else {
+              _taskScreenKey.currentState!.openCreateTaskEditor();
+            }
           }
         });
       } else if (action == 'read') {

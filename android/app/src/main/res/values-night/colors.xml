@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="widget_bg_color">#1E1E1E</color>
-    <color name="widget_item_bg_color">#2D2D2D</color>
-    <color name="widget_text_color">#E3E3E3</color>
-    <color name="widget_empty_text_color">#A0A0A0</color>
-    <color name="widget_accent_color">#80CBE5</color>
+    <color name="widget_bg_color">#131A26</color>
+    <color name="widget_item_bg_color">#1B2536</color>
+    <color name="widget_text_color">#E3EBFA</color>
+    <color name="widget_empty_text_color">#8FA3C7</color>
+    <color name="widget_accent_color">#3B8AD9</color>
 </resources>

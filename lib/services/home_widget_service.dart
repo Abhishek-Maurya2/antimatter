@@ -24,7 +24,11 @@ class HomeWidgetService {
 
     // Convert to a simple List of Maps tailored for the widget
     final tasksData = activeTasks
-        .map((t) => {'id': t.id, 'title': t.title})
+        .map((t) => {
+              'id': t.id,
+              'title': t.title,
+              'categories': t.categories,
+            })
         .toList();
 
     // Save as JSON string

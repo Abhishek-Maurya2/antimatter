@@ -1,64 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!-- Layout for a single task row inside the widget's ListView.
-     Uses horizontal LinearLayout: [checkbox] [title] -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:gravity="center_vertical">
-    <!-- layout_width=match_parent: row spans the full list width -->
-    <!-- layout_height=wrap_content: row height adjusts to content -->
-    <!-- orientation=horizontal: children are arranged left-to-right -->
-    <!-- gravity=center_vertical: vertically centers checkbox and title -->
+    android:gravity="center_vertical"
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp">
 
-    <!-- Checkbox tap target.
-         FrameLayout acts as a large 44x44dp invisible touch area (Material guideline).
-         Kotlin attaches setOnClickFillInIntent here to trigger ACTION_COMPLETE_TASK. -->
+    <!-- Checkbox tap target -->
     <FrameLayout
         android:id="@+id/task_checkbox_container"
-        android:layout_width="34dp"
-        android:layout_height="34dp"
-        android:gravity="center">
-        <!-- id: Kotlin uses this to set the checkbox click fill-in intent -->
-        <!-- 44dp x 44dp: minimum recommended touch target size -->
-        <!-- gravity=center: centers the child ImageView inside -->
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:clickable="true"
+        android:focusable="true">
 
-        <!-- The visible checkbox circle icon (smaller than the tap area) -->
+        <!-- The visible checkbox circle icon -->
         <ImageView
             android:id="@+id/task_checkbox_img"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
             android:layout_gravity="center"
             android:src="@drawable/widget_checkbox_circle"
-            android:tint="@color/widget_accent_color"
+            android:tint="@color/widget_text_color"
             android:contentDescription="Complete task" />
-        <!-- 22dp: visual size of the circle (inside the 44dp container) -->
-        <!-- layout_gravity=center: centers inside the FrameLayout -->
-        <!-- src: custom drawable — an outlined circle shape -->
-        <!-- tint: colors the circle with the app's accent color -->
-        <!-- contentDescription: accessibility label for screen readers -->
     </FrameLayout>
 
-    <!-- Task title text — fills remaining horizontal space after the checkbox -->
+    <!-- Task title text -->
     <TextView
         android:id="@+id/task_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginStart="4dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:paddingEnd="8dp"
+        android:layout_marginStart="8dp"
         android:textColor="@color/widget_text_color"
         android:textSize="16sp"
         android:ellipsize="end"
         android:maxLines="1" />
-    <!-- id: Kotlin sets the task title text on this view -->
-    <!-- layout_width=0dp + layout_weight=1: takes all remaining horizontal space -->
-    <!-- paddingTop/Bottom=8dp: vertical breathing room -->
-    <!-- paddingEnd=8dp: right padding so text doesn't touch the widget edge -->
-    <!-- ellipsize=end: shows "..." if the title is too long -->
-    <!-- maxLines=1: keeps each row compact by limiting to a single line -->
 
 </LinearLayout>

@@ -694,7 +694,7 @@ class TaskScreenState extends ConsumerState<TaskScreen> {
                                 child: ConstrainedBox(
                                   constraints: BoxConstraints(
                                     maxWidth: isExpanded
-                                        ? 600
+                                        ? 500
                                         : double.infinity,
                                   ),
                                   child: Container(

@@ -1,52 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!-- Root container: RelativeLayout allows flexible child positioning (above, below, center, etc.) -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
-    android:padding="10dp">
-    <!-- id: unique identifier for this root view -->
-    <!-- layout_width/height: match_parent = fill the entire widget space -->
-    <!-- background: custom drawable with rounded corners and surface color -->
-    <!-- padding: 10dp inner spacing on all sides -->
+    android:padding="16dp">
 
-    <!-- Header title displayed at the top of the widget. Clicking it opens the app. -->
-    <TextView
-        android:id="@+id/widget_title"
-        android:layout_width="wrap_content"
+    <!-- Header containing Category Selector (Left) and Add Task Button (Right) -->
+    <RelativeLayout
+        android:id="@+id/widget_header"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Active Tasks"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="@color/widget_text_color"
         android:layout_alignParentTop="true"
-        android:layout_marginBottom="12dp" />
-    <!-- id: referenced in Kotlin to set a click-to-open-app PendingIntent -->
-    <!-- wrap_content: sizes itself to fit the text -->
-    <!-- text: static default label -->
-    <!-- textSize: 18sp, scalable pixels for accessibility -->
-    <!-- textStyle: bold for emphasis -->
-    <!-- textColor: defined in res/values/colors.xml -->
-    <!-- layout_alignParentTop: pins to the top edge of the RelativeLayout -->
-    <!-- layout_marginBottom: 12dp gap before the list below -->
+        android:layout_marginBottom="12dp">
 
-    <!-- Scrollable list of tasks. Populated by TasksWidgetService (RemoteViewsFactory). -->
+        <!-- Category selector (cycles on click) -->
+        <LinearLayout
+            android:id="@+id/widget_category_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:id="@+id/widget_category_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Temp"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/widget_text_color" />
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginStart="2dp"
+                android:src="@drawable/widget_ic_drop_down"
+                android:tint="@color/widget_text_color"
+                android:contentDescription="Select Category" />
+        </LinearLayout>
+
+        <!-- Add Task Button (+ button) -->
+        <FrameLayout
+            android:id="@+id/widget_add_button"
+            android:layout_width="48dp"
+            android:layout_height="32dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/widget_add_button_bg"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/widget_ic_add"
+                android:contentDescription="Add Task" />
+        </FrameLayout>
+    </RelativeLayout>
+
+    <!-- Scrollable list of tasks -->
     <ListView
         android:id="@+id/widget_task_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/widget_title"
+        android:layout_below="@id/widget_header"
         android:divider="@android:color/transparent"
-        android:dividerHeight="1dp" />
-    <!-- id: used in Kotlin to bind RemoteAdapter and setPendingIntentTemplate -->
-    <!-- match_parent: fills all remaining space -->
-    <!-- layout_below: positions this list directly under the title -->
-    <!-- divider: transparent = no visible divider line between items -->
-    <!-- dividerHeight: 4dp vertical spacing between each task row -->
+        android:dividerHeight="6dp" />
 
-    <!-- Empty state message, shown when the list has zero items -->
+    <!-- Empty state message -->
     <TextView
         android:id="@+id/widget_empty_view"
         android:layout_width="wrap_content"
@@ -56,8 +83,5 @@
         android:textColor="@color/widget_empty_text_color"
         android:textSize="14sp"
         android:visibility="gone" />
-    <!-- id: referenced by setEmptyView() in Kotlin — the ListView shows this when empty -->
-    <!-- layout_centerInParent: centers horizontally and vertically -->
-    <!-- visibility=gone: hidden by default; ListView toggles it automatically -->
 
 </RelativeLayout>
