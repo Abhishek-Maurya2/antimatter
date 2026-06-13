@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'login_screen.dart';
 import 'package:m3e_collection/m3e_collection.dart';
 import 'package:settings_tiles/settings_tiles.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
@@ -14,10 +13,11 @@ import 'settings/updates_screen.dart';
 import 'settings/about_screen.dart';
 import 'settings/wavy_demo_screen.dart';
 import 'settings/google_calendar_screen.dart';
+import 'settings/profile_screen.dart';
 import '../utils/m3_motion.dart';
-import '../utils/preferences_helper.dart';
 
 enum SettingsDetail {
+  profile,
   appearance,
   notifications,
   categories,
@@ -39,7 +39,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  SettingsDetail? _selectedDetail = SettingsDetail.appearance;
+  SettingsDetail? _selectedDetail = SettingsDetail.profile;
 
   void _handleTap(SettingsDetail detail, Widget Function() screenBuilder) {
     if (MediaQuery.sizeOf(context).width >= 800) {
@@ -59,6 +59,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _getDetailScreen() {
     Widget detailScreen;
     switch (_selectedDetail) {
+      case SettingsDetail.profile:
+        detailScreen = const ProfileScreen(isEmbedded: true);
+        break;
       case SettingsDetail.appearance:
         detailScreen = const AppearanceScreen(isEmbedded: true);
         break;
@@ -138,12 +141,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SliverToBoxAdapter(
           child: Column(
             children: [
-              // Google Account Section
+              // Account Section
               SettingSection(
                 title: Padding(
                   padding: const EdgeInsets.only(left: 4, bottom: 8),
                   child: Text(
-                    'Google Account',
+                    'Account',
                     style: TextStyle(
                       color: colorTheme.primary,
                       fontWeight: FontWeight.bold,
@@ -152,73 +155,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 styleTile: true,
                 tiles: [
-                  if (Supabase.instance.client.auth.currentUser == null)
-                    SettingActionTile(
-                      icon: iconContainer(
-                        Symbols.account_circle,
-                        isLight ? const Color(0xffd6e3ff) : const Color(0xff284777),
-                        isLight ? const Color(0xff284777) : const Color(0xffd6e3ff),
-                      ),
-                      title: const Text('Sign In with Google'),
-                      description: const Text('Enable cloud backups and cross-device sync'),
-                      onTap: () {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          M3Motion.sharedAxisRoute(const LoginScreen()),
-                          (route) => false,
-                        );
-                      },
-                    )
-                  else
-                    SettingActionTile(
-                      icon: iconContainer(
-                        Symbols.account_circle,
-                        isLight ? const Color(0xffcdeda3) : const Color(0xff354e16),
-                        isLight ? const Color(0xff354e16) : const Color(0xffcdeda3),
-                      ),
-                      title: Text(Supabase.instance.client.auth.currentUser?.userMetadata?['full_name'] as String? ?? 'Authenticated User'),
-                      description: Text('Log out of ${Supabase.instance.client.auth.currentUser?.email ?? 'Connected'}'),
-                      onTap: () async {
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: const Text('Sign Out?'),
-                            content: const Text(
-                              'Are you sure you want to sign out? '
-                              'Your local tasks and sessions will be cleared, and you will be routed back to the login screen.',
-                            ),
-                            actions: [
-                              ButtonM3E(
-                                onPressed: () => Navigator.of(ctx).pop(false),
-                                style: ButtonM3EStyle.text,
-                                label: const Text('Cancel'),
-                              ),
-                              ButtonM3E(
-                                onPressed: () => Navigator.of(ctx).pop(true),
-                                style: ButtonM3EStyle.filled,
-                                backgroundColor: colorTheme.error,
-                                foregroundColor: colorTheme.onError,
-                                label: const Text('Sign Out'),
-                              ),
-                            ],
-                          ),
-                        );
-                        
-                        if (confirmed == true) {
-                          // The global auth state change listener in main.dart handles all cleanups
-                          // (GoogleCalendarService.signOut, syncService.clearLocalData, sessionSyncService.clearLocalData)
-                          // when it detects the signedOut event.
-                          await Supabase.instance.client.auth.signOut();
-                          await PreferencesHelper.remove('offline_mode');
-                          
-                          if (context.mounted) {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              M3Motion.sharedAxisRoute(const LoginScreen()),
-                              (route) => false,
-                            );
-                          }
-                        }
-                      },
+                  SettingActionTile(
+                    icon: iconContainer(
+                      Symbols.account_circle,
+                      isLight ? const Color(0xffd6e3ff) : const Color(0xff284777),
+                      isLight ? const Color(0xff284777) : const Color(0xffd6e3ff),
                     ),
+                    title: Text(Supabase.instance.client.auth.currentUser == null
+                        ? 'Local Profile'
+                        : Supabase.instance.client.auth.currentUser?.userMetadata?['full_name'] as String? ?? 'Authenticated User'),
+                    description: Text(Supabase.instance.client.auth.currentUser == null
+                        ? 'Sign in to sync your data'
+                        : Supabase.instance.client.auth.currentUser?.email ?? 'Manage your profile and synchronization'),
+                    onTap: () => _handleTap(
+                      SettingsDetail.profile,
+                      () => const ProfileScreen(),
+                    ),
+                  ),
                 ],
               ),
               SizedBox(height: 16),

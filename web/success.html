@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication Successful - AntiMatter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6750A4;
+      --primary-container: #EADDFF;
+      --on-primary-container: #21005D;
+      --background: #FBFCFF;
+      --surface: #F3F4F9;
+      --on-surface: #1C1B1F;
+      --on-surface-variant: #49454F;
+      --outline: #79747E;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #D0BCFF;
+        --primary-container: #4F378B;
+        --on-primary-container: #EADDFF;
+        --background: #1C1B1F;
+        --surface: #25242A;
+        --on-surface: #E6E1E5;
+        --on-surface-variant: #CAC4D0;
+        --outline: #938F99;
+      }
+    }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--background);
+      color: var(--on-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .container {
+      background: var(--surface);
+      padding: 3rem 2rem;
+      border-radius: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      transform: translateY(20px);
+      opacity: 0;
+      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes slideUp {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .icon-container {
+      width: 80px;
+      height: 80px;
+      background-color: var(--primary-container);
+      color: var(--on-primary-container);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 2.5rem;
+      animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0); }
+      to { transform: scale(1); }
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin: 0 0 0.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    p {
+      color: var(--on-surface-variant);
+      line-height: 1.5;
+      margin: 0 0 2rem;
+      font-size: 0.95rem;
+    }
+
+    .btn {
+      background-color: var(--primary);
+      color: var(--background);
+      border: none;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: transform 0.2s, filter 0.2s;
+    }
+
+    .btn:hover {
+      transform: scale(1.03);
+      filter: brightness(1.1);
+    }
+
+    .footer {
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: var(--outline);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon-container">✓</div>
+    <h1>Success!</h1>
+    <p>You have successfully authenticated. We are returning you to the AntiMatter app...</p>
+    <button class="btn" onclick="launchApp()">Open AntiMatter</button>
+    <div class="footer" id="countdown">This tab will attempt to close in 5 seconds...</div>
+  </div>
+
+  <script>
+    // Get tokens from hash
+    const hash = window.location.hash;
+    
+    function launchApp() {
+      // Launch custom scheme redirect with tokens
+      window.location.href = "antimatter://login-callback" + hash;
+    }
+
+    // Auto launch app on load
+    launchApp();
+
+    // Auto close tab countdown
+    let secondsLeft = 5;
+    const countdownEl = document.getElementById('countdown');
+    
+    const interval = setInterval(() => {
+      secondsLeft--;
+      if (secondsLeft <= 0) {
+        clearInterval(interval);
+        countdownEl.innerText = "You can safely close this tab now.";
+        window.close();
+      } else {
+        countdownEl.innerText = `This tab will attempt to close in ${secondsLeft} seconds...`;
+      }
+    }, 1000);
+  </script>
+</body>
+</html>

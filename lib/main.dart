@@ -8,6 +8,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
+import 'package:supabase_flutter/supabase_flutter.dart' as supa show Session;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'providers/theme_provider.dart';
 import 'providers/settings_provider.dart';
@@ -33,6 +34,7 @@ const String supaAnonKey = 'sb_publishable_fILUo9xhkWoqMlt2UiNlWg_kZf220ex';
 late final SupabaseSyncService syncService;
 late final SessionSyncService sessionSyncService;
 late final AppLifecycleListener _appLifecycleListener;
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -72,17 +74,21 @@ void main() async {
     debugPrint('Supabase Auth Change: Event: $event, User ID: ${session?.user.id}');
 
     if (session != null) {
-      if (event == AuthChangeEvent.signedIn) {
-        // Just signed in: upload offline changes, pull from cloud, and sync calendar
-        await syncService.uploadLocalData();
-        await sessionSyncService.uploadLocalData();
-        await syncService.pullTasks();
-        await sessionSyncService.pullSessions();
-        await GoogleCalendarService().initialSync(tasksBox);
-      } else if (event == AuthChangeEvent.initialSession) {
-        // App opened with an existing session: pull latest
-        await syncService.pullTasks();
-        await sessionSyncService.pullSessions();
+      try {
+        if (event == AuthChangeEvent.signedIn) {
+          // Just signed in: upload offline changes, pull from cloud, and sync calendar
+          await syncService.uploadLocalData();
+          await sessionSyncService.uploadLocalData();
+          await syncService.pullTasks();
+          await sessionSyncService.pullSessions();
+          await GoogleCalendarService().initialSync(tasksBox);
+        } else if (event == AuthChangeEvent.initialSession) {
+          // App opened with an existing session: pull latest
+          await syncService.pullTasks();
+          await sessionSyncService.pullSessions();
+        }
+      } catch (e, st) {
+        debugPrint('Error during post-login sync: $e\n$st');
       }
 
       // Start listening to local changes and subscribe to Realtime AFTER initial pull/sync
@@ -137,16 +143,34 @@ class AntimatterApp extends ConsumerStatefulWidget {
 class _AntimatterAppState extends ConsumerState<AntimatterApp> {
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
+  StreamSubscription<AuthState>? _authSubscription;
+  supa.Session? _session;
 
   @override
   void initState() {
     super.initState();
+    _session = Supabase.instance.client.auth.currentSession;
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final session = data.session;
+      final event = data.event;
+      debugPrint('[AntimatterApp] Auth state changed: $event, Session: ${session != null}');
+      if (mounted) {
+        setState(() {
+          _session = session;
+        });
+        if (session != null) {
+          debugPrint('[AntimatterApp] Session detected. Popping routes to root...');
+          navigatorKey.currentState?.popUntil((route) => route.isFirst);
+        }
+      }
+    });
     _initDeepLinks();
   }
 
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    _authSubscription?.cancel();
     super.dispose();
   }
 
@@ -259,6 +283,7 @@ class _AntimatterAppState extends ConsumerState<AntimatterApp> {
           );
 
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'AntiMatter',
       debugShowCheckedModeBanner: false,
       theme:
@@ -322,7 +347,7 @@ class _AntimatterAppState extends ConsumerState<AntimatterApp> {
             ),
           ),
       themeMode: themeState.themeMode,
-      home: (Supabase.instance.client.auth.currentSession != null ||
+      home: (_session != null ||
               (PreferencesHelper.getBool('offline_mode') ?? false))
           ? const HomeScreen()
           : const LoginScreen(),
