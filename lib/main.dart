@@ -18,6 +18,7 @@ import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'models/task.dart';
 import 'models/session.dart';
+import 'models/activity.dart';
 import 'services/home_widget_service.dart';
 import 'services/supabase_sync_service.dart';
 import 'services/session_sync_service.dart';
@@ -55,8 +56,10 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(TaskAdapter());
   Hive.registerAdapter(SessionAdapter());
+  Hive.registerAdapter(ActivityAdapter());
   final tasksBox = await Hive.openBox<Task>('tasksBox');
   final sessionsBox = await Hive.openBox<Session>('sessionsBox');
+  final activitiesBox = await Hive.openBox<Activity>('activitiesBox');
   final gcalEventsBox = await Hive.openBox<String>('gcalEventsBox');
 
   // Initialize notifications

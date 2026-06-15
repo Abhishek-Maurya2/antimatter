@@ -56,6 +56,11 @@ class FloatingNavBar extends StatelessWidget {
       label: 'Tasks',
     ),
     FloatingNavItem(
+      icon: Symbols.calendar_today_rounded,
+      selectedIcon: Symbols.calendar_today_rounded,
+      label: 'Tracker',
+    ),
+    FloatingNavItem(
       icon: Symbols.timer_rounded,
       selectedIcon: Symbols.timer_rounded,
       label: 'Session',

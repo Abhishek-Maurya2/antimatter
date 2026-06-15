@@ -16,17 +16,29 @@ import '../models/task.dart';
 import '../services/audio_service.dart';
 import '../utils/ui_utils.dart';
 import 'task_screen.dart' show TaskSortOption;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/activities_provider.dart';
+import '../models/activity.dart';
 
-class SessionScreen extends StatefulWidget {
+class SessionScreen extends ConsumerStatefulWidget {
+  final String? activityId;
   final VoidCallback? onBack;
+  final VoidCallback? onStopSession;
   final ValueChanged<bool>? onAmbientModeChanged;
-  const SessionScreen({super.key, this.onBack, this.onAmbientModeChanged});
+
+  const SessionScreen({
+    super.key,
+    this.activityId,
+    this.onBack,
+    this.onStopSession,
+    this.onAmbientModeChanged,
+  });
 
   @override
-  State<SessionScreen> createState() => _SessionScreenState();
+  ConsumerState<SessionScreen> createState() => _SessionScreenState();
 }
 
-class _SessionScreenState extends State<SessionScreen>
+class _SessionScreenState extends ConsumerState<SessionScreen>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   Timer? _timer;
   int _seconds = 0;
@@ -78,7 +90,36 @@ class _SessionScreenState extends State<SessionScreen>
     _weightController.value = _isRunning ? 1.0 : 0.0;
   }
 
+  @override
+  void didUpdateWidget(covariant SessionScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.activityId != oldWidget.activityId) {
+      _timer?.cancel();
+      _loadTimerState();
+      _weightController.value = _isRunning ? 1.0 : 0.0;
+    }
+  }
+
+
+
   void _loadTimerState() {
+    if (widget.activityId != null) {
+      final box = Hive.box<Activity>('activitiesBox');
+      final activity = box.get(widget.activityId);
+      if (activity != null) {
+        final active = activity.activeSession;
+        if (active != null) {
+          _seconds = activity.totalTrackedSeconds;
+          _isRunning = true;
+          _startTimer();
+        } else {
+          _seconds = activity.totalTrackedSeconds;
+          _isRunning = false;
+        }
+      }
+      return;
+    }
+
     final savedSeconds = PreferencesHelper.getInt('session_seconds') ?? 0;
     // We only persist the count, we don't resume automatically or calculate elapsed time
     // as per user request "when app is closed timer pause"
@@ -114,6 +155,41 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _toggleTimer() {
+    if (widget.activityId != null) {
+      final box = Hive.box<Activity>('activitiesBox');
+      final activity = box.get(widget.activityId);
+      if (activity != null) {
+        final notifier = ref.read(activitiesControllerProvider.notifier);
+        if (_isRunning) {
+          _timer?.cancel();
+          _cancelAmbientTimer();
+          _weightController.reverse();
+          notifier.stopSession(activity);
+        } else {
+          notifier.startSession(activity);
+          _startTimer();
+          _weightController.forward();
+
+          if (_stayAwakeEnabled) {
+            WakelockPlus.enable();
+          }
+        }
+        setState(() {
+          _isRunning = !_isRunning;
+          if (!_isRunning) {
+            WakelockPlus.disable();
+          }
+        });
+        if (_isRunning && _ambientModeEnabled) {
+          _startAmbientTimer();
+          if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
+            toggleFullscreen(true);
+          }
+        }
+      }
+      return;
+    }
+
     if (_isRunning) {
       _timer?.cancel();
       _cancelAmbientTimer();
@@ -150,18 +226,36 @@ class _SessionScreenState extends State<SessionScreen>
     _currentStartTime ??= DateTime.now();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
-        _seconds++;
+        if (widget.activityId != null) {
+          final box = Hive.box<Activity>('activitiesBox');
+          final activity = box.get(widget.activityId);
+          if (activity != null) {
+            _seconds = activity.totalTrackedSeconds;
+          }
+        } else {
+          _seconds++;
+        }
       });
       // Save every 10 seconds to avoid too many IO writes while still being reliable
-      if (_seconds % 10 == 0) {
+      if (widget.activityId == null && _seconds % 10 == 0) {
         _saveTimerState();
       }
     });
   }
 
   void _resetTimer() {
-    if (_seconds > 0) {
-      _saveSession();
+    if (widget.activityId != null) {
+      final box = Hive.box<Activity>('activitiesBox');
+      final activity = box.get(widget.activityId);
+      if (activity != null) {
+        final notifier = ref.read(activitiesControllerProvider.notifier);
+        notifier.stopSession(activity);
+      }
+      widget.onStopSession?.call();
+    } else {
+      if (_seconds > 0) {
+        _saveSession();
+      }
     }
 
     _timer?.cancel();
@@ -300,14 +394,11 @@ class _SessionScreenState extends State<SessionScreen>
     });
   }
 
-  Widget _buildAmbientTaskWidget() {
+  Widget _buildAmbientTaskWidget(Activity? activity) {
     if (!_ambientTaskEnabled) return const SizedBox.shrink();
-    final task = _getFirstTask();
-    if (task == null) return const SizedBox.shrink();
 
-    // Compute positioning based on preference
+    // Determine positioning based on preference
     double? top, bottom, left, right;
-
     switch (_ambientTaskPosition) {
       case 'top-left':
         top = 32; left = 32;
@@ -331,17 +422,65 @@ class _SessionScreenState extends State<SessionScreen>
     }
 
     final bool isCenter = _ambientTaskPosition.contains('center');
+    final Widget content;
+
+    if (activity != null) {
+      content = _buildAmbientActivityContent(activity);
+    } else {
+      final task = _getFirstTask();
+      if (task == null) return const SizedBox.shrink();
+      content = _buildAmbientTaskContent(task);
+    }
 
     return Positioned(
       top: top,
       bottom: bottom,
       left: left,
       right: right,
-      child: isCenter
-          ? Center(
-              child: _buildAmbientTaskContent(task),
-            )
-          : _buildAmbientTaskContent(task),
+      child: isCenter ? Center(child: content) : content,
+    );
+  }
+
+  Widget _buildAmbientActivityContent(Activity activity) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 320),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Main activity title row
+          _buildAmbientTaskRow(
+            title: activity.title,
+            isCompleted: activity.isCompleted,
+            onTap: () {
+              ref.read(activitiesControllerProvider.notifier).updateActivity(
+                    activity,
+                    isCompleted: !activity.isCompleted,
+                  );
+            },
+            isParent: true,
+          ),
+          // Activity subtasks
+          if (activity.tasks.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: activity.tasks.map((subTask) {
+                  return _buildAmbientTaskRow(
+                    title: subTask.title,
+                    isCompleted: subTask.isCompleted,
+                    onTap: () => ref
+                        .read(activitiesControllerProvider.notifier)
+                        .toggleSubTask(activity, subTask.id),
+                    isParent: false,
+                  );
+                }).toList(),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -568,6 +707,12 @@ class _SessionScreenState extends State<SessionScreen>
     final t = _isRunning ? 1.0 : 0.0;
     double l(double a, double b) => a + (b - a) * t;
 
+    Activity? activity;
+    if (widget.activityId != null) {
+      final box = Hive.box<Activity>('activitiesBox');
+      activity = box.get(widget.activityId);
+    }
+
     return Scaffold(
       backgroundColor: colorTheme.surfaceContainer,
       body: Stack(
@@ -577,7 +722,7 @@ class _SessionScreenState extends State<SessionScreen>
             slivers: [
               if (isExpanded)
                 SliverAppBar.large(
-                  title: const Text('Session'),
+                  title: Text(activity != null ? 'Timing: ${activity.title}' : 'Session'),
                   titleSpacing: 0,
                   automaticallyImplyLeading: false,
                   leadingWidth: 80,
@@ -602,7 +747,7 @@ class _SessionScreenState extends State<SessionScreen>
                 )
               else
                 SliverAppBar(
-                  title: const Text('Session'),
+                  title: Text(activity != null ? 'Timing: ${activity.title}' : 'Session'),
                   titleSpacing: 16,
                   automaticallyImplyLeading: false,
                   leadingWidth: 0,
@@ -745,8 +890,9 @@ class _SessionScreenState extends State<SessionScreen>
                           ),
                         ),
                       ),
+
                       // Ambient task widget in bottom-right
-                      _buildAmbientTaskWidget(),
+                      _buildAmbientTaskWidget(activity),
                     ],
                   ),
                 ),

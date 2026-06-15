@@ -8,6 +8,9 @@ import 'settings_screen.dart';
 import 'package:m3e_collection/m3e_collection.dart'
     hide ExpressiveLoadingIndicator;
 import 'package:antimatter/screens/session_screen.dart';
+import 'package:antimatter/screens/daily_tracker_screen.dart';
+import 'package:hive/hive.dart';
+import 'package:antimatter/models/activity.dart';
 import 'package:antimatter/screens/overview/overview_page.dart';
 import 'package:antimatter/screens/task_screen.dart';
 import 'package:antimatter/widgets/floating_nav_bar.dart';
@@ -32,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _taskSubFilter = 0;
   bool _isSessionAmbient = false;
   bool _taskHasSelection = false;
+  String? _timingActivityId;
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
 
@@ -121,15 +125,37 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
         } else if (_navIndex == 2) {
-          bodyContent = SessionScreen(
+          bodyContent = DailyTrackerScreen(
             onBack: () => setState(() => _navIndex = 0),
+            onNavigateToSession: (activityId) {
+              setState(() {
+                _timingActivityId = activityId;
+                _navIndex = 3; // Navigate to Session tab
+              });
+            },
+          );
+        } else if (_navIndex == 3) {
+          bodyContent = SessionScreen(
+            activityId: _timingActivityId,
+            onBack: () {
+              if (_timingActivityId != null) {
+                setState(() => _navIndex = 2); // Go back to Tracker
+              } else {
+                setState(() => _navIndex = 0); // Go back to Overview
+              }
+            },
+            onStopSession: () {
+              setState(() {
+                _timingActivityId = null;
+              });
+            },
             onAmbientModeChanged: (isAmbient) {
               setState(() {
                 _isSessionAmbient = isAmbient;
               });
             },
           );
-        } else if (_navIndex == 3) {
+        } else if (_navIndex == 4) {
           bodyContent = SettingsScreen(
             onBack: () => setState(() => _navIndex = 0),
           );
@@ -139,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
             key: _taskScreenKey,
             isExpanded: isExpanded,
             onBack: () => setState(() => _navIndex = 0),
-            onNavigateToSettings: () => setState(() => _navIndex = 3),
+            onNavigateToSettings: () => setState(() => _navIndex = 4),
             onSelectionChanged: (hasSelection) {
               setState(() {
                 _taskHasSelection = hasSelection;
@@ -166,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
         void handleSettingsShortcut() {
           if (FocusManager.instance.primaryFocus?.context?.widget is! EditableText) {
             setState(() {
-              _navIndex = 3;
+              _navIndex = 4;
             });
           }
         }
@@ -251,6 +277,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                   if (index == 1 && _taskSubFilter == -1) {
                                     _taskSubFilter = 0;
                                   }
+                                  if (index == 3) {
+                                    final box = Hive.box<Activity>('activitiesBox');
+                                    Activity? runningActivity;
+                                    for (final a in box.values) {
+                                      if (a.activeSession != null) {
+                                        runningActivity = a;
+                                        break;
+                                      }
+                                    }
+                                    if (runningActivity != null) {
+                                      _timingActivityId = runningActivity.id;
+                                    }
+                                  }
                                 });
                               },
                               pageActionIcon: _navIndex == 1
@@ -291,9 +330,11 @@ class _HomeScreenState extends State<HomeScreen> {
       // Maps to taskSubFilters 0-5 (All Tasks through Trash) -> Rail 1-6
       railSelectedIndex = _taskSubFilter + 1;
     } else if (_navIndex == 2) {
-      railSelectedIndex = 7; // Session
+      railSelectedIndex = 7; // Daily Tracker
     } else if (_navIndex == 3) {
-      railSelectedIndex = 8; // Settings
+      railSelectedIndex = 8; // Session
+    } else if (_navIndex == 4) {
+      railSelectedIndex = 9; // Settings
     } else {
       railSelectedIndex = 0;
     }
@@ -314,9 +355,22 @@ class _HomeScreenState extends State<HomeScreen> {
               _taskScreenKey.currentState?.setSubFilter(_taskSubFilter);
             });
           } else if (index == 7) {
-            _navIndex = 2;
+            _navIndex = 2; // Daily Tracker
           } else if (index == 8) {
-            _navIndex = 3;
+            final box = Hive.box<Activity>('activitiesBox');
+            Activity? runningActivity;
+            for (final a in box.values) {
+              if (a.activeSession != null) {
+                runningActivity = a;
+                break;
+              }
+            }
+            if (runningActivity != null) {
+              _timingActivityId = runningActivity.id;
+            }
+            _navIndex = 3; // Session
+          } else if (index == 9) {
+            _navIndex = 4; // Settings
           }
         });
       },
@@ -409,6 +463,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 weight: 600,
               ),
               label: 'Trash',
+            ),
+            NavigationRailM3EDestination(
+              icon: const Icon(Symbols.calendar_today_rounded, fill: 0, weight: 600),
+              selectedIcon: const Icon(
+                Symbols.calendar_today_rounded,
+                fill: 1,
+                weight: 600,
+              ),
+              label: 'Tracker',
             ),
             NavigationRailM3EDestination(
               icon: const Icon(Symbols.timer_rounded, fill: 0, weight: 600),
